@@ -1,0 +1,33 @@
+name: Build and Test
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v2
+
+    # - name: clang-format Check
+    #   run: ./format.sh --check
+
+    - name: Install latest clang / GCC
+      run: |
+        sudo apt update
+        sudo apt install clang-14 g++-11 lld
+
+    - name: Install gtest
+      uses: MarkusJx/googletest-installer@v1.1
+
+    - name: Build (clang++-14)
+      run: make CXX=clang++-14 ASAN=1 -j
+
+    - name: Build (g++-11)
+      run: |
+        make clean
+        make CXX=g++-11 ASAN=1 -j
+
+    - name: Test
+      run: make test ASAN=1 -j
