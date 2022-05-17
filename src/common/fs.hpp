@@ -14,6 +14,7 @@ enum FileSystemError
 
 class File
 {
+public:
     template<typename T>
     using Result = tl::expected<T, FileSystemError>;
 
