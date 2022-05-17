@@ -9,12 +9,18 @@ namespace gbemu::core
 Gameboy::Gameboy() :
     m_bootrom(std::vector<u8>(BOOTROM_SIZE)),
     m_bootrom_enabled(true),
+    m_hram(std::vector<u8>(HRAM_SIZE)),
     m_memory(std::make_unique<Memory>()),
     m_cpu(std::make_unique<Cpu>(mem())),
     m_gb_type(GameboyType_DMG)
 {
+    // map bootrom
     mem()->mapBuffer(BOOTROM_START, m_bootrom.data(), m_bootrom.size());
 
+    // map HRAM
+    mem()->mapBuffer(HRAM_START, m_hram.data(), m_hram.size());
+
+    // map bootrom disable register
     mem()->mapRegister(BOOT_ADDR, MmioReg::wo(std::bind(&Gameboy::disableBootRom, this, std::placeholders::_1)));
 }
 
