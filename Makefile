@@ -17,7 +17,8 @@ DEBUG ?= 3
 LTO ?= 0
 ASAN ?= 1
 
-WARN := -Wall -Wextra -Werror
+WARN := -Wall -Wextra -Werror \
+	-Wno-unused-parameter
 
 CXXFLAGS := -std=$(STD) -g$(DEBUG) $(OPT) $(WARN)
 CPPFLAGS := -MMD
@@ -41,11 +42,17 @@ CXXFILES_EMU := \
 	src/common/arg_parser.cpp \
 	src/common/fs.cpp \
 	src/core/cart.cpp \
-	src/core/cpu.cpp
+	src/core/cpu.cpp \
+	src/core/gameboy.cpp \
+	src/core/memory.cpp
 
 CXXFILES_TEST := \
 	src/common/arg_parser.cpp \
-	test/test_arg_parser.cpp
+	src/core/cart.cpp \
+	src/core/cpu.cpp \
+	src/core/memory.cpp \
+	test/test_arg_parser.cpp \
+	test/test_memory.cpp
 
 OFILES_EMU := $(CXXFILES_EMU:%.cpp=$(BUILD)/%.o)
 OFILES_TEST := $(CXXFILES_TEST:%.cpp=$(BUILD)/%.o)

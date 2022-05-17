@@ -1,6 +1,6 @@
 #pragma once
 
-#define ERROR_IF(cond, error) do { if (cond) tl::make_unexpected(error); } while (0)
+#define ERROR_IF(cond, error) do { if (cond) return tl::make_unexpected(error); } while (0)
 #define UNREACHABLE(msg) assert(0 && msg)
 
 #define GETTER(type, name) type name() { return m_##name; }
