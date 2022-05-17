@@ -93,7 +93,7 @@ class Cart
 public:
     Cart(std::vector<u8> rom) : m_rom(rom), m_header(data<const CartHeader>()) {}
 
-    template<typename T>
+    template<typename T = void>
     T* data(size_t off = 0) { return reinterpret_cast<T*>(m_rom.data() + off); }
 
     GETTER_CONST(auto, header);

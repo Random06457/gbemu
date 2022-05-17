@@ -6,7 +6,9 @@ namespace gbemu::core
 {
 enum Error
 {
+    // Gameboy
     Error_InvalidRom,
+    Errro_InvalidBootromSize,
 
     // Memory
     MemoryError_WriteToReadOnlyAddress,

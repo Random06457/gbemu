@@ -18,7 +18,8 @@ LTO ?= 0
 ASAN ?= 1
 
 WARN := -Wall -Wextra -Werror \
-	-Wno-unused-parameter
+	-Wno-unused-parameter \
+	-Wno-unused-private-field
 
 CXXFLAGS := -std=$(STD) -g$(DEBUG) $(OPT) $(WARN)
 CPPFLAGS := -MMD
