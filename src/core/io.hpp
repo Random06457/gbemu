@@ -1,0 +1,112 @@
+#pragma once
+
+#include "types.hpp"
+
+#define MAKE_REGION(name, start, end) \
+    static constexpr u16 name##_START = start; \
+    static constexpr u16 name##_END = end + 1; \
+    static constexpr u16 name##_SIZE = end + 1 - start;
+#define MAKE_REG(name, addr) static constexpr u16 name##_ADDR = addr;
+
+namespace gbemu::core
+{
+/*
+    0000	3FFF	16 KiB ROM bank 00	From cartridge, usually a fixed bank
+    4000	7FFF	16 KiB ROM Bank 01~NN	From cartridge, switchable bank via mapper (if any)
+    8000	9FFF	8 KiB Video RAM (VRAM)	In CGB mode, switchable bank 0/1
+    A000	BFFF	8 KiB External RAM	From cartridge, switchable bank if any
+    C000	CFFF	4 KiB Work RAM (WRAM)
+    D000	DFFF	4 KiB Work RAM (WRAM)	In CGB mode, switchable bank 1~7
+    E000	FDFF	Mirror of C000~DDFF (ECHO RAM)	Nintendo says use of this area is prohibited.
+    FE00	FE9F	Sprite attribute table (OAM)
+    FEA0	FEFF	Not Usable	Nintendo says use of this area is prohibited
+    FF00	FF7F	I/O Registers
+    FF80	FFFE	High RAM (HRAM)
+    FFFF	FFFF	Interrupt Enable register (IE)
+*/
+MAKE_REGION(BOOTROM, 0x0000, 0x00FF);
+MAKE_REGION(ROM0, 0x0000, 0x3FFF);
+MAKE_REGION(ROM1, 0x4000, 0x7FFF);
+MAKE_REGION(VRAM, 0x8000, 0x9FFF);
+MAKE_REGION(EXTRAM, 0xA000, 0xBFFF);
+MAKE_REGION(WRAM0, 0xC000, 0xCFFF);
+MAKE_REGION(WRAM1, 0xD000, 0xDFFF);
+// MAKE_REGION(ECHORAM, 0xE000, 0xFDFF);
+MAKE_REGION(OAM, 0xFE00, 0xFE9F);
+// MAKE_REGION(UNUSABLE, 0xFEA0, 0xFEFF);
+MAKE_REGION(IO, 0xFF00, 0xFF7F);
+MAKE_REGION(HRAM, 0xFF80, 0xFFFE);
+
+
+MAKE_REG(P1, 0xFF00);
+MAKE_REG(SB, 0xFF01);
+MAKE_REG(SC, 0xFF02);
+MAKE_REG(DIV, 0xFF03);
+MAKE_REG(TIM, 0xFF04);
+MAKE_REG(TMA, 0xFF05);
+MAKE_REG(TAC, 0xFF06);
+MAKE_REG(IF, 0xFF0F);
+
+MAKE_REG(NR10, 0xFF10);
+MAKE_REG(NR11, 0xFF11);
+MAKE_REG(NR12, 0xFF12);
+MAKE_REG(NR13, 0xFF13);
+MAKE_REG(NR14, 0xFF14);
+
+MAKE_REG(NR21, 0xFF16);
+MAKE_REG(NR22, 0xFF17);
+MAKE_REG(NR23, 0xFF18);
+MAKE_REG(NR24, 0xFF19);
+
+MAKE_REG(NR30, 0xFF1A);
+MAKE_REG(NR31, 0xFF1B);
+MAKE_REG(NR32, 0xFF1C);
+MAKE_REG(NR33, 0xFF1D);
+MAKE_REG(NR34, 0xFF1E);
+
+MAKE_REG(NR41, 0xFF20);
+MAKE_REG(NR42, 0xFF21);
+MAKE_REG(NR43, 0xFF22);
+MAKE_REG(NR44, 0xFF23);
+
+MAKE_REG(NR50, 0xFF24);
+MAKE_REG(NR51, 0xFF25);
+MAKE_REG(NR52, 0xFF26);
+
+MAKE_REG(W0, 0xFF30);
+MAKE_REG(W1, 0xFF30);
+MAKE_REG(W2, 0xFF30);
+MAKE_REG(W3, 0xFF30);
+MAKE_REG(W4, 0xFF30);
+MAKE_REG(W5, 0xFF30);
+MAKE_REG(W6, 0xFF30);
+MAKE_REG(W7, 0xFF30);
+MAKE_REG(W8, 0xFF30);
+MAKE_REG(W9, 0xFF30);
+MAKE_REG(W10, 0xFF30);
+MAKE_REG(W11, 0xFF30);
+MAKE_REG(W12, 0xFF30);
+MAKE_REG(W13, 0xFF30);
+MAKE_REG(W14, 0xFF30);
+MAKE_REG(W15, 0xFF30);
+
+MAKE_REG(LCD, 0xFF40);
+MAKE_REG(STA, 0xFF41);
+MAKE_REG(SCY, 0xFF42);
+MAKE_REG(SCX, 0xFF43);
+MAKE_REG(LY, 0xFF44);
+MAKE_REG(LYC, 0xFF45);
+MAKE_REG(DMA, 0xFF46);
+MAKE_REG(BGP, 0xFF47);
+MAKE_REG(OBP1, 0xFF48);
+MAKE_REG(OBP2, 0xFF49);
+MAKE_REG(WY, 0xFF4A);
+MAKE_REG(WX, 0xFF4B);
+
+MAKE_REG(BOOT, 0xFF50);
+
+MAKE_REG(IE, 0xFFFF);
+
+#undef MAKE_REGION
+#undef MAKE_REG
+}
