@@ -120,6 +120,12 @@ std::optional<ArgParser::ArgValue> ArgParser::parseArgValue(ArgType type, const 
     }
 }
 
+static bool unexpectedValue(ArgParser::ArgDesc* desc)
+{
+     std::cerr << "Expected value for argument \"" << desc->name << "\" of type " << ArgParser::argType(desc->type) << "\n";
+    return false;
+}
+
 bool ArgParser::parseArg(s32 argc, const char** argv, s32& i)
 {
     std::string arg = argv[i++];
@@ -150,38 +156,26 @@ bool ArgParser::parseArg(s32 argc, const char** argv, s32& i)
         {
             // if there are no more arguments
             if (i >= argc)
-            {
-                std::cerr << "Expected value of type " << argType(desc->type) << " for argument \"" << desc->name << "\"\n";
-                return false;
-            }
+                return unexpectedValue(desc);
 
             m_parsed_args.push_back({desc, parseArgValue(desc->type, argv[i++])});
             return true;
         }
 
         if (desc->type != ArgType_None)
-        {
-            std::cerr << "Expected value of type " << argType(desc->type) << " for argument \"" << desc->name << "\"\n";
-            return false;
-        }
+            return unexpectedValue(desc);
 
         m_parsed_args.push_back({desc, std::nullopt});
         return true;
     }
 
     if (desc->type != ArgType_Bool && desc->type != ArgType_U32 && desc->type != ArgType_String)
-    {
-        std::cerr << "Expected value of type " << argType(desc->type) << " for argument \"" << desc->name << "\"\n";
-        return false;
-    }
+        return unexpectedValue(desc);
 
     std::string value = arg.substr(pos+1);
     auto parsed_value = parseArgValue(desc->type, value);
     if (!parsed_value.has_value())
-    {
-        std::cerr << "Expected value of type " << argType(desc->type) << " for argument \"" << desc->name << "\"\n";
-        return false;
-    }
+        return unexpectedValue(desc);
 
     m_parsed_args.push_back({desc, parsed_value.value()});
     return true;
