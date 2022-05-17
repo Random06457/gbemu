@@ -65,24 +65,28 @@ struct CartHeader
             /* 0x13F */ char manufacturer_code[4];
             /* 0x143 */ u8 cgb_flag;
         };
-        /* 0x144 */ u8 new_licensee_code[2];
-        /* 0x146 */ u8 sgb_flag;
-        /* 0x147 */ CartridgeType cart_type;
-        /* 0x148 */ u8 rom_size;
-        /* 0x149 */ u8 ram_size;
-        /* 0x14A */ DestinationCode destination_code;
-        /* 0x14B */ u8 old_licensee_code;
-        /* 0x14C */ u8 rom_version;
-        /* 0x14D */ u8 checksum;
-        /* 0x14E */ u8 global_checksum[2];
     };
+    /* 0x144 */ u8 new_licensee_code[2];
+    /* 0x146 */ u8 sgb_flag;
+    /* 0x147 */ CartridgeType cart_type;
+    /* 0x148 */ u8 rom_size;
+    /* 0x149 */ u8 ram_size;
+    /* 0x14A */ DestinationCode destination_code;
+    /* 0x14B */ u8 old_licensee_code;
+    /* 0x14C */ u8 rom_version;
+    /* 0x14D */ u8 checksum;
+    /* 0x14E */ u8 global_checksum[2];
 
     static size_t romSize(u8 rom_size);
-    size_t romSize() { return romSize(rom_size); }
+    size_t romSize() const { return romSize(rom_size); }
 
     static size_t ramSize(u8 rom_size);
-    size_t ramSize() { return ramSize(ram_size); }
+    size_t ramSize() const { return ramSize(ram_size); }
+
+    static const char* cartType(CartridgeType cart_type);
+    const char* cartType() const { return cartType(cart_type); }
 } PACKED;
+static_assert(sizeof(CartHeader) == 0x150);
 
 class Cart
 {
