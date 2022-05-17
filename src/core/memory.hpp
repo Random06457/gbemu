@@ -96,6 +96,7 @@ public:
     Result<MmioBuffer*> getMappedBuffer(u16 addr);
     Result<MmioReg*> getMappedReg(u16 addr);
     Result<void> remapBuffer(u16 addr, void* buff);
+    Result<void> remapBuffer(u16 addr, void* buff, size_t size);
 
     // Result<void> read(u16 addr, void* dst, size_t size);
     // Result<void> write(u16 addr, const void* src, size_t size);

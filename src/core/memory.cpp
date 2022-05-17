@@ -101,6 +101,17 @@ Result<void> Memory::remapBuffer(u16 addr, void* buff)
     return {};
 }
 
+Result<void> Memory::remapBuffer(u16 addr, void* buff, size_t size)
+{
+    auto b = getMappedBuffer(addr);
+    if (!b)
+        return mapBuffer(addr, buff, size);
+
+    ERROR_IF(b.value()->start() != addr || b.value()->size() != size, MemoryError_RemapBufferWithDifferentSize);
+
+    return remapBuffer(addr, buff);
+}
+
 // Result<void> Memory::read(u16 addr, void* dst, size_t size)
 // {
 //     u8* ptr = reinterpret_cast<u8*>(dst);
