@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <span>
 #include "types.hpp"
+#include "core/gameboy.hpp"
 #include "core/cart.hpp"
 #include "common/arg_parser.hpp"
 #include "common/fs.hpp"
@@ -37,28 +38,42 @@ s32 main(s32 argc, char** argv)
     auto input = args.getArg("--input");
     auto bootrom = args.getArg("--bootrom");
 
-    // if (!input.has_value())
-    // {
-    //     std::cerr << "No input a ROM.\n";
-    //     return 1;
-    // }
-    if (!bootrom.has_value())
-    {
-        std::cerr << "No Boot ROM.\n";
-        return 1;
-    }
+    Gameboy gb;
 
-    if (args.hasArg("--print-header"))
+    if (bootrom.has_value())
     {
-        auto rom = File::readAllBytes(input.value().value.value().value);
+        auto rom = File::readAllBytes(bootrom.value().value.value().value);
         if (!rom)
         {
-            std::cerr << "Error while opening file " << rom.error() << "\n";
+            std::cerr << "Error while opening bootrom " << rom.error() << "\n";
             return 1;
         }
+        gb.setBootrom(rom.value());
+    }
 
-        Cart cart(rom.value());
-        printCart(cart);
+    if (input.has_value())
+    {
+        auto rom = File::readAllBytes(input.value().value.value().value);
+        auto cart = std::make_unique<Cart>(rom.value());
+
+        if (args.hasArg("--print-header"))
+        {
+            if (!rom)
+            {
+                std::cerr << "Error while opening file " << rom.error() << "\n";
+                return 1;
+            }
+
+            printCart(*cart);
+        }
+
+        gb.setCartridge(std::move(cart));
+        gb.powerOn();
+    }
+    else
+    {
+        std::cerr << "No input rom\n";
+        return 1;
     }
 
     return 0;
