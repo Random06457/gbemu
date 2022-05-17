@@ -1,6 +1,7 @@
 #pragma once
 
 #define ERROR_IF(cond, error) do { if (cond) return tl::make_unexpected(error); } while (0)
+#define PROPAGATE_ERROR(...) ({auto err = __VA_ARGS__; if (err) return tl::make_unexpected(err.error()); err.value();})
 #define UNREACHABLE(msg) assert(0 && msg)
 
 #define GETTER(type, name) type name() { return m_##name; }

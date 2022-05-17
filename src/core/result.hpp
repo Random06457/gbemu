@@ -9,13 +9,15 @@ enum Error
     Error_InvalidRom,
 
     // Memory
-    Error_MemoryWriteToReadOnlyAddress,
-    Error_MemoryReadToWriteOnlyAddress,
-    Error_MemoryBufferOOBRead,
-    Error_MemoryBufferOOBWrite,
-    Error_MemoryMapReservedRegion,
-    Error_MemoryReadUnmappedMemory,
-    Error_MemoryWriteUnmappedMemory,
+    MemoryError_WriteToReadOnlyAddress,
+    MemoryError_ReadToWriteOnlyAddress,
+    MemoryError_BufferOOBRead,
+    MemoryError_BufferOOBWrite,
+    MemoryError_MapReservedRegion,
+    MemoryError_ReadUnmappedMemory,
+    MemoryError_WriteUnmappedMemory,
+    MemoryError_UnmapUnmappedAddress,
+    MemoryError_CannotFindMapped,
 };
 
 template<typename T>

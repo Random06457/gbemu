@@ -87,3 +87,67 @@ TEST(memory, map_register)
     ASSERT_EQ(reg1, 9);
 
 }
+
+TEST(memory, unmap_register)
+{
+    Memory mem;
+    u8 reg;
+
+    ASSERT_FALSE(mem.unmapAddress(0x100));
+
+    ASSERT_TRUE(mem.mapRegister(0x100, MmioReg::rw(&reg)));
+    ASSERT_TRUE(mem.isRegionMapped(0x100, 1));
+    ASSERT_FALSE(mem.mapRegister(0x100, MmioReg::rw(&reg)));
+
+    ASSERT_TRUE(mem.unmapAddress(0x100));
+    ASSERT_FALSE(mem.isRegionMapped(0x100, 1));
+    ASSERT_TRUE(mem.mapRegister(0x100, MmioReg::rw(&reg)));
+}
+
+TEST(memory, unmap_buffer)
+{
+    Memory mem;
+    u8 reg;
+
+    ASSERT_FALSE(mem.unmapAddress(0x100));
+
+    ASSERT_TRUE(mem.mapRegister(0x100, MmioReg::rw(&reg)));
+    ASSERT_TRUE(mem.isRegionMapped(0x100, 1));
+    ASSERT_FALSE(mem.mapRegister(0x100, MmioReg::rw(&reg)));
+
+    ASSERT_TRUE(mem.unmapAddress(0x100));
+    ASSERT_FALSE(mem.isRegionMapped(0x100, 1));
+    ASSERT_TRUE(mem.mapRegister(0x100, MmioReg::rw(&reg)));
+}
+
+TEST(memory, get_mapped)
+{
+    Memory mem;
+    u8 buff0[] = { 1, 2, 3, 4, };
+    u8 reg;
+
+    ASSERT_TRUE(mem.mapBuffer(0x100, buff0, sizeof(buff0)));
+    ASSERT_TRUE(mem.mapRegister(0x200, MmioReg::rw(&reg)));
+    ASSERT_TRUE(mem.getMappedBuffer(0x100));
+    ASSERT_TRUE(mem.getMappedReg(0x200));
+    ASSERT_FALSE(mem.getMappedReg(0x300));
+}
+
+TEST(memory, remap_buffer)
+{
+    Memory mem;
+    u8 buff0[] = { 1, 2, 3, 4, };
+    u8 buff1[] = { 5, 6, 7, 8, };
+
+    ASSERT_TRUE(mem.mapBuffer(0x100, buff0, sizeof(buff0)));
+
+    ASSERT_TRUE(mem.read8(0x100));
+    ASSERT_EQ(mem.read8(0x100).value(), 1);
+
+    auto buff = mem.getMappedBuffer(0x100);
+    ASSERT_TRUE(buff);
+    buff.value()->setBuffer(buff1);
+
+    ASSERT_TRUE(mem.read8(0x100));
+    ASSERT_EQ(mem.read8(0x100).value(), 5);
+}
