@@ -27,6 +27,9 @@ Gameboy::Gameboy() :
 
 Result<void> Gameboy::disableBootRom(u8 data)
 {
+    if (data == 0)
+        return {};
+
     if (m_bootrom_enabled)
     {
         // unmap bootrom
