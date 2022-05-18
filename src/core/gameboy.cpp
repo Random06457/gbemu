@@ -12,6 +12,7 @@ Gameboy::Gameboy() :
     m_hram(std::vector<u8>(HRAM_SIZE)),
     m_memory(std::make_unique<Memory>()),
     m_cpu(std::make_unique<Cpu>(mem())),
+    m_ppu(std::make_unique<Ppu>(mem())),
     m_gb_type(GameboyType_DMG)
 {
     // map bootrom
@@ -78,6 +79,13 @@ Result<void> Gameboy::powerOn()
     while (true)
     {
         cpu()->step();
+        ppu()->step(cpu()->clocks());
+
+
+        if (cpu()->regs().pc == 0x100)
+        {
+            ppu()->dumpBg();
+        }
     }
 }
 

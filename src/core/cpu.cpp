@@ -3,6 +3,7 @@
 #include "attributes.hpp"
 #include <cassert>
 #include <iostream>
+#include <cstdarg>
 
 namespace gbemu::core
 {
@@ -21,13 +22,33 @@ void Cpu::reset()
 
 void Cpu::step()
 {
-    printf("step\n");
+    log("step\n");
+
+    static u16 last_pc = 0;
+
+    m_logging_enable = regs().pc >= 0xE6;
 
     assert(regs().pc < 0x100);
 
     u8 op = fetch8();
 
     execute(op);
+
+    assert(last_pc != regs().pc);
+
+    last_pc = regs().pc;
+}
+
+void Cpu::log(const char* fmt, ...)
+{
+    std::va_list args;
+
+    va_start(args, fmt);
+
+    if (m_logging_enable)
+        vprintf(fmt, args);
+
+    va_end(args);
 }
 
 
@@ -35,10 +56,10 @@ u8 Cpu::read8(u16 addr)
 {
     tick(4);
     auto ret = mem()->read8(addr);
-    printf("read(0x%04X)=%02X\n", addr, ret.value_or(0));
+    log("read(0x%04X)=%02X\n", addr, ret.value_or(0));
 
     if (!ret)
-        printf("INVALID MEMORY : 0x%04X\n", addr);
+        log("INVALID MEMORY : 0x%04X\n", addr);
 
     // TODO: handle error
     // assert(ret);
@@ -49,10 +70,10 @@ void Cpu::write8(u16 addr, u8 x)
 {
     tick(4);
     auto ret = mem()->write8(addr, x);
-    printf("write8(0x%04X, 0x%02X)\n", addr, x);
+    log("write8(0x%04X, 0x%02X)\n", addr, x);
 
     if (!ret)
-        printf("INVALID MEMORY : 0x%04X\n", addr);
+        log("INVALID MEMORY : 0x%04X\n", addr);
 
     // TODO: handle error
     // assert(ret);
@@ -396,7 +417,7 @@ void Cpu::execute(u8 op)
         case 0x36: LD(HL8, D8);
 
         case 0x0A: LD(A, BC8);
-        case 0x1A: LD(A, D8);
+        case 0x1A: LD(A, DE8);
         case 0x2A: LD(A, HLI);
         case 0x3A: LD(A, HLD);
 

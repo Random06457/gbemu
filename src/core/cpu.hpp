@@ -37,6 +37,9 @@ public:
     {}
 
 
+    __attribute__ ((format(printf, 2, 3)))
+    void log(const char*, ...);
+
     void reset();
     void step();
 
@@ -60,12 +63,14 @@ public:
     auto mem() { return m_memory; }
     auto& regs() { return m_regs; }
     void tick(size_t x) { m_clocks += x; }
+    size_t clocks() { return m_clocks; }
 
 private:
     Memory* m_memory;
-    size_t m_clocks;
+    size_t m_clocks; // T-states
 
     bool interrupt_master_enable;
+    bool m_logging_enable;
 
 // TODO: handle endianness
 #define REG_8_16(x, y) \

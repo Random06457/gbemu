@@ -19,7 +19,8 @@ ASAN ?= 1
 
 WARN := -Wall -Wextra -Werror \
 	-Wno-unused-parameter \
-	-Wno-unused-private-field
+	-Wno-unused-private-field \
+	-Wno-unused-variable
 
 CXXFLAGS := -std=$(STD) -g$(DEBUG) $(OPT) $(WARN)
 CPPFLAGS := -MMD
@@ -45,7 +46,8 @@ CXXFILES_EMU := \
 	src/core/cart.cpp \
 	src/core/cpu.cpp \
 	src/core/gameboy.cpp \
-	src/core/memory.cpp
+	src/core/memory.cpp \
+	src/core/ppu.cpp
 
 CXXFILES_TEST := \
 	src/common/arg_parser.cpp \
