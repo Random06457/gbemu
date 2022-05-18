@@ -20,9 +20,24 @@ struct MmioReg
     static MmioReg wo(MmioWriteFunc write) { return { invalidRead, write }; }
     static MmioReg rw(MmioReadFunc read, MmioWriteFunc write) { return { read, write }; }
 
-    static MmioReg ro(u8* reg) { return { std::bind(ptrRead, reg), invalidWrite }; }
-    static MmioReg wo(u8* reg) { return { invalidRead, std::bind(ptrWrite, reg, std::placeholders::_1) }; }
-    static MmioReg rw(u8* reg) { return { std::bind(ptrRead, reg), std::bind(ptrWrite, reg, std::placeholders::_1) }; }
+    static MmioReg ro(void* reg)
+    {
+        return { std::bind(ptrRead, reinterpret_cast<u8*>(reg)), invalidWrite };
+    }
+    static MmioReg wo(void* reg, u8 wmask = 0xFF)
+    {
+        return {
+            invalidRead,
+            std::bind(ptrWrite, reinterpret_cast<u8*>(reg), wmask, std::placeholders::_1)
+        };
+    }
+    static MmioReg rw(void* reg, u8 wmask = 0xFF)
+    {
+        return {
+            std::bind(ptrRead, reinterpret_cast<u8*>(reg)),
+            std::bind(ptrWrite, reinterpret_cast<u8*>(reg), wmask, std::placeholders::_1)
+        };
+    }
 
     MmioReg() {}
     MmioReg(MmioReadFunc read, MmioWriteFunc write) :
@@ -35,7 +50,7 @@ struct MmioReg
 
 private:
     static inline Result<u8> ptrRead(u8* ptr) { return *ptr; }
-    static inline Result<void> ptrWrite(u8* ptr, u8 value) { *ptr = value; return {}; }
+    static inline Result<void> ptrWrite(u8* ptr, u8 mask, u8 value) { *ptr = (*ptr & ~mask) | (value & mask); return {}; }
     static inline Result<u8> invalidRead() { return tl::make_unexpected(MemoryError_ReadToWriteOnlyAddress); }
     static inline Result<void> invalidWrite(u8 value) { return tl::make_unexpected(MemoryError_WriteToReadOnlyAddress); }
 };

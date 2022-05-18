@@ -65,6 +65,7 @@ TEST(memory, map_register)
 {
     u8 reg0 = 8;
     u8 reg1 = 7;
+    u8 reg2 = 0x80;
     Memory mem;
 
     // RO
@@ -86,6 +87,11 @@ TEST(memory, map_register)
     ASSERT_TRUE(mem.write8(0x102, 9));
     ASSERT_EQ(reg1, 9);
 
+    // partial W
+    ASSERT_TRUE(mem.mapRegister(0x103, MmioReg::wo(&reg2, 0b01111110)));
+    ASSERT_FALSE(mem.read8(0x103));
+    ASSERT_TRUE(mem.write8(0x103, 0x7F));
+    ASSERT_EQ(reg2, 0xFE);
 }
 
 TEST(memory, unmap_register)
