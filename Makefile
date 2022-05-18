@@ -55,6 +55,7 @@ CXXFILES_TEST := \
 	src/core/cpu.cpp \
 	src/core/memory.cpp \
 	test/test_arg_parser.cpp \
+	test/test_cpu.cpp \
 	test/test_memory.cpp
 
 OFILES_EMU := $(CXXFILES_EMU:%.cpp=$(BUILD)/%.o)

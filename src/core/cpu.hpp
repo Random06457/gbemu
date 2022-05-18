@@ -8,7 +8,7 @@ namespace gbemu::core
 
 class Cpu
 {
-private:
+public:
     enum VREG8
     {
         VREG8_B,
@@ -34,7 +34,9 @@ public:
     Cpu(Memory* memory) :
         m_memory(memory),
         m_clocks(0)
-    {}
+    {
+        reset();
+    }
 
 
     __attribute__ ((format(printf, 2, 3)))
@@ -51,8 +53,8 @@ public:
     u16 read16(u16 addr);
     void write8(u16 addr, u8 x);
     void write16(u16 addr, u16 x);
-    constexpr u8 readReg(VREG8 reg);
-    constexpr void writeReg(VREG8 reg, u8 data);
+    u8 readReg(VREG8 reg);
+    void writeReg(VREG8 reg, u8 data);
 
 private:
 

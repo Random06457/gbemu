@@ -1,6 +1,7 @@
 #include "cpu.hpp"
 #include "io.hpp"
 #include "attributes.hpp"
+#include "opcode.hpp"
 #include <cassert>
 #include <iostream>
 #include <cstdarg>
@@ -120,7 +121,7 @@ u16 Cpu::pop16()
 }
 
 
-constexpr u8 Cpu::readReg(VREG8 reg)
+u8 Cpu::readReg(VREG8 reg)
 {
     switch (reg)
     {
@@ -144,7 +145,7 @@ constexpr u8 Cpu::readReg(VREG8 reg)
     }
 }
 
-constexpr void Cpu::writeReg(VREG8 reg, u8 data)
+void Cpu::writeReg(VREG8 reg, u8 data)
 {
     switch (reg)
     {
@@ -329,7 +330,7 @@ void Cpu::execute(u8 op)
 
         Z = d == 0;
         N = 0;
-        H = !!(((b & 0xF) + a) & 0x10);
+        H = !!(((a & 0xF) + b) & 0x10);
 
         writeReg(r, d);
     };
@@ -342,7 +343,7 @@ void Cpu::execute(u8 op)
 
         Z = d == 0;
         N = 1;
-        H = !!(((b & 0xF) - a) & 0x10);
+        H = !!(((a & 0xF) - b) & 0x10);
 
         writeReg(r, d);
     };
@@ -362,107 +363,101 @@ void Cpu::execute(u8 op)
 
     switch (op)
     {
-        case 0x00: // NOP
+        case OP_NOP:
             break;
-        case 0x10: // STOP
+        case OP_STOP_d8:
             UNIMPLEMENTED("STOP");
             break;
-        case 0x76: // HALT
+        case OP_HALT:
             UNIMPLEMENTED("HALT");
             break;
 
-        case 0x20: JR_R8(NZ);
-        case 0x30: JR_R8(NC);
-        case 0x18: JR_R8(true);
-        case 0x28: JR_R8(Z);
-        case 0x38: JR_R8(C);
+        case OP_JR_NZ_r8: JR_R8(NZ);
+        case OP_JR_NC_r8: JR_R8(NC);
+        case OP_JR_r8: JR_R8(true);
+        case OP_JR_Z_r8: JR_R8(Z);
+        case OP_JR_C_r8: JR_R8(C);
 
-        case 0xCD: CALL_A16(true);
-        case 0xC4: CALL_A16(NZ);
-        case 0xD4: CALL_A16(NC);
-        case 0xCC: CALL_A16(Z);
-        case 0xDC: CALL_A16(C);
+        case OP_CALL_a16: CALL_A16(true);
+        case OP_CALL_NZ_a16: CALL_A16(NZ);
+        case OP_CALL_NC_a16: CALL_A16(NC);
+        case OP_CALL_Z_a16: CALL_A16(Z);
+        case OP_CALL_C_a16: CALL_A16(C);
 
-        case 0xC5: PUSH(bc);
-        case 0xD5: PUSH(de);
-        case 0xE5: PUSH(hl);
-        case 0xF5: PUSH(af);
+        case OP_PUSH_BC: PUSH(bc);
+        case OP_PUSH_DE: PUSH(de);
+        case OP_PUSH_HL: PUSH(hl);
+        case OP_PUSH_AF: PUSH(af);
 
-        case 0xC1: POP(bc);
-        case 0xD1: POP(de);
-        case 0xE1: POP(hl);
-        case 0xF1: POP(af);
+        case OP_POP_BC: POP(bc);
+        case OP_POP_DE: POP(de);
+        case OP_POP_HL: POP(hl);
+        case OP_POP_AF: POP(af);
 
-        case 0x01: // LD BC, d16
-            regs().bc = fetch16();
-            break;
-        case 0x11: // LD DE, d16
-            regs().de = fetch16();
-            break;
-        case 0x21: // LD HL, d16
-            regs().hl = fetch16();
-            break;
-        case 0x31: // LD SP, d16
-            regs().sp = fetch16();
-            break;
+        case OP_LD_BC_d16: regs().bc = fetch16(); break;
+        case OP_LD_DE_d16: regs().de = fetch16(); break;
+        case OP_LD_HL_d16: regs().hl = fetch16(); break;
+        case OP_LD_SP_d16: regs().sp = fetch16(); break;
 
-        case 0x02: LD(BC8, A);
-        case 0x12: LD(DE8, A);
-        case 0x22: LD(HLI, A);
-        case 0x32: LD(HLD, A);
+        case OP_LD_MEM_BC_A: LD(BC8, A);
+        case OP_LD_MEM_DE_A: LD(DE8, A);
+        case OP_LD_MEM_HLI_A: LD(HLI, A);
+        case OP_LD_MEM_HLD_A: LD(HLD, A);
 
-        case 0x06: LD(B, D8);
-        case 0x16: LD(D, D8);
-        case 0x26: LD(E, D8);
-        case 0x36: LD(HL8, D8);
+        case OP_LD_B_d8: LD(B, D8);
+        case OP_LD_D_d8: LD(D, D8);
+        case OP_LD_H_d8: LD(H, D8);
+        case OP_LD_MEM_HL_d8: LD(HL8, D8);
 
-        case 0x0A: LD(A, BC8);
-        case 0x1A: LD(A, DE8);
-        case 0x2A: LD(A, HLI);
-        case 0x3A: LD(A, HLD);
+        case OP_LD_A_MEM_BC: LD(A, BC8);
+        case OP_LD_A_MEM_DE: LD(A, DE8);
+        case OP_LD_A_MEM_HLI: LD(A, HLI);
+        case OP_LD_A_MEM_HLD: LD(A, HLD);
 
-        case 0x0E: LD(C, D8);
-        case 0x1E: LD(E, D8);
-        case 0x2E: LD(L, D8);
-        case 0x3E: LD(A, D8);
+        case OP_LD_C_d8: LD(C, D8);
+        case OP_LD_E_d8: LD(E, D8);
+        case OP_LD_L_d8: LD(L, D8);
+        case OP_LD_A_d8: LD(A, D8);
 
-        case 0x04: INC(B);
-        case 0x14: INC(D);
-        case 0x24: INC(H);
-        case 0x34: INC(HL8);
-        case 0x0C: INC(C);
-        case 0x1C: INC(E);
-        case 0x2C: INC(L);
-        case 0x3C: INC(A);
+        case OP_INC_B: INC(B);
+        case OP_INC_D: INC(D);
+        case OP_INC_H: INC(H);
+        case OP_INC_MEM_HL: INC(HL8);
+        case OP_INC_C: INC(C);
+        case OP_INC_E: INC(E);
+        case OP_INC_L: INC(L);
+        case OP_INC_A: INC(A);
 
-        case 0x05: DEC(B);
-        case 0x15: DEC(D);
-        case 0x25: DEC(H);
-        case 0x35: DEC(HL8);
-        case 0x0D: DEC(C);
-        case 0x1D: DEC(E);
-        case 0x2D: DEC(L);
-        case 0x3D: DEC(A);
+        case OP_DEC_B: DEC(B);
+        case OP_DEC_D: DEC(D);
+        case OP_DEC_H: DEC(H);
+        case OP_DEC_MEM_HL: DEC(HL8);
+        case OP_DEC_C: DEC(C);
+        case OP_DEC_E: DEC(E);
+        case OP_DEC_L: DEC(L);
+        case OP_DEC_A: DEC(A);
 
-        case 0x03: regs().bc++; break;
-        case 0x13: regs().de++; break;
-        case 0x23: regs().hl++; break;
-        case 0x33: regs().sp++; break;
-        case 0x0B: regs().bc--; break;
-        case 0x1B: regs().de--; break;
-        case 0x2B: regs().hl--; break;
-        case 0x3B: regs().sp--; break;
+        case OP_INC_BC: regs().bc++; break;
+        case OP_INC_DE: regs().de++; break;
+        case OP_INC_HL: regs().hl++; break;
+        case OP_INC_SP: regs().sp++; break;
+        case OP_DEC_BC: regs().bc--; break;
+        case OP_DEC_DE: regs().de--; break;
+        case OP_DEC_HL: regs().hl--; break;
+        case OP_DEC_SP: regs().sp--; break;
 
-        case 0xC8: RET(Z);
-        case 0xD8: RET(C);
-        case 0xC9: RET(true);
+        case OP_RET_Z: RET(Z);
+        case OP_RET_C: RET(C);
+        case OP_RET: RET(true);
 
-        case 0xFE: op_cp(VREG8_A, VREG8_D8); break;
+        case OP_CP_d8: op_cp(VREG8_A, VREG8_D8); break;
 
-        case 0xEA: LD(A16, A);
-        case 0xFA: LD(A, A16);
+        case OP_LD_MEM_a16_A: LD(A16, A);
+        case OP_LD_A_MEM_a16: LD(A, A16);
 
-        case 0x07: // RLCA
+        case OP_LD_MEM_a16_SP: write16(fetch16(), regs().sp); break;
+
+        case OP_RLCA:
         {
             bool new_c = regs().a >> 7;
             regs().a <<= 1;
@@ -474,7 +469,7 @@ void Cpu::execute(u8 op)
             C = new_c;
             break;
         }
-        case 0x17: // RLA
+        case OP_RLA:
         {
             bool new_c = regs().a >> 7;
             regs().a <<= 1;
@@ -486,22 +481,48 @@ void Cpu::execute(u8 op)
             C = new_c;
             break;
         }
+        case OP_RRCA:
+        {
+            bool new_c = regs().a & 1;
+
+            regs().a >>= 1;
+            regs().a |= new_c << 7;
+
+            Z = 0;
+            N = 0;
+            H = 0;
+            C = new_c;
+            break;
+        }
+        case OP_RRA:
+        {
+            bool new_c = regs().a & 1;
+
+            regs().a >>= 1;
+            regs().a |= C << 7;
+
+            Z = 0;
+            N = 0;
+            H = 0;
+            C = new_c;
+            break;
+        }
 
 
-        case 0xE0: LD(HA8, A);
-        case 0xF0: LD(A, HA8);
+        case OP_LDH_MEM_a8_A: LD(HA8, A);
+        case OP_LDH_A_MEM_a8: LD(A, HA8);
 
-        case 0xE2: LD(HC, A);
-        case 0xF2: LD(A, HC);
+        case OP_LD_MEM_C_A: LD(HC, A);
+        case OP_LD_A_MEM_C: LD(A, HC);
 
-        case 0xCB:
+        case OP_PREFIX:
             executeCB(fetch8());
             break;
 
-        case 0xF3: // DI
+        case OP_DI: // DI
             interrupt_master_enable = false;
             break;
-        case 0xFB: // EI
+        case OP_EI: // EI
             interrupt_master_enable = true;
             break;
 
