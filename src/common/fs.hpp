@@ -19,6 +19,7 @@ public:
     using Result = tl::expected<T, FileSystemError>;
 
     static Result<std::vector<u8>> readAllBytes(const fs::path& path);
+    static Result<void> writeAllBytes(const fs::path& path, const void* data, size_t size);
 
     static Result<std::string> readAllText(const fs::path& path);
 

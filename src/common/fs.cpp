@@ -32,3 +32,15 @@ File::Result<std::vector<u8>> File::readAllBytes(const fs::path& path)
 
     return ret;
 }
+
+File::Result<void> File::writeAllBytes(const fs::path& path, const void* data, size_t size)
+{
+    std::ofstream fs;
+    fs.open(path, std::ios::binary);
+
+    ERROR_IF(!fs.is_open(), FileSystemError_FileOpenFailed);
+
+    fs.write(reinterpret_cast<const char*>(data), size);
+
+    return {};
+}
