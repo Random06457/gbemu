@@ -201,6 +201,15 @@ void Cpu::writeReg(VREG8 reg, u8 data)
         return; \
     }
 
+#define MAKE_OP_LD(start, size, func, ...) \
+    if (op >= start && op < start + size) \
+    { \
+        VREG8 dst = (VREG8)((op - start) / 8); \
+        VREG8 src = (VREG8)((op - start) % 8); \
+        func(dst, src, ##__VA_ARGS__); \
+        return; \
+    }
+
 #define MAKE_OP_IDX(start, size, func, ...) \
     if (op >= start && op <= start + size - 1) \
     { \
@@ -349,17 +358,17 @@ void Cpu::execute(u8 op)
     };
 
     // LD
-    if (op != 0x76)
-        MAKE_OP_ACCU(0x40, 0x40, ld);
+    if (op != OP_HALT)
+        MAKE_OP_LD(OP_LD_B_B, 0x40, ld);
 
-    MAKE_OP_ACCU(0x80, 8, add, false);
-    MAKE_OP_ACCU(0x88, 8, add, true);
-    MAKE_OP_ACCU(0x90, 8, sub, false);
-    MAKE_OP_ACCU(0x98, 8, sub, true);
-    MAKE_OP_ACCU(0xA0, 8, op_and);
-    MAKE_OP_ACCU(0xA8, 8, op_xor);
-    MAKE_OP_ACCU(0xB0, 8, op_or);
-    MAKE_OP_ACCU(0xB8, 8, op_cp);
+    MAKE_OP_ACCU(OP_ADD_A_B, 8, add, false);
+    MAKE_OP_ACCU(OP_ADC_A_B, 8, add, true);
+    MAKE_OP_ACCU(OP_SUB_B, 8, sub, false);
+    MAKE_OP_ACCU(OP_SBC_A_B, 8, sub, true);
+    MAKE_OP_ACCU(OP_AND_B, 8, op_and);
+    MAKE_OP_ACCU(OP_XOR_B, 8, op_xor);
+    MAKE_OP_ACCU(OP_OR_B, 8, op_or);
+    MAKE_OP_ACCU(OP_CP_B, 8, op_cp);
 
     switch (op)
     {

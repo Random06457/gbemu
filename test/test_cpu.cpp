@@ -422,3 +422,133 @@ TEST(cpu, dec_r16)
     ASSERT_EQ(REG_HL, 0x3332);
     ASSERT_EQ(REG_SP, 0x4443);
 }
+
+// 0x_0 / 0x_8
+TEST(cpu, jr_r8)
+{
+    CPU_CREATE(
+        OP_JR_NZ_r8, 0x06,  // 0x0000
+        OP_JR_NC_r8, 0x70,  // 0x0002
+        OP_JR_Z_r8,  0x70,  // 0x0004
+        OP_JR_r8,    0xFA,  // 0x0006
+        OP_JR_C_r8,  0xFA,  // 0x0008
+    );
+
+    Z = 0;
+    cpu.step();
+    ASSERT_EQ(REG_PC, 0x0008);
+
+    C = 1;
+    cpu.step();
+    ASSERT_EQ(REG_PC, 0x0004);
+
+    Z = 0;
+    cpu.step();
+    ASSERT_EQ(REG_PC, 0x0006);
+
+    cpu.step();
+    ASSERT_EQ(REG_PC, 0x0002);
+
+    C = 0;
+    cpu.step();
+    ASSERT_EQ(REG_PC, 0x0074);
+}
+
+
+// 0x4_ / 0x5_ / 0x6_ / 0x7_
+TEST(cpu, ld_r8_r8)
+{
+#define TEST_LD(src) { \
+    CPU_CREATE( \
+        OP_LD_##src##_d8, 0x11, OP_LD_HL_d16, 0x00, 0x10, \
+        OP_LD_B_##src, OP_LD_C_##src, OP_LD_D_##src, OP_LD_E_##src, OP_LD_MEM_HL_##src, OP_LD_A_##src, OP_LD_H_##src, OP_LD_L_##src \
+    ); \
+    CPU_RUN(); \
+    for (size_t i = 0; i < 8; i++) \
+    { \
+        u8 b = i == 6 ? ram[0] : cpu.readReg((Cpu::VREG8)i); \
+        ASSERT_EQ(b, 0x11); \
+    } \
+}
+
+    TEST_LD(A);
+    TEST_LD(B);
+    TEST_LD(C);
+    TEST_LD(D);
+    TEST_LD(E);
+
+    // HL
+    {
+        CPU_CREATE(
+            OP_LD_H_MEM_HL,
+            OP_LD_L_MEM_HL,
+
+            OP_LD_HL_d16, 0x00, 0x10,
+            OP_LD_B_MEM_HL, OP_LD_C_MEM_HL, OP_LD_D_MEM_HL, OP_LD_E_MEM_HL, OP_LD_A_MEM_HL,
+        );
+
+        ram[0] = 0x11;
+
+
+        REG_HL = 0x1000;
+        cpu.step();
+        ASSERT_EQ(REG_H, 0x11);
+        REG_HL = 0x1000;
+        cpu.step();
+        ASSERT_EQ(REG_L, 0x11);
+
+        CPU_RUN();
+        for (size_t i = 0; i < 8; i++)
+        {
+            Cpu::VREG8 reg = (Cpu::VREG8)i;
+            if (i == Cpu::VREG8_H || i == Cpu::VREG8_L || i == Cpu::VREG8_HL8)
+                continue;
+            ASSERT_EQ(cpu.readReg(reg), 0x11);
+        }
+    }
+    // L
+    {
+        CPU_CREATE(
+            OP_LD_MEM_HL_L,
+            OP_LD_B_L, OP_LD_C_L, OP_LD_D_L, OP_LD_E_L, OP_LD_H_L, OP_LD_L_L, OP_LD_A_L
+        );
+
+        ram[0] = 0x11;
+        REG_HL = 0x1000;
+        cpu.step();
+        ASSERT_EQ(ram[0], 0x00);
+
+        REG_L = 0x11;
+        CPU_RUN();
+        for (size_t i = 0; i < 8; i++)
+        {
+            Cpu::VREG8 reg = (Cpu::VREG8)i;
+            if (i == Cpu::VREG8_HL8)
+                continue;
+            ASSERT_EQ(cpu.readReg(reg), 0x11);
+        }
+    }
+    // H
+    {
+        CPU_CREATE(
+            OP_LD_MEM_HL_H,
+            OP_LD_B_H, OP_LD_C_H, OP_LD_D_H, OP_LD_E_H, OP_LD_H_H, OP_LD_L_H, OP_LD_A_H
+        );
+
+        ram[0] = 0x11;
+        REG_HL = 0x1000;
+        cpu.step();
+        ASSERT_EQ(ram[0], 0x10);
+
+        REG_H = 0x11;
+        CPU_RUN();
+        for (size_t i = 0; i < 8; i++)
+        {
+            Cpu::VREG8 reg = (Cpu::VREG8)i;
+            if (i == Cpu::VREG8_HL8)
+                continue;
+            ASSERT_EQ(cpu.readReg(reg), 0x11);
+        }
+    }
+
+}
