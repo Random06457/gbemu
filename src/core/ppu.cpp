@@ -100,33 +100,15 @@ void Ppu::step(size_t clocks)
 
     if (prev_mode == PpuMode_HBlank && m_stat.mode == PpuMode_VBlank)
     {
-        // drawTiles(true);
-        // drawTiles(false);
+        drawTiles(true);
+        drawTiles(false);
     }
 }
 
 
 void Ppu::dumpBg()
 {
-    u8 tiles[] = {
-        0xD, 0xE, 0xF, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x19
-    };
-
-    u8 tile[] =
-    {
-        0xFC, 0x00, 0xFC, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0x33, 0x00, 0x33, 0x00, 0xFC, 0x00, 0xFC, 0x00
-        // 0x3C, 0x00, 0x42, 0x00, 0xB9, 0x00, 0xA5, 0x00, 0xB9, 0x00, 0xA5, 0x00, 0x42, 0x00, 0x3C, 0x00,
-    };
-
-    drawTile(m_bg_texture, tile);
-
-    for (size_t i = 0; i < 0x1A; i++)
-        drawTile(m_bg_texture + i * 8, bgTiles() + i * 0x10);
-
-    // for (size_t i = 0; i < sizeof(tiles); i++)
-    //     drawTile(m_bg_texture + i * 8, bgTiles() + tiles[i] * 0x10);
-
-    // drawTiles(true);
+    drawTiles(true);
     printf("Dumping background\n");
     printf("palette : 0x%02X\n", m_dmg_bgp);
     File::writeAllBytes("bg.raw", m_bg_texture, sizeof(m_bg_texture));
