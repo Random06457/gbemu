@@ -152,20 +152,27 @@ TEST(cpu, inc_r16)
     ASSERT_EQ(REG_SP, 0x4445);
 }
 
-// 0x_4
+// 0x_4 / 0x_C
 TEST(cpu, inc_r8)
 {
     CPU_CREATE(
         OP_INC_B,
         OP_INC_D,
         OP_INC_H,
-        OP_INC_MEM_HL);
+        OP_INC_MEM_HL,
+        OP_INC_C,
+        OP_INC_E,
+        OP_INC_L,
+        OP_INC_A);
 
     ram[0] = 0xFF;
 
     REG_B = 0x11;
     REG_D = 0x1F;
     REG_HL = 0x0F00;
+    REG_C = 0x11;
+    REG_E = 0x1F;
+    REG_A = 0x08;
 
     cpu.step();
     ASSERT_EQ(REG_B, 0x12);
@@ -182,22 +189,45 @@ TEST(cpu, inc_r8)
     cpu.step();
     ASSERT_EQ(ram[0], 0x00);
     CHECK_FLAGS(1, 0, 1, 0);
+
+    cpu.step();
+    ASSERT_EQ(REG_C, 0x12);
+    CHECK_FLAGS(0, 0, 0, 0);
+
+    cpu.step();
+    ASSERT_EQ(REG_E, 0x20);
+    CHECK_FLAGS(0, 0, 1, 0);
+
+    cpu.step();
+    ASSERT_EQ(REG_L, 0x01);
+    CHECK_FLAGS(0, 0, 0, 0);
+
+    cpu.step();
+    ASSERT_EQ(REG_A, 0x9);
+    CHECK_FLAGS(0, 0, 0, 0);
 }
 
-// 0x_5
+// 0x_5 / 0x_D
 TEST(cpu, dec_r8)
 {
     CPU_CREATE(
         OP_DEC_B,
         OP_DEC_D,
         OP_DEC_H,
-        OP_DEC_MEM_HL);
+        OP_DEC_MEM_HL,
+        OP_DEC_C,
+        OP_DEC_E,
+        OP_DEC_L,
+        OP_DEC_A);
 
     ram[0] = 0x01;
 
     REG_B = 0x10;
     REG_D = 0x00;
     REG_HL = 0x1100;
+    REG_C = 0x10;
+    REG_E = 0x00;
+    REG_A = 0x01;
 
     cpu.step();
     ASSERT_EQ(REG_B, 0x0F);
@@ -214,16 +244,37 @@ TEST(cpu, dec_r8)
     cpu.step();
     ASSERT_EQ(ram[0], 0x00);
     CHECK_FLAGS(1, 1, 0, 0);
+
+
+    cpu.step();
+    ASSERT_EQ(REG_C, 0x0F);
+    CHECK_FLAGS(0, 1, 1, 0);
+
+    cpu.step();
+    ASSERT_EQ(REG_E, 0xFF);
+    CHECK_FLAGS(0, 1, 1, 0);
+
+    cpu.step();
+    ASSERT_EQ(REG_L, 0xFF);
+    CHECK_FLAGS(0, 1, 1, 0);
+
+    cpu.step();
+    ASSERT_EQ(REG_A, 0x00);
+    CHECK_FLAGS(1, 1, 0, 0);
 }
 
-// 0x_6
+// 0x_6 / 0x_E
 TEST(cpu, ld_r8_d8)
 {
     CPU_CREATE(
         OP_LD_B_d8, 0x11,
         OP_LD_D_d8, 0x22,
         OP_LD_H_d8, 0x10,
-        OP_LD_MEM_HL_d8, 0x44);
+        OP_LD_MEM_HL_d8, 0x44,
+        OP_LD_C_d8, 0x11,
+        OP_LD_E_d8, 0x22,
+        OP_LD_L_d8, 0x10,
+        OP_LD_A_d8, 0x44);
 
     REG_HL = 0x0000;
 
@@ -233,6 +284,14 @@ TEST(cpu, ld_r8_d8)
     ASSERT_EQ(REG_D, 0x22);
     ASSERT_EQ(REG_H, 0x10);
     ASSERT_EQ(ram[0], 0x44);
+    ASSERT_EQ(REG_C, 0x11);
+    ASSERT_EQ(REG_E, 0x22);
+    ASSERT_EQ(REG_L, 0x10);
+    ASSERT_EQ(REG_A, 0x44);
+    ASSERT_EQ(REG_C, 0x11);
+    ASSERT_EQ(REG_E, 0x22);
+    ASSERT_EQ(REG_L, 0x10);
+    ASSERT_EQ(REG_A, 0x44);
 }
 
 // 0x_07 / 0x_0F
@@ -362,84 +421,4 @@ TEST(cpu, dec_r16)
     ASSERT_EQ(REG_DE, 0x2221);
     ASSERT_EQ(REG_HL, 0x3332);
     ASSERT_EQ(REG_SP, 0x4443);
-}
-
-// 0x_C
-TEST(cpu, inc_r8_2)
-{
-    CPU_CREATE(
-        OP_INC_C,
-        OP_INC_E,
-        OP_INC_L,
-        OP_INC_A);
-
-    REG_C = 0x11;
-    REG_E = 0x1F;
-    REG_L = 0xFF;
-    REG_A = 0x08;
-
-    cpu.step();
-    ASSERT_EQ(REG_C, 0x12);
-    CHECK_FLAGS(0, 0, 0, 0);
-
-    cpu.step();
-    ASSERT_EQ(REG_E, 0x20);
-    CHECK_FLAGS(0, 0, 1, 0);
-
-    cpu.step();
-    ASSERT_EQ(REG_L, 0x00);
-    CHECK_FLAGS(1, 0, 1, 0);
-
-    cpu.step();
-    ASSERT_EQ(REG_A, 0x9);
-    CHECK_FLAGS(0, 0, 0, 0);
-}
-
-// 0x_D
-TEST(cpu, dec_r8_2)
-{
-    CPU_CREATE(
-        OP_DEC_C,
-        OP_DEC_E,
-        OP_DEC_L,
-        OP_DEC_A);
-
-
-    REG_C = 0x10;
-    REG_E = 0x00;
-    REG_L = 0x11;
-    REG_A = 0x01;
-
-    cpu.step();
-    ASSERT_EQ(REG_C, 0x0F);
-    CHECK_FLAGS(0, 1, 1, 0);
-
-    cpu.step();
-    ASSERT_EQ(REG_E, 0xFF);
-    CHECK_FLAGS(0, 1, 1, 0);
-
-    cpu.step();
-    ASSERT_EQ(REG_L, 0x10);
-    CHECK_FLAGS(0, 1, 0, 0);
-
-    cpu.step();
-    ASSERT_EQ(REG_A, 0x00);
-    CHECK_FLAGS(1, 1, 0, 0);
-}
-
-// 0x_E
-TEST(cpu, ld_r8_d8_2)
-{
-    CPU_CREATE(
-        OP_LD_C_d8, 0x11,
-        OP_LD_E_d8, 0x22,
-        OP_LD_L_d8, 0x10,
-        OP_LD_A_d8, 0x44);
-
-    CPU_RUN();
-
-    ASSERT_EQ(REG_C, 0x11);
-    ASSERT_EQ(REG_E, 0x22);
-    ASSERT_EQ(REG_L, 0x10);
-    ASSERT_EQ(REG_A, 0x44);
 }
