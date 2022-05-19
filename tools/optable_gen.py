@@ -5,6 +5,41 @@ import json
 import argparse
 
 
+def gen_disas_code(table):
+    print("switch(op)")
+    print("{")
+    print()
+
+    for op in table["unprefixed"]:
+        if (table["unprefixed"][op]["mnemonic"].startswith("ILLEGAL")):
+            continue
+        gen_disas_code_instr(table["unprefixed"][op])
+
+    print()
+    print("    default:")
+    print("        UNIMPLEMENTED(\"Unimplemented or invalid opcode (0x{:02X})\", op);")
+    print("}")
+
+def gen_disas_code_instr(instr):
+    disas : str = disas_instr(instr)
+    suffix = None
+    if "a16" in disas or "d16" in disas:
+        disas = disas.replace("d16", "a16")
+        disas = disas.replace("a16", "${:04X}")
+        suffix = ", read16()"
+    if "a8" in disas or "d8" in disas:
+        disas = disas.replace("d8", "a8")
+        disas = disas.replace("a8", "{:02X}")
+        suffix = ", read8()"
+
+    if suffix:
+        disas = "fmt::format(\"" + disas + "\"" + suffix + ")"
+    else:
+        disas = "\"" + disas + "\""
+
+    print("    case OP_" + op_name(instr) + ": return " + disas + ";")
+
+
 def disas_instr(instr):
     mnemonic : str = instr["mnemonic"]
     operands = instr["operands"]
@@ -38,17 +73,10 @@ def disas_instr(instr):
 
     return line
 
-
-def gen_opcode_define(op, instr):
+def op_name(instr):
     mnemonic : str = instr["mnemonic"]
     operands = instr["operands"]
-
-    if (mnemonic.startswith("ILLEGAL")):
-        return
-
-
-    line : str = ""
-    line += "MAKE_OP(" + op + ", " + mnemonic
+    line = mnemonic
 
     for i in range(len(operands)):
         operand : dict = operands[i]
@@ -68,9 +96,17 @@ def gen_opcode_define(op, instr):
             line += "I"
         if dec:
             line += "D"
+    return line
 
 
-    line += ")"
+def gen_opcode_define(op, instr):
+    mnemonic : str = instr["mnemonic"]
+
+    if (mnemonic.startswith("ILLEGAL")):
+        return
+
+    line : str = ""
+    line += "MAKE_OP(" + op + ", " + op_name(instr) + ")"
 
     line = line.ljust(40)
     line += "// " + disas_instr(instr)
@@ -105,7 +141,8 @@ def main():
         text = f.read()
 
     table = json.loads(text)
-    gen_opcode_header(table)
+    # gen_opcode_header(table)
+    gen_disas_code(table)
 
 if __name__ == "__main__":
    main()

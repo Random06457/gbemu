@@ -4,6 +4,7 @@
 #include "opcode.hpp"
 #include "common/logging.hpp"
 #include <cassert>
+#include "disas.hpp"
 
 #define TRACE(...) do { if (m_logging_enable) { LOG(__VA_ARGS__); } } while (0)
 
@@ -358,6 +359,13 @@ void Cpu::execute(u8 op)
     MAKE_OP_ACCU(OP_XOR_B, 8, op_xor);
     MAKE_OP_ACCU(OP_OR_B, 8, op_or);
     MAKE_OP_ACCU(OP_CP_B, 8, op_cp);
+
+    u8 mem[3];
+    mem[0] = op;
+    mem[1] = m_memory->read8(regs().pc+1).value_or(0);
+    mem[2] = m_memory->read8(regs().pc+2).value_or(0);
+
+    TRACE("{}\n", Disas::disassemble(&mem, sizeof(mem)));
 
     switch (op)
     {

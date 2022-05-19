@@ -50,6 +50,7 @@ CXXFILES_EMU := \
 	src/common/logging.cpp \
 	src/core/cart.cpp \
 	src/core/cpu.cpp \
+	src/core/disas.cpp \
 	src/core/gameboy.cpp \
 	src/core/memory.cpp \
 	src/core/ppu.cpp \
@@ -61,6 +62,7 @@ CXXFILES_TEST := \
 	src/common/logging.cpp \
 	src/core/cart.cpp \
 	src/core/cpu.cpp \
+	src/core/disas.cpp \
 	src/core/memory.cpp \
 	test/test_arg_parser.cpp \
 	test/test_cpu.cpp \
