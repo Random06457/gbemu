@@ -62,8 +62,21 @@ CXXFILES_TEST := \
 	test/test_cpu.cpp \
 	test/test_memory.cpp
 
+# fmtlib
+CXXFILES_FMT += \
+	3rd-party/fmt/src/format.cc \
+	3rd-party/fmt/src/os.cc
+INCDIRS += 3rd-party/fmt/include
+
+CXXFILES_EMU += $(CXXFILES_FMT)
+CXXFILES_TEST += $(CXXFILES_FMT)
+
+
 OFILES_EMU := $(CXXFILES_EMU:%.cpp=$(BUILD)/%.o)
+OFILES_EMU := $(OFILES_EMU:%.cc=$(BUILD)/%.o)
+
 OFILES_TEST := $(CXXFILES_TEST:%.cpp=$(BUILD)/%.o)
+OFILES_TEST := $(OFILES_TEST:%.cc=$(BUILD)/%.o)
 
 DFILES := \
 	$(OFILES_EMU:%.o=%.d) \
@@ -94,6 +107,9 @@ $(TARGETS):
 	$(CXX) -fuse-ld=$(LD) $(LDFLAGS) $(LIBS:%=-l%) $^ -o $@
 
 $(BUILD)/%.o : %.cpp
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(INCDIRS:%=-I%) -c $< -o $@
+
+$(BUILD)/%.o : %.cc
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(INCDIRS:%=-I%) -c $< -o $@
 
 .PHONY: all clean build-test test
