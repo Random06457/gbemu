@@ -65,28 +65,27 @@ Result<void> Gameboy::setCartridge(std::unique_ptr<Cart> cart)
     {
         // TODO: map rest of cartridge
         case CartridgeType_ROM:
+        case CartridgeType_MBC1:
             mem()->remapBuffer(ROM1_START, m_cart->data(ROM0_SIZE), ROM1_SIZE);
             break;
-        default: UNIMPLEMENTED("Only MBC1 supported");
+        default:
+            printf("type : %d\n", m_cart->header()->cart_type);
+            UNIMPLEMENTED("Only MBC1 supported");
     }
 
     return {};
 }
 
+void Gameboy::step()
+{
+    cpu()->step();
+    ppu()->step(cpu()->clocks());
+}
+
 Result<void> Gameboy::powerOn()
 {
     cpu()->reset();
-    while (true)
-    {
-        cpu()->step();
-        ppu()->step(cpu()->clocks());
-
-
-        if (cpu()->regs().pc == 0x100)
-        {
-            ppu()->dumpBg();
-        }
-    }
+    return {};
 }
 
 }

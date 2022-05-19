@@ -25,7 +25,9 @@ WARN := -Wall -Wextra -Werror \
 CXXFLAGS := -std=$(STD) -g$(DEBUG) $(OPT) $(WARN)
 CPPFLAGS := -MMD
 LDFLAGS :=
-LIBS :=
+LIBS := \
+	GL \
+	glfw
 
 ifneq ($(ASAN),0)
 	CXXFLAGS += -fsanitize=address
@@ -47,7 +49,9 @@ CXXFILES_EMU := \
 	src/core/cpu.cpp \
 	src/core/gameboy.cpp \
 	src/core/memory.cpp \
-	src/core/ppu.cpp
+	src/core/ppu.cpp \
+	src/gui/gui_main.cpp \
+	src/gui/ppu_render.cpp
 
 CXXFILES_TEST := \
 	src/common/arg_parser.cpp \
@@ -70,6 +74,7 @@ $(shell mkdir -p $(SRCDIRS:%=$(BUILD)/%))
 $(shell mkdir -p $(OUTPUT))
 
 all: $(TARGETS)
+	$(shell cp -r src/gui/shaders $(OUTPUT))
 
 clean:
 	rm -rf build

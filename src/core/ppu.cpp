@@ -75,9 +75,9 @@ u32 Ppu::getColor(u8 palette, u8 idx)
 
 void Ppu::step(size_t clocks)
 {
-    constexpr size_t oam_cycles = 20;
-    constexpr size_t transfer_cycles = 43;
-    constexpr size_t hblank_cycles = 41;
+    constexpr size_t oam_cycles = 20 * 4;
+    constexpr size_t transfer_cycles = 43 * 4;
+    constexpr size_t hblank_cycles = 41 * 4;
     constexpr size_t transfer_off = oam_cycles;
     constexpr size_t hblank_off = transfer_off + transfer_cycles;
     constexpr size_t line_cycles = oam_cycles + transfer_cycles + hblank_cycles;
@@ -102,6 +102,7 @@ void Ppu::step(size_t clocks)
     {
         drawTiles(true);
         drawTiles(false);
+        m_new_frame_available = true;
     }
 }
 

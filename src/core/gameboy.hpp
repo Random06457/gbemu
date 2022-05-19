@@ -28,6 +28,7 @@ public:
     Result<void> setCartridge(std::unique_ptr<Cart> cart);
     Result<void> setBootrom(std::vector<u8> bootrom);
     Result<void> powerOn();
+    void step();
 
     Result<void> disableBootRom(u8 data);
 

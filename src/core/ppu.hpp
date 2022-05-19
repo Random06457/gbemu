@@ -56,6 +56,10 @@ public:
 
     void dumpBg();
 
+    void render();
+
+    bool newFrameAvailable() const { return m_new_frame_available; }
+
 private:
     Memory* m_memory;
     size_t m_vram_bank;
@@ -64,6 +68,7 @@ private:
 
     u8 m_dmg_bgp; // non-CGB
     u8 m_dmg_obp[2]; // non-CGB
+    bool m_new_frame_available;
 
     struct
     {

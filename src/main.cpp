@@ -18,6 +18,8 @@ void printCart(gbemu::core::Cart& cart)
     std::cout << "RAM Size: " << hdr->ramSize() << "\n";
 }
 
+s32 gui_main(gbemu::core::Gameboy& gb);
+
 s32 main(s32 argc, char** argv)
 {
     using namespace gbemu::core;
@@ -68,13 +70,14 @@ s32 main(s32 argc, char** argv)
         }
 
         gb.setCartridge(std::move(cart));
-        gb.powerOn();
     }
     else
     {
         std::cerr << "No input rom\n";
         return 1;
     }
+
+    gui_main(gb);
 
     return 0;
 }
