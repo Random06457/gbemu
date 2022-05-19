@@ -53,7 +53,7 @@ u8 Cpu::read8(u16 addr)
     if (!ret)
     {
         TRACE("INVALID MEMORY : 0x{:04X}\n", addr);
-        UNREACHABLE("INVALID MEMORY : 0x{:04X}\n", addr);
+        UNREACHABLE("INVALID MEMORY : 0x{:04X}", addr);
     }
 
     // TODO: handle error
@@ -70,7 +70,7 @@ void Cpu::write8(u16 addr, u8 x)
     if (!ret)
     {
         TRACE("INVALID MEMORY : 0x{:04X}\n", addr);
-        UNREACHABLE("INVALID MEMORY : 0x{:04X}\n", addr);
+        UNREACHABLE("INVALID MEMORY : 0x{:04X}", addr);
     }
 
     // TODO: handle error
@@ -382,8 +382,8 @@ void Cpu::execute(u8 op)
 
     u8 mem[3];
     mem[0] = op;
-    mem[1] = m_memory->read8(regs().pc+1).value_or(0);
-    mem[2] = m_memory->read8(regs().pc+2).value_or(0);
+    mem[1] = m_memory->read8(regs().pc+0).value_or(0);
+    mem[2] = m_memory->read8(regs().pc+1).value_or(0);
 
     TRACE("{}\n", Disas::disassemble(&mem, sizeof(mem)));
 

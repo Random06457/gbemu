@@ -284,7 +284,7 @@ u16 Disas::read16()
 {
     u8 b0 = read8();
     u8 b1 = read8();
-    return b0 << 8 | b1;
+    return b1 << 8 | b0;
 }
 
 }
