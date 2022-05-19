@@ -44,7 +44,7 @@ std::string Disas::disassemble()
         case OP_DEC_D: return "DEC D";
         case OP_LD_D_d8: return fmt::format("LD D, {:02X}", read8());
         case OP_RLA: return "RLA ";
-        case OP_JR_r8: return "JR r8";
+        case OP_JR_r8: return fmt::format("JR {:02X}", read8());
         case OP_ADD_HL_DE: return "ADD HL, DE";
         case OP_LD_A_MEM_DE: return "LD A, (DE)";
         case OP_DEC_DE: return "DEC DE";
@@ -52,7 +52,7 @@ std::string Disas::disassemble()
         case OP_DEC_E: return "DEC E";
         case OP_LD_E_d8: return fmt::format("LD E, {:02X}", read8());
         case OP_RRA: return "RRA ";
-        case OP_JR_NZ_r8: return "JR NZ, r8";
+        case OP_JR_NZ_r8: return fmt::format("JR NZ, {:02X}", read8());
         case OP_LD_HL_d16: return fmt::format("LD HL, ${:04X}", read16());
         case OP_LD_MEM_HLI_A: return "LD (HL+), A";
         case OP_INC_HL: return "INC HL";
@@ -60,7 +60,7 @@ std::string Disas::disassemble()
         case OP_DEC_H: return "DEC H";
         case OP_LD_H_d8: return fmt::format("LD H, {:02X}", read8());
         case OP_DAA: return "DAA ";
-        case OP_JR_Z_r8: return "JR Z, r8";
+        case OP_JR_Z_r8: return fmt::format("JR Z, {:02X}", read8());
         case OP_ADD_HL_HL: return "ADD HL, HL";
         case OP_LD_A_MEM_HLI: return "LD A, (HL+)";
         case OP_DEC_HL: return "DEC HL";
@@ -68,7 +68,7 @@ std::string Disas::disassemble()
         case OP_DEC_L: return "DEC L";
         case OP_LD_L_d8: return fmt::format("LD L, {:02X}", read8());
         case OP_CPL: return "CPL ";
-        case OP_JR_NC_r8: return "JR NC, r8";
+        case OP_JR_NC_r8: return fmt::format("JR NC, {:02X}", read8());
         case OP_LD_SP_d16: return fmt::format("LD SP, ${:04X}", read16());
         case OP_LD_MEM_HLD_A: return "LD (HL-), A";
         case OP_INC_SP: return "INC SP";
@@ -76,7 +76,7 @@ std::string Disas::disassemble()
         case OP_DEC_MEM_HL: return "DEC (HL)";
         case OP_LD_MEM_HL_d8: return fmt::format("LD (HL), {:02X}", read8());
         case OP_SCF: return "SCF ";
-        case OP_JR_C_r8: return "JR C, r8";
+        case OP_JR_C_r8: return fmt::format("JR C, {:02X}", read8());
         case OP_ADD_HL_SP: return "ADD HL, SP";
         case OP_LD_A_MEM_HLD: return "LD A, (HL-)";
         case OP_DEC_SP: return "DEC SP";
@@ -247,7 +247,7 @@ std::string Disas::disassemble()
         case OP_PUSH_HL: return "PUSH HL";
         case OP_AND_d8: return fmt::format("AND {:02X}", read8());
         case OP_RST_20H: return "RST 20H";
-        case OP_ADD_SP_r8: return "ADD SP, r8";
+        case OP_ADD_SP_r8: return fmt::format("ADD SP, {:02X}", read8());
         case OP_JP_HL: return "JP HL";
         case OP_LD_MEM_a16_A: return fmt::format("LD (${:04X}), A", read16());
         case OP_XOR_d8: return fmt::format("XOR {:02X}", read8());
@@ -259,7 +259,7 @@ std::string Disas::disassemble()
         case OP_PUSH_AF: return "PUSH AF";
         case OP_OR_d8: return fmt::format("OR {:02X}", read8());
         case OP_RST_30H: return "RST 30H";
-        case OP_LD_HL_SPI_r8: return "LD HL, SP+r8";
+        case OP_LD_HL_SPI_r8: return fmt::format("LD HL, SP+{:02X}", read8());
         case OP_LD_SP_HL: return "LD SP, HL";
         case OP_LD_A_MEM_a16: return fmt::format("LD A, (${:04X})", read16());
         case OP_EI: return "EI ";
@@ -269,6 +269,7 @@ std::string Disas::disassemble()
         default:
             UNIMPLEMENTED("Unimplemented or invalid opcode (0x{:02X})", op);
     }
+
 }
 
 u8 Disas::read8()
