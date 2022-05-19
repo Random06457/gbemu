@@ -33,6 +33,7 @@ void Cpu::step()
     m_logging_enable = regs().pc >= 0x100;
 
     // assert(regs().pc < 0x100);
+    assert(regs().pc < ROM1_END);
 
     u8 op = fetch8();
 
@@ -50,7 +51,10 @@ u8 Cpu::read8(u16 addr)
     TRACE("read(0x{:04X})={:02X}\n", addr, ret.value_or(0));
 
     if (!ret)
+    {
         TRACE("INVALID MEMORY : 0x{:04X}\n", addr);
+        UNREACHABLE("INVALID MEMORY : 0x{:04X}\n", addr);
+    }
 
     // TODO: handle error
     // assert(ret);
@@ -64,7 +68,10 @@ void Cpu::write8(u16 addr, u8 x)
     TRACE("write8(0x{:04X}, 0x{:02X})\n", addr, x);
 
     if (!ret)
+    {
         TRACE("INVALID MEMORY : 0x{:04X}\n", addr);
+        UNREACHABLE("INVALID MEMORY : 0x{:04X}\n", addr);
+    }
 
     // TODO: handle error
     // assert(ret);
@@ -240,6 +247,19 @@ void Cpu::execute(u8 op)
         writeReg(dst, readReg(src));
     };
 
+    auto add_hl_r16 = [this] (u16 a) ALWAYS_INLINE
+    {
+        u8 b = regs().hl;
+        u8 d = a + b;
+
+        Z = d == 0;
+        N = 0;
+        H = !!(((a & 0xF) + (b & 0xF)) & 0x10);
+        C = d < a + b;
+
+        regs().hl = d;
+    };
+
     auto add = [this] (VREG8 dst, VREG8 src, bool c) ALWAYS_INLINE
     {
         u8 a = readReg(dst);
@@ -372,7 +392,10 @@ void Cpu::execute(u8 op)
         case OP_NOP:
             break;
         case OP_STOP_d8:
-            UNIMPLEMENTED("STOP");
+            // UNIMPLEMENTED("STOP");
+            // TODO:
+            LOG("***STOP***\n");
+            fetch8();
             break;
         case OP_HALT:
             UNIMPLEMENTED("HALT");
@@ -536,6 +559,11 @@ void Cpu::execute(u8 op)
             tick(4);
             regs().pc = fetch16();
             break;
+
+        case OP_ADD_HL_BC: add_hl_r16(regs().bc); break;
+        case OP_ADD_HL_DE: add_hl_r16(regs().de); break;
+        case OP_ADD_HL_HL: add_hl_r16(regs().hl); break;
+        case OP_ADD_HL_SP: add_hl_r16(regs().sp); break;
 
         default:
             UNIMPLEMENTED("Unimplemented opcode (0x{:02X})", op);
