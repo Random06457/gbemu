@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "core/cpu.hpp"
 #include "core/memory.hpp"
+#include "core/timer.hpp"
 #include "core/opcode.hpp"
 
 using namespace gbemu::core;
@@ -32,9 +33,11 @@ using namespace gbemu::core;
     u8 code[] = { __VA_ARGS__ }; \
     u8 ram[0x100]; \
     Memory mem; \
+    Memory fake_mem; \
+    Timer timer(&fake_mem); \
     mem.mapBuffer(0x0000, code, sizeof(code)); \
     mem.mapBuffer(0x1000, ram, sizeof(ram)); \
-    Cpu cpu(&mem);
+    Cpu cpu(&mem, &timer);
 
 #define CPU_RUN() \
     while (REG_PC != sizeof(code)) \

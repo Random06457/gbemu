@@ -6,6 +6,8 @@
 namespace gbemu::core
 {
 
+class Timer;
+
 class Cpu
 {
 public:
@@ -31,9 +33,9 @@ public:
     };
 
 public:
-    Cpu(Memory* memory) :
+    Cpu(Memory* memory, Timer* timer) :
         m_memory(memory),
-        m_clocks(0)
+        m_timer(timer)
     {
         reset();
     }
@@ -60,12 +62,10 @@ public:
 
     auto mem() { return m_memory; }
     auto& regs() { return m_regs; }
-    void tick(size_t x) { m_clocks += x; }
-    size_t clocks() { return m_clocks; }
 
 private:
     Memory* m_memory;
-    size_t m_clocks; // T-states
+    Timer* m_timer;
 
     bool interrupt_master_enable;
     bool m_logging_enable;

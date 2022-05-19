@@ -3,8 +3,9 @@
 #include "attributes.hpp"
 #include "opcode.hpp"
 #include "common/logging.hpp"
-#include <cassert>
 #include "disas.hpp"
+#include "timer.hpp"
+#include <cassert>
 
 #define TRACE(...) do { if (m_logging_enable) { LOG(__VA_ARGS__); } } while (0)
 
@@ -20,7 +21,6 @@ void Cpu::reset()
     m_regs.hl = 0;
     m_regs.pc = 0;
     m_regs.sp = 0xFFFF;
-    m_clocks = 0;
 }
 
 void Cpu::step()
@@ -46,7 +46,7 @@ void Cpu::step()
 
 u8 Cpu::read8(u16 addr)
 {
-    tick(4);
+    m_timer->tick(4);
     auto ret = mem()->read8(addr);
     TRACE("read(0x{:04X})={:02X}\n", addr, ret.value_or(0));
 
@@ -63,7 +63,7 @@ u8 Cpu::read8(u16 addr)
 
 void Cpu::write8(u16 addr, u8 x)
 {
-    tick(4);
+    m_timer->tick(4);
     auto ret = mem()->write8(addr, x);
     TRACE("write8(0x{:04X}, 0x{:02X})\n", addr, x);
 
@@ -104,14 +104,14 @@ u16 Cpu::fetch16()
 
 void Cpu::push16(u16 x)
 {
-    tick(4);
+    m_timer->tick(4);
     regs().sp -= 2;
     write16(regs().sp, x);
 }
 
 u16 Cpu::pop16()
 {
-    tick(4);
+    m_timer->tick(4);
     u16 ret = read16(regs().sp);
     regs().sp += 2;
     return ret;
@@ -222,7 +222,7 @@ void Cpu::execute(u8 op)
     {
         if (cond)
         {
-            tick(4);
+            m_timer->tick(4);
             regs().pc += n;
         }
     };
@@ -556,7 +556,7 @@ void Cpu::execute(u8 op)
             break;
 
         case OP_JP_a16:
-            tick(4);
+            m_timer->tick(4);
             regs().pc = fetch16();
             break;
 

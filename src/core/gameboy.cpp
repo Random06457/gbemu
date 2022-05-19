@@ -14,7 +14,8 @@ Gameboy::Gameboy() :
     m_wram0(std::vector<u8>(WRAM0_SIZE)),
     m_wram1(std::vector<u8>(WRAM1_SIZE)),
     m_memory(std::make_unique<Memory>()),
-    m_cpu(std::make_unique<Cpu>(mem())),
+    m_timer(std::make_unique<Timer>(mem())),
+    m_cpu(std::make_unique<Cpu>(mem(), timer())),
     m_ppu(std::make_unique<Ppu>(mem())),
     m_audio(std::make_unique<Audio>(mem())),
     m_gb_type(GameboyType_DMG)
@@ -87,7 +88,7 @@ Result<void> Gameboy::setCartridge(std::unique_ptr<Cart> cart)
 void Gameboy::step()
 {
     cpu()->step();
-    ppu()->step(cpu()->clocks());
+    ppu()->step(timer()->systemClocks());
 }
 
 Result<void> Gameboy::powerOn()

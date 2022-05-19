@@ -39,6 +39,8 @@ struct MmioReg
         };
     }
 
+    static MmioReg rw(void* reg, MmioWriteFunc write) { return { std::bind(ptrRead, reinterpret_cast<u8*>(reg)), write }; }
+
     MmioReg() {}
     MmioReg(MmioReadFunc read, MmioWriteFunc write) :
         read(read),
