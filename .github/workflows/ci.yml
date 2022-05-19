@@ -16,7 +16,7 @@ jobs:
     - name: Install latest clang / GCC
       run: |
         sudo apt update
-        sudo apt install clang-14 g++-11 lld
+        sudo apt install clang-14 g++-11 lld libgles-dev
 
     - name: Install gtest
       uses: MarkusJx/googletest-installer@v1.1
