@@ -5,6 +5,7 @@
 #include "cart.hpp"
 #include "cpu.hpp"
 #include "ppu.hpp"
+#include "audio.hpp"
 #include "memory.hpp"
 #include <vector>
 #include <memory>
@@ -44,9 +45,12 @@ private:
     std::vector<u8> m_bootrom;
     bool m_bootrom_enabled;
     std::vector<u8> m_hram;
+    std::vector<u8> m_wram0;
+    std::vector<u8> m_wram1; // switchable in cgb mode
     std::unique_ptr<Memory> m_memory;
     std::unique_ptr<Cpu> m_cpu;
     std::unique_ptr<Ppu> m_ppu;
+    std::unique_ptr<Audio> m_audio;
     GameboyType m_gb_type;
     std::unique_ptr<Cart> m_cart;
 };

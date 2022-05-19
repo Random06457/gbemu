@@ -11,9 +11,12 @@ Gameboy::Gameboy() :
     m_bootrom(std::vector<u8>(BOOTROM_SIZE)),
     m_bootrom_enabled(true),
     m_hram(std::vector<u8>(HRAM_SIZE)),
+    m_wram0(std::vector<u8>(WRAM0_SIZE)),
+    m_wram1(std::vector<u8>(WRAM1_SIZE)),
     m_memory(std::make_unique<Memory>()),
     m_cpu(std::make_unique<Cpu>(mem())),
     m_ppu(std::make_unique<Ppu>(mem())),
+    m_audio(std::make_unique<Audio>(mem())),
     m_gb_type(GameboyType_DMG)
 {
     // map bootrom
@@ -21,6 +24,10 @@ Gameboy::Gameboy() :
 
     // map HRAM
     mem()->mapBuffer(HRAM_START, m_hram.data(), m_hram.size());
+
+    // map WRAM (todo: make WRAM1 switchable for CGB)
+    mem()->mapBuffer(WRAM0_START, m_wram0.data(), m_wram0.size());
+    mem()->mapBuffer(WRAM1_START, m_wram1.data(), m_wram1.size());
 
     // map bootrom disable register
     mem()->mapRegister(BOOT_ADDR, MmioReg::wo(std::bind(&Gameboy::disableBootRom, this, std::placeholders::_1)));
