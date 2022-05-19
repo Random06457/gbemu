@@ -1,3 +1,5 @@
+include prettyprint.mk
+
 BUILD 	:= build
 OUTPUT 	:= out
 
@@ -104,13 +106,16 @@ $(TARGET_TEST): $(OFILES_TEST)
 $(TARGET_TEST): LIBS += gtest gtest_main
 
 $(TARGETS):
-	$(CXX) -fuse-ld=$(LD) $(LDFLAGS) $(LIBS:%=-l%) $^ -o $@
+	$(V)$(CXX) -fuse-ld=$(LD) $(LDFLAGS) $(LIBS:%=-l%) $^ -o $@
+	$(call printtask,Linking,$@)
 
 $(BUILD)/%.o : %.cpp
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(INCDIRS:%=-I%) -c $< -o $@
+	$(V)$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(INCDIRS:%=-I%) -c $< -o $@
+	$(call printtask,Compiling,$@)
 
 $(BUILD)/%.o : %.cc
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(INCDIRS:%=-I%) -c $< -o $@
+	$(V)$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(INCDIRS:%=-I%) -c $< -o $@
+	$(call printtask,Compiling,$@)
 
 .PHONY: all clean build-test test
 
