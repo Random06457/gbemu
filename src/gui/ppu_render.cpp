@@ -1,7 +1,7 @@
 #include <GLES3/gl3.h>
-#include <iostream>
 #include "common/fs.hpp"
 #include "core/ppu.hpp"
+#include "common/logging.hpp"
 
 namespace gbemu::core
 {
@@ -12,8 +12,7 @@ static u32 compileShader(GLenum type, const std::filesystem::path& path)
     auto shader_src = File::readAllText(path);
     if (!shader_src)
     {
-        std::cerr << "failed to open " << path << "\n";
-        std::terminate();
+        UNREACHABLE("failed to open {}\n", path.generic_string());
     }
     const char* src = shader_src.value().c_str();
     glShaderSource(shader, 1, &src, nullptr);
@@ -24,8 +23,7 @@ static u32 compileShader(GLenum type, const std::filesystem::path& path)
     {
         char buff[0x100];
         glGetShaderInfoLog(shader, sizeof(buff), nullptr, buff);
-        std::cerr << "Failed to compile " << path << ":\n" << buff << "\n";
-        std::terminate();
+        UNREACHABLE("Failed to compile {}:\n{}\n", path.generic_string(), buff);
     }
     return shader;
 }
@@ -45,8 +43,7 @@ static u32 compileProgram()
     {
         char buff[0x100];
         glGetProgramInfoLog(program, sizeof(buff), nullptr, buff);
-        std::cerr << "Failed to compile program:\n" << buff << "\n";
-        std::terminate();
+        UNREACHABLE("Failed to compile program:\n{}\n", buff);
     }
     return program;
 }
@@ -55,8 +52,8 @@ void Ppu::render()
 {
     static bool init = false;
     static int i = 0;
-    // printf("render %d\n", i++);
-    // printf("scy=%d\n", m_scy);
+    // LOG("render {}\n", i++);
+    // LOG("scy={}\n", m_scy);
 
     glClearColor(0.1, 0.1, 0.1, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);

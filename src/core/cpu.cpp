@@ -2,9 +2,10 @@
 #include "io.hpp"
 #include "attributes.hpp"
 #include "opcode.hpp"
+#include "common/logging.hpp"
 #include <cassert>
-#include <iostream>
-#include <cstdarg>
+
+#define TRACE(...) do { if (m_logging_enable) { LOG(__VA_ARGS__); } } while (0)
 
 namespace gbemu::core
 {
@@ -23,13 +24,14 @@ void Cpu::reset()
 
 void Cpu::step()
 {
-    log("step\n");
+    TRACE("step\n");
 
     static u16 last_pc = 0;
 
-    m_logging_enable = regs().pc >= 0xE6;
+    // m_logging_enable = true;
+    m_logging_enable = regs().pc >= 0x100;
 
-    assert(regs().pc < 0x100);
+    // assert(regs().pc < 0x100);
 
     u8 op = fetch8();
 
@@ -40,27 +42,14 @@ void Cpu::step()
     last_pc = regs().pc;
 }
 
-void Cpu::log(const char* fmt, ...)
-{
-    std::va_list args;
-
-    va_start(args, fmt);
-
-    if (m_logging_enable)
-        vprintf(fmt, args);
-
-    va_end(args);
-}
-
-
 u8 Cpu::read8(u16 addr)
 {
     tick(4);
     auto ret = mem()->read8(addr);
-    log("read(0x%04X)=%02X\n", addr, ret.value_or(0));
+    TRACE("read(0x{:04X})={:02X}\n", addr, ret.value_or(0));
 
     if (!ret)
-        log("INVALID MEMORY : 0x%04X\n", addr);
+        TRACE("INVALID MEMORY : 0x{:04X}\n", addr);
 
     // TODO: handle error
     // assert(ret);
@@ -71,10 +60,10 @@ void Cpu::write8(u16 addr, u8 x)
 {
     tick(4);
     auto ret = mem()->write8(addr, x);
-    log("write8(0x%04X, 0x%02X)\n", addr, x);
+    TRACE("write8(0x{:04X}, 0x{:02X})\n", addr, x);
 
     if (!ret)
-        log("INVALID MEMORY : 0x%04X\n", addr);
+        TRACE("INVALID MEMORY : 0x{:04X}\n", addr);
 
     // TODO: handle error
     // assert(ret);
@@ -535,9 +524,13 @@ void Cpu::execute(u8 op)
             interrupt_master_enable = true;
             break;
 
+        case OP_JP_a16:
+            tick(4);
+            regs().pc = fetch16();
+            break;
+
         default:
-            fflush(stdout);
-            UNIMPLEMENTED("Unimplemented opcode");
+            UNIMPLEMENTED("Unimplemented opcode (0x{:02X})", op);
     }
 }
 

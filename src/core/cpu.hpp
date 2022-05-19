@@ -38,10 +38,6 @@ public:
         reset();
     }
 
-
-    __attribute__ ((format(printf, 2, 3)))
-    void log(const char*, ...);
-
     void reset();
     void step();
 

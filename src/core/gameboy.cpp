@@ -1,6 +1,7 @@
 #include "gameboy.hpp"
 #include "io.hpp"
 #include <assert.h>
+#include "common/logging.hpp"
 
 namespace gbemu::core
 {
@@ -69,7 +70,7 @@ Result<void> Gameboy::setCartridge(std::unique_ptr<Cart> cart)
             mem()->remapBuffer(ROM1_START, m_cart->data(ROM0_SIZE), ROM1_SIZE);
             break;
         default:
-            printf("type : %d\n", m_cart->header()->cart_type);
+            fmt::print("type : {}\n", m_cart->header()->cart_type);
             UNIMPLEMENTED("Only MBC1 supported");
     }
 

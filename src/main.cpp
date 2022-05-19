@@ -1,21 +1,19 @@
-#include <iostream>
-#include <cstdio>
 #include <span>
 #include "types.hpp"
 #include "core/gameboy.hpp"
 #include "core/cart.hpp"
 #include "common/arg_parser.hpp"
 #include "common/fs.hpp"
+#include "common/logging.hpp"
 
 void printCart(gbemu::core::Cart& cart)
 {
-
     auto hdr = cart.header();
-    std::cout << "Title: " << hdr->title << "\n";
-    std::cout << "SGB Flag: 0x" << std::hex  << (u32)hdr->sgb_flag << "\n";
-    std::cout << "Cartridge Type: 0x" << std::hex << (u32)hdr->cart_type << "(" << hdr->cartType() << ")\n";
-    std::cout << "ROM Size: " << hdr->romSize() << "\n";
-    std::cout << "RAM Size: " << hdr->ramSize() << "\n";
+    fmt::print("Title: {}\n", hdr->title);
+    fmt::print("SGB Flag: 0x{:X}\n", hdr->sgb_flag);
+    fmt::print("Cartridge Type: 0x{:X} ({})\n", hdr->cart_type, hdr->cartType());
+    fmt::print("ROM Size: {}\n",hdr->romSize());
+    fmt::print("RAM Size: {}\n", hdr->ramSize());
 }
 
 s32 gui_main(gbemu::core::Gameboy& gb);
@@ -47,7 +45,7 @@ s32 main(s32 argc, char** argv)
         auto rom = File::readAllBytes(bootrom.value().value.value().value);
         if (!rom)
         {
-            std::cerr << "Error while opening bootrom " << rom.error() << "\n";
+            LOG_ERROR("Error while opening bootrom : {}\n", rom.error());
             return 1;
         }
         gb.setBootrom(rom.value());
@@ -62,7 +60,7 @@ s32 main(s32 argc, char** argv)
         {
             if (!rom)
             {
-                std::cerr << "Error while opening file " << rom.error() << "\n";
+                LOG_ERROR("Error while opening file : {}\n", rom.error());
                 return 1;
             }
 
@@ -73,7 +71,7 @@ s32 main(s32 argc, char** argv)
     }
     else
     {
-        std::cerr << "No input rom\n";
+        LOG_ERROR("No input rom\n");
         return 1;
     }
 

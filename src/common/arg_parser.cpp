@@ -1,6 +1,6 @@
 #include "arg_parser.hpp"
 #include "macro.hpp"
-#include <iostream>
+#include "common/logging.hpp"
 
 std::optional<ArgParser::ParsedArg> ArgParser::getArg(const std::string& name)
 {
@@ -39,29 +39,30 @@ bool ArgParser::parse(s32 argc, const char** argv)
 
 void ArgParser::showUsage()
 {
-    std::cout << "Usage: gbemu <arguments...>" << "\n\n";
-    std::cout << "Arguments:\n";
+
+    fmt::print("Usage: gbemu <arguments...>\n\n");
+    fmt::print("Arguments:\n");
     for (auto& desc : m_descriptions)
     {
-        std::cout << desc.second.name;
+        fmt::print("{}", desc.second.name);
         switch (desc.second.type)
         {
             case ArgType_Bool:
-                std::cout << "=<true|false>";
+                fmt::print("=<true|false>");
                 break;
             case ArgType_U32:
-                std::cout << "=<int>";
+                fmt::print("=<int>");
                 break;
             case ArgType_String:
-                std::cout << "=<string>";
+                fmt::print("=<string>");
                 break;
             case ArgType_StringNext:
-                std::cout << " <string>";
+                fmt::print(" <string>");
                 break;
             default:
                 UNREACHABLE("Invalid ArgType");
         }
-        std::cout << " : " << desc.second.description << "\n";
+        fmt::print(" : {}\n", desc.second.description);
     }
 }
 
@@ -122,7 +123,7 @@ std::optional<ArgParser::ArgValue> ArgParser::parseArgValue(ArgType type, const 
 
 static bool unexpectedValue(ArgParser::ArgDesc* desc)
 {
-     std::cerr << "Expected value for argument \"" << desc->name << "\" of type " << ArgParser::argType(desc->type) << "\n";
+    LOG_ERROR("Expected value for argument \"{}\" of type {}\n", desc->name, ArgParser::argType(desc->type));
     return false;
 }
 
@@ -136,13 +137,13 @@ bool ArgParser::parseArg(s32 argc, const char** argv, s32& i)
     // check if arg was already parsed
     if (std::ranges::any_of(m_parsed_args, [&name](auto arg) { return arg.description->name == name; }))
     {
-        std::cerr << "Argument \"" << name << "\" was passed twice.\n";
+        LOG_ERROR("Argument \"{}\" was passed twice.\n", name);
         return false;
     }
 
     if (!m_descriptions.contains(name))
     {
-        std::cerr << "Invalid argument \"" << name << "\"\n";
+        LOG_ERROR("Invalid argument \"{}\"\n", name);
         return false;
     }
 

@@ -1,14 +1,14 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <GLES3/gl3.h>
-#include <iostream>
 #include "types.hpp"
 #include "core/gameboy.hpp"
 #include "core/ppu.hpp"
+#include "common/logging.hpp"
 
 static void glfw_error_callback(int error, const char* description)
 {
-    std::cerr << "Glfw Error " << error << ": " << description << "\n";
+    UNREACHABLE("Glfw Error {}: {}\n", error, description);
 }
 
 s32 gui_main(gbemu::core::Gameboy& gb)

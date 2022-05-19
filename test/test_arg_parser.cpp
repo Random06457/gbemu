@@ -9,7 +9,7 @@
         "dummy", \
         ##__VA_ARGS__ \
     }; \
-    ArgParser parser{ARRAY_SIZE(args), args};
+    ArgParser parser{ARRAY_COUNT(args), args};
 
 TEST(arg_parser, arg_int)
 {
@@ -33,15 +33,15 @@ TEST(arg_parser, arg_int)
     ArgParser parser;
     parser.registerArg({ "--test", "", ArgParser::ArgType_U32, std::nullopt });
 
-    ASSERT_TRUE(parser.parse(ARRAY_SIZE(args0), args0));
+    ASSERT_TRUE(parser.parse(ARRAY_COUNT(args0), args0));
     ASSERT_TRUE(parser.hasArg("--test"));
     ASSERT_EQ(parser.getArg("--test").value().value.value().value_u32, 12);
 
-    ASSERT_TRUE(parser.parse(ARRAY_SIZE(args1), args1));
+    ASSERT_TRUE(parser.parse(ARRAY_COUNT(args1), args1));
     ASSERT_TRUE(parser.hasArg("--test"));
     ASSERT_EQ(parser.getArg("--test").value().value.value().value_u32, 0x1F);
 
-    ASSERT_FALSE(parser.parse(ARRAY_SIZE(args2), args2));
+    ASSERT_FALSE(parser.parse(ARRAY_COUNT(args2), args2));
 }
 
 
@@ -67,15 +67,15 @@ TEST(arg_parser, arg_bool)
     ArgParser parser;
     parser.registerArg({ "--test", "", ArgParser::ArgType_Bool, std::nullopt });
 
-    ASSERT_TRUE(parser.parse(ARRAY_SIZE(args0), args0));
+    ASSERT_TRUE(parser.parse(ARRAY_COUNT(args0), args0));
     ASSERT_TRUE(parser.hasArg("--test"));
     ASSERT_EQ(parser.getArg("--test").value().value.value().value_bool, false);
 
-    ASSERT_TRUE(parser.parse(ARRAY_SIZE(args1), args1));
+    ASSERT_TRUE(parser.parse(ARRAY_COUNT(args1), args1));
     ASSERT_TRUE(parser.hasArg("--test"));
     ASSERT_EQ(parser.getArg("--test").value().value.value().value_bool, true);
 
-    ASSERT_FALSE(parser.parse(ARRAY_SIZE(args2), args2));
+    ASSERT_FALSE(parser.parse(ARRAY_COUNT(args2), args2));
 }
 
 
@@ -101,15 +101,15 @@ TEST(arg_parser, arg_string)
     ArgParser parser;
     parser.registerArg({ "--test", "", ArgParser::ArgType_String, std::nullopt });
 
-    ASSERT_TRUE(parser.parse(ARRAY_SIZE(args0), args0));
+    ASSERT_TRUE(parser.parse(ARRAY_COUNT(args0), args0));
     ASSERT_TRUE(parser.hasArg("--test"));
     ASSERT_EQ(parser.getArg("--test").value().value.value().value, "abc");
 
-    ASSERT_TRUE(parser.parse(ARRAY_SIZE(args1), args1));
+    ASSERT_TRUE(parser.parse(ARRAY_COUNT(args1), args1));
     ASSERT_TRUE(parser.hasArg("--test"));
     ASSERT_EQ(parser.getArg("--test").value().value.value().value, "");
 
-    ASSERT_FALSE(parser.parse(ARRAY_SIZE(args2), args2));
+    ASSERT_FALSE(parser.parse(ARRAY_COUNT(args2), args2));
 }
 
 TEST(arg_parser, arg_string_next)
@@ -134,13 +134,13 @@ TEST(arg_parser, arg_string_next)
     ArgParser parser;
     parser.registerArg({ "--test", "", ArgParser::ArgType_StringNext, std::nullopt });
 
-    ASSERT_TRUE(parser.parse(ARRAY_SIZE(args0), args0));
+    ASSERT_TRUE(parser.parse(ARRAY_COUNT(args0), args0));
     ASSERT_TRUE(parser.hasArg("--test"));
     ASSERT_EQ(parser.getArg("--test").value().value.value().value, "abc");
 
-    ASSERT_FALSE(parser.parse(ARRAY_SIZE(args1), args1));
+    ASSERT_FALSE(parser.parse(ARRAY_COUNT(args1), args1));
 
-    ASSERT_FALSE(parser.parse(ARRAY_SIZE(args2), args2));
+    ASSERT_FALSE(parser.parse(ARRAY_COUNT(args2), args2));
 }
 
 TEST(arg_parser, default_arg)
@@ -158,7 +158,7 @@ TEST(arg_parser, default_arg)
     parser.registerArg({ "--test-default", "", ArgParser::ArgType_String, ArgParser::ArgValue::fromString("default_val")});
     parser.registerArg({ "--test-no-default", "", ArgParser::ArgType_Bool, std::nullopt});
 
-    ASSERT_TRUE(parser.parse(ARRAY_SIZE(args), args));
+    ASSERT_TRUE(parser.parse(ARRAY_COUNT(args), args));
     ASSERT_TRUE(parser.hasArg("--test-int"));
     ASSERT_EQ(parser.getArg("--test-int").value().value.value().value_u32, 4);
     ASSERT_TRUE(parser.hasArg("--test-hex-int"));

@@ -47,6 +47,7 @@ CXXFILES_EMU := \
 	src/main.cpp \
 	src/common/arg_parser.cpp \
 	src/common/fs.cpp \
+	src/common/logging.cpp \
 	src/core/cart.cpp \
 	src/core/cpu.cpp \
 	src/core/gameboy.cpp \
@@ -57,6 +58,7 @@ CXXFILES_EMU := \
 
 CXXFILES_TEST := \
 	src/common/arg_parser.cpp \
+	src/common/logging.cpp \
 	src/core/cart.cpp \
 	src/core/cpu.cpp \
 	src/core/memory.cpp \

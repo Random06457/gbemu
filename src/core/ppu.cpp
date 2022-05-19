@@ -1,6 +1,7 @@
 #include "ppu.hpp"
 #include "io.hpp"
 #include "common/fs.hpp"
+#include "common/logging.hpp"
 
 namespace gbemu::core
 {
@@ -110,8 +111,8 @@ void Ppu::step(size_t clocks)
 void Ppu::dumpBg()
 {
     drawTiles(true);
-    printf("Dumping background\n");
-    printf("palette : 0x%02X\n", m_dmg_bgp);
+    fmt::print("Dumping background\n");
+    fmt::print("palette : 0x{:02X}\n", m_dmg_bgp);
     File::writeAllBytes("bg.raw", m_bg_texture, sizeof(m_bg_texture));
     File::writeAllBytes("bg_map.bin", bgMap(), 32*32*0x10);
     File::writeAllBytes("bg_tiles.bin", bgTiles(), 0x100*0x10);
