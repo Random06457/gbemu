@@ -53,6 +53,7 @@ CXXFILES_EMU := \
 	src/core/cpu.cpp \
 	src/core/disas.cpp \
 	src/core/gameboy.cpp \
+	src/core/int_controller.cpp \
 	src/core/memory.cpp \
 	src/core/timer.cpp \
 	src/core/ppu.cpp \
@@ -66,6 +67,7 @@ CXXFILES_TEST := \
 	src/core/cart.cpp \
 	src/core/cpu.cpp \
 	src/core/disas.cpp \
+	src/core/int_controller.cpp \
 	src/core/memory.cpp \
 	src/core/timer.cpp \
 	test/test_arg_parser.cpp \

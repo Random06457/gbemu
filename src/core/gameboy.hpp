@@ -7,6 +7,7 @@
 #include "ppu.hpp"
 #include "audio.hpp"
 #include "timer.hpp"
+#include "int_controller.hpp"
 #include "memory.hpp"
 #include <vector>
 #include <memory>
@@ -39,6 +40,7 @@ public:
     Ppu* ppu() { return m_ppu.get(); }
     Timer* timer() { return m_timer.get(); }
     Memory* mem() { return m_memory.get(); }
+    InterruptController* interrupts() { return m_interrupt_controller.get(); }
     Cart* cart() { return m_cart.get(); }
     GameboyType gbType() { return m_gb_type; }
     bool isGb(GameboyType type) { return m_gb_type == type; }
@@ -50,6 +52,7 @@ private:
     std::vector<u8> m_wram0;
     std::vector<u8> m_wram1; // switchable in cgb mode
     std::unique_ptr<Memory> m_memory;
+    std::unique_ptr<InterruptController> m_interrupt_controller;
     std::unique_ptr<Timer> m_timer;
     std::unique_ptr<Cpu> m_cpu;
     std::unique_ptr<Ppu> m_ppu;

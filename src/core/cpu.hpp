@@ -1,12 +1,14 @@
 #pragma once
 
-#include "memory.hpp"
 #include "macro.hpp"
+#include "types.hpp"
 
 namespace gbemu::core
 {
 
+class Memory;
 class Timer;
+class InterruptController;
 
 class Cpu
 {
@@ -33,12 +35,7 @@ public:
     };
 
 public:
-    Cpu(Memory* memory, Timer* timer) :
-        m_memory(memory),
-        m_timer(timer)
-    {
-        reset();
-    }
+    Cpu(Memory* memory, Timer* timer, InterruptController* interrupt);
 
     void reset();
     void step();
@@ -54,6 +51,8 @@ public:
     u8 readReg(VREG8 reg);
     void writeReg(VREG8 reg, u8 data);
 
+    void processInt();
+
 private:
 
     void execute(u8 op);
@@ -66,8 +65,7 @@ public:
 private:
     Memory* m_memory;
     Timer* m_timer;
-
-    bool interrupt_master_enable;
+    InterruptController* m_interrupt_controller;
     bool m_logging_enable;
 
 // TODO: handle endianness

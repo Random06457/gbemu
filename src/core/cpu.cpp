@@ -1,10 +1,11 @@
 #include "cpu.hpp"
 #include "io.hpp"
-#include "attributes.hpp"
 #include "opcode.hpp"
 #include "common/logging.hpp"
 #include "disas.hpp"
 #include "timer.hpp"
+#include "memory.hpp"
+#include "int_controller.hpp"
 #include <cassert>
 
 #define TRACE(...) do { if (m_logging_enable) { LOG(__VA_ARGS__); } } while (0)
@@ -12,6 +13,13 @@
 namespace gbemu::core
 {
 
+Cpu::Cpu(Memory* memory, Timer* timer, InterruptController* interrupt) :
+    m_memory(memory),
+    m_timer(timer),
+    m_interrupt_controller(interrupt)
+{
+    reset();
+}
 
 void Cpu::reset()
 {
@@ -549,10 +557,10 @@ void Cpu::execute(u8 op)
             break;
 
         case OP_DI: // DI
-            interrupt_master_enable = false;
+            m_interrupt_controller->setIME(false);
             break;
         case OP_EI: // EI
-            interrupt_master_enable = true;
+            m_interrupt_controller->setIME(false);
             break;
 
         case OP_JP_a16:
