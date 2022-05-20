@@ -589,7 +589,9 @@ void Cpu::execute(u8 op)
 
 
         case OP_ADD_A_d8: op_add(VREG8_A, VREG8_D8, false); break;
+        case OP_ADC_A_d8: op_add(VREG8_A, VREG8_D8, true); break;
         case OP_SUB_d8: op_sub(VREG8_A, VREG8_D8, false); break;
+        case OP_SBC_A_d8: op_sub(VREG8_A, VREG8_D8, true); break;
 
         case OP_AND_d8:
             regs().a &= fetch8();
