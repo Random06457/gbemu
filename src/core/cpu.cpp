@@ -181,6 +181,7 @@ void Cpu::writeReg(VREG8 reg, u8 data)
 #define CALL_A16(cond) call(cond, fetch16()); break
 #define RET(cond) ret(cond, pop16()); break
 #define JR_R8(cond) jr(cond, fetch8()); break
+#define JP_A16(cond) jp(cond, fetch16()); break
 
 #define Z regs().flags.z
 #define NZ !regs().flags.z
@@ -232,6 +233,14 @@ void Cpu::execute(u8 op)
         {
             m_timer->tick(4);
             regs().pc += n;
+        }
+    };
+    auto jp = [this] (bool cond, u16 addr) ALWAYS_INLINE
+    {
+        if (cond)
+        {
+            m_timer->tick(4);
+            regs().pc = addr;
         }
     };
 
@@ -486,6 +495,9 @@ void Cpu::execute(u8 op)
         case OP_RET_Z: RET(Z);
         case OP_RET_C: RET(C);
         case OP_RET: RET(true);
+        case OP_RET_NZ: RET(NZ);
+        case OP_RET_NC: RET(NC);
+        case OP_RETI: m_interrupt_controller->setIME(true); RET(true);
 
         case OP_CP_d8: op_cp(VREG8_A, VREG8_D8); break;
 
@@ -563,15 +575,25 @@ void Cpu::execute(u8 op)
             m_interrupt_controller->setIME(false);
             break;
 
-        case OP_JP_a16:
-            m_timer->tick(4);
-            regs().pc = fetch16();
-            break;
+        case OP_JP_a16: JP_A16(true);
+        case OP_JP_Z_a16: JP_A16(Z);
+        case OP_JP_NZ_a16: JP_A16(NZ);
+        case OP_JP_C_a16: JP_A16(C);
+        case OP_JP_NC_a16: JP_A16(NC);
+        case OP_JP_HL: regs().pc = regs().hl; break;
 
         case OP_ADD_HL_BC: add_hl_r16(regs().bc); break;
         case OP_ADD_HL_DE: add_hl_r16(regs().de); break;
         case OP_ADD_HL_HL: add_hl_r16(regs().hl); break;
         case OP_ADD_HL_SP: add_hl_r16(regs().sp); break;
+
+        case OP_AND_d8:
+            regs().a |= fetch8();
+            Z = regs().a == 0;
+            N = 0;
+            H = 1;
+            C = 0;
+            break;
 
         default:
             UNIMPLEMENTED("Unimplemented opcode (0x{:02X})", op);
