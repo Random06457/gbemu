@@ -41,7 +41,7 @@ void Cpu::step()
     m_logging_enable = regs().pc >= 0x100;
 
     // assert(regs().pc < 0x100);
-    assert(regs().pc < ROM1_END);
+    // assert(regs().pc < ROM1_END);
 
     u8 op = fetch8();
 
@@ -173,15 +173,15 @@ void Cpu::writeReg(VREG8 reg, u8 data)
     }
 }
 
-#define LD(d, s) ld(VREG8_##d, VREG8_##s); break
+#define LD(d, s) op_ld(VREG8_##d, VREG8_##s); break
 #define INC(r) op_inc(VREG8_##r); break
 #define DEC(r) op_dec(VREG8_##r); break
 #define PUSH(x) push16(regs().x); break
 #define POP(x) regs().x = pop16(); break
-#define CALL_A16(cond) call(cond, fetch16()); break
-#define RET(cond) ret(cond, pop16()); break
-#define JR_R8(cond) jr(cond, fetch8()); break
-#define JP_A16(cond) jp(cond, fetch16()); break
+#define CALL_A16(cond) op_call(cond, fetch16()); break
+#define RET(cond) op_ret(cond, pop16()); break
+#define JR_R8(cond) op_jr(cond, fetch8()); break
+#define JP_A16(cond) op_jp(cond, fetch16()); break
 
 #define Z regs().flags.z
 #define NZ !regs().flags.z
@@ -227,7 +227,7 @@ void Cpu::writeReg(VREG8 reg, u8 data)
 
 void Cpu::execute(u8 op)
 {
-    auto jr = [this] (bool cond, s8 n) ALWAYS_INLINE
+    auto op_jr = [this] (bool cond, s8 n) ALWAYS_INLINE
     {
         if (cond)
         {
@@ -235,7 +235,7 @@ void Cpu::execute(u8 op)
             regs().pc += n;
         }
     };
-    auto jp = [this] (bool cond, u16 addr) ALWAYS_INLINE
+    auto op_jp = [this] (bool cond, u16 addr) ALWAYS_INLINE
     {
         if (cond)
         {
@@ -244,13 +244,13 @@ void Cpu::execute(u8 op)
         }
     };
 
-    auto ret = [this] (bool cond, u16 x) ALWAYS_INLINE
+    auto op_ret = [this] (bool cond, u16 x) ALWAYS_INLINE
     {
         if (cond)
             regs().pc = x;
     };
 
-    auto call = [this] (bool cond, u16 addr) ALWAYS_INLINE
+    auto op_call = [this] (bool cond, u16 addr) ALWAYS_INLINE
     {
         if (cond)
         {
@@ -259,12 +259,12 @@ void Cpu::execute(u8 op)
         }
     };
 
-    auto ld = [this] (VREG8 dst, VREG8 src) ALWAYS_INLINE
+    auto op_ld = [this] (VREG8 dst, VREG8 src) ALWAYS_INLINE
     {
         writeReg(dst, readReg(src));
     };
 
-    auto add_hl_r16 = [this] (u16 a) ALWAYS_INLINE
+    auto op_add_hl_r16 = [this] (u16 a) ALWAYS_INLINE
     {
         u8 b = regs().hl;
         u8 d = a + b;
@@ -277,7 +277,7 @@ void Cpu::execute(u8 op)
         regs().hl = d;
     };
 
-    auto add = [this] (VREG8 dst, VREG8 src, bool c) ALWAYS_INLINE
+    auto op_add = [this] (VREG8 dst, VREG8 src, bool c) ALWAYS_INLINE
     {
         u8 a = readReg(dst);
         u8 b = readReg(src);
@@ -292,7 +292,7 @@ void Cpu::execute(u8 op)
 
         writeReg(dst, d);
     };
-    auto sub = [this] (VREG8 dst, VREG8 src, bool c) ALWAYS_INLINE
+    auto op_sub = [this] (VREG8 dst, VREG8 src, bool c) ALWAYS_INLINE
     {
         u8 a = readReg(dst);
         u8 b = readReg(src);
@@ -386,12 +386,12 @@ void Cpu::execute(u8 op)
 
     // LD
     if (op != OP_HALT)
-        MAKE_OP_LD(OP_LD_B_B, 0x40, ld);
+        MAKE_OP_LD(OP_LD_B_B, 0x40, op_ld);
 
-    MAKE_OP_ACCU(OP_ADD_A_B, 8, add, false);
-    MAKE_OP_ACCU(OP_ADC_A_B, 8, add, true);
-    MAKE_OP_ACCU(OP_SUB_B, 8, sub, false);
-    MAKE_OP_ACCU(OP_SBC_A_B, 8, sub, true);
+    MAKE_OP_ACCU(OP_ADD_A_B, 8, op_add, false);
+    MAKE_OP_ACCU(OP_ADC_A_B, 8, op_add, true);
+    MAKE_OP_ACCU(OP_SUB_B, 8, op_sub, false);
+    MAKE_OP_ACCU(OP_SBC_A_B, 8, op_sub, true);
     MAKE_OP_ACCU(OP_AND_B, 8, op_and);
     MAKE_OP_ACCU(OP_XOR_B, 8, op_xor);
     MAKE_OP_ACCU(OP_OR_B, 8, op_or);
@@ -582,16 +582,36 @@ void Cpu::execute(u8 op)
         case OP_JP_NC_a16: JP_A16(NC);
         case OP_JP_HL: regs().pc = regs().hl; break;
 
-        case OP_ADD_HL_BC: add_hl_r16(regs().bc); break;
-        case OP_ADD_HL_DE: add_hl_r16(regs().de); break;
-        case OP_ADD_HL_HL: add_hl_r16(regs().hl); break;
-        case OP_ADD_HL_SP: add_hl_r16(regs().sp); break;
+        case OP_ADD_HL_BC: op_add_hl_r16(regs().bc); break;
+        case OP_ADD_HL_DE: op_add_hl_r16(regs().de); break;
+        case OP_ADD_HL_HL: op_add_hl_r16(regs().hl); break;
+        case OP_ADD_HL_SP: op_add_hl_r16(regs().sp); break;
+
+
+        case OP_ADD_A_d8: op_add(VREG8_A, VREG8_D8, false); break;
+        case OP_SUB_d8: op_sub(VREG8_A, VREG8_D8, false); break;
 
         case OP_AND_d8:
-            regs().a |= fetch8();
+            regs().a &= fetch8();
             Z = regs().a == 0;
             N = 0;
             H = 1;
+            C = 0;
+            break;
+
+        case OP_OR_d8:
+            regs().a |= fetch8();
+            Z = regs().a == 0;
+            N = 0;
+            H = 0;
+            C = 0;
+            break;
+
+        case OP_XOR_d8:
+            regs().a ^= fetch8();
+            Z = regs().a == 0;
+            N = 0;
+            H = 0;
             C = 0;
             break;
 
