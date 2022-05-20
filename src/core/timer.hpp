@@ -1,11 +1,13 @@
 #pragma once
 
-#include "memory.hpp"
+#include "attributes.hpp"
+#include "device.hpp"
+#include "result.hpp"
 
 namespace gbemu::core
 {
 
-class Timer
+class Timer : public Device
 {
     static constexpr size_t SYSTEM_FREQUENCY = 4194304; // T-states
     static constexpr size_t DIV_FREQUENCY = 16384; // T-states
@@ -19,16 +21,14 @@ class Timer
     };
 
 public:
-    Timer(Memory* memory);
-
-    Memory* mem() { return m_memory; }
+    Timer();
 
     Result<void> resetDiv(u8 b);
     void tick(size_t clocks);
     size_t systemClocks() { return m_system_clock; }
+    virtual void mapMemory(Memory* mem) override;
 
 private:
-    Memory* m_memory;
     size_t m_div_start;
     size_t m_system_clock; // T-states
 
@@ -39,7 +39,7 @@ private:
     {
         u8 clock_select : 2;
         u8 timer_enable : 1;
-    } m_tac;
+    } PACKED m_tac;
 
 };
 

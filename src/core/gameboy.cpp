@@ -14,11 +14,11 @@ Gameboy::Gameboy() :
     m_wram0(std::vector<u8>(WRAM0_SIZE)),
     m_wram1(std::vector<u8>(WRAM1_SIZE)),
     m_memory(std::make_unique<Memory>()),
-    m_interrupt_controller(std::make_unique<InterruptController>(mem())),
-    m_timer(std::make_unique<Timer>(mem())),
+    m_interrupt_controller(std::make_unique<InterruptController>()),
+    m_timer(std::make_unique<Timer>()),
     m_cpu(std::make_unique<Cpu>(mem(), timer(), interrupts())),
-    m_ppu(std::make_unique<Ppu>(mem())),
-    m_audio(std::make_unique<Audio>(mem())),
+    m_ppu(std::make_unique<Ppu>()),
+    m_audio(std::make_unique<Audio>()),
     m_gb_type(GameboyType_DMG)
 {
     // map bootrom
@@ -33,6 +33,12 @@ Gameboy::Gameboy() :
 
     // map bootrom disable register
     mem()->mapRegister(BOOT_ADDR, MmioReg::wo(std::bind(&Gameboy::disableBootRom, this, std::placeholders::_1)));
+
+    // map registers
+    m_interrupt_controller->mapMemory(mem());
+    m_audio->mapMemory(mem());
+    m_ppu->mapMemory(mem());
+    m_timer->mapMemory(mem());
 }
 
 

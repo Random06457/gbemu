@@ -1,16 +1,20 @@
 #include "timer.hpp"
 #include "io.hpp"
+#include "memory.hpp"
 
 namespace gbemu::core
 {
 
-Timer::Timer(Memory* memory) :
-    m_memory(memory)
+Timer::Timer()
 {
-    mem()->mapRegister(DIV_ADDR, MmioReg::rw(&m_div, std::bind(&Timer::resetDiv, this, std::placeholders::_1)));
-    mem()->mapRegister(TIMA_ADDR, MmioReg::rw(&m_tima));
-    mem()->mapRegister(TMA_ADDR, MmioReg::rw(&m_tma));
-    mem()->mapRegister(TAC_ADDR, MmioReg::rw(&m_tac));
+}
+
+void Timer::mapMemory(Memory* mem)
+{
+    mem->mapRegister(DIV_ADDR, MmioReg::rw(&m_div, std::bind(&Timer::resetDiv, this, std::placeholders::_1)));
+    mem->mapRegister(TIMA_ADDR, MmioReg::rw(&m_tima));
+    mem->mapRegister(TMA_ADDR, MmioReg::rw(&m_tma));
+    mem->mapRegister(TAC_ADDR, MmioReg::rw(&m_tac));
 }
 
 Result<void> Timer::resetDiv(u8 b)

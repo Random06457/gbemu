@@ -1,11 +1,9 @@
 #pragma once
 
-#include "memory.hpp"
-#include "attributes.hpp"
+#include "device.hpp"
 
 namespace gbemu::core
 {
-
 
 enum InterruptType : u8
 {
@@ -21,17 +19,18 @@ enum InterruptType : u8
 
 class Cpu;
 
-class InterruptController
+class InterruptController : public Device
 {
 public:
-    InterruptController(Memory* memory);
+    InterruptController();
+
+    virtual void mapMemory(Memory* mem) override;
 
     void requestInterrupt(InterruptType type);
     void processInterrupts(Cpu* cpu);
     void setIME(bool enable) { m_ime = enable; }
 
 private:
-    Memory* m_memory;
 
     bool m_ime; // interrupt master flag
     union

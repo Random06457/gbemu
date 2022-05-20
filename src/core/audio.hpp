@@ -1,21 +1,18 @@
 #pragma once
 
-#include "memory.hpp"
-#include "attributes.hpp"
+#include "device.hpp"
 
 namespace gbemu::core
 {
 
-class Audio
+class Audio : public Device
 {
 public:
-    Audio(Memory* memory);
+    Audio();
 
-    auto mem() { return m_memory; }
+    virtual void mapMemory(Memory* mem) override;
 
 private:
-    Memory* m_memory;
-
     struct
     {
         u8 so1_output_level : 3;

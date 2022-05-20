@@ -1,8 +1,7 @@
 #pragma once
 
-#include "memory.hpp"
+#include "device.hpp"
 #include "io.hpp"
-#include "attributes.hpp"
 
 namespace gbemu::core
 {
@@ -32,16 +31,18 @@ enum PpuMode : u8
     PpuMode_PixelTransfer,
 };
 
-class Ppu
+class Ppu : public Device
 {
 public:
-    Ppu(Memory* mem);
+    Ppu();
 
 public:
-    auto mem() { return m_memory; }
+
+    virtual void mapMemory(Memory* mem) override;
+
     auto vram() { return  m_vram[m_vram_bank]; }
     auto oam() { return  m_oam; }
-    void switchBank(size_t bank);
+    void switchBank(Memory* mem, size_t bank);
 
     void step(size_t clocks);
 
@@ -61,7 +62,6 @@ public:
     bool newFrameAvailable() const { return m_new_frame_available; }
 
 private:
-    Memory* m_memory;
     size_t m_vram_bank;
     u8 m_vram[2][VRAM_SIZE]; // switchable bank in CGB mode
     OamEntry m_oam[40];

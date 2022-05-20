@@ -1,5 +1,5 @@
 #include "ppu.hpp"
-#include "io.hpp"
+#include "memory.hpp"
 #include "common/fs.hpp"
 #include "common/logging.hpp"
 
@@ -40,32 +40,34 @@ void Ppu::drawTiles(bool bg)
     }
 }
 
-Ppu::Ppu(Memory* mem) :
-    m_memory(mem),
-    m_vram_bank(0)
+Ppu::Ppu() : m_vram_bank(0)
 {
-    switchBank(0);
-    m_memory->mapBuffer(OAM_START, oam(), OAM_SIZE);
-
-    m_memory->mapRegister(BGP_ADDR, MmioReg::rw(&m_dmg_bgp));
-    m_memory->mapRegister(OBP0_ADDR, MmioReg::rw(&m_dmg_obp[0]));
-    m_memory->mapRegister(OBP1_ADDR, MmioReg::rw(&m_dmg_obp[1]));
-    m_memory->mapRegister(SCX_ADDR, MmioReg::rw(&m_scx));
-    m_memory->mapRegister(SCY_ADDR, MmioReg::rw(&m_scy));
-    m_memory->mapRegister(LCDC_ADDR, MmioReg::rw(&m_lcdc));
-    m_memory->mapRegister(STAT_ADDR, MmioReg::rw(&m_stat, 0b01111100));
-    m_memory->mapRegister(LY_ADDR, MmioReg::ro(&m_ly));
-
     m_dmg_colors[0] = 0xFFFFFFFF;
     m_dmg_colors[2] = 0xFFAAAAAA;
     m_dmg_colors[1] = 0xFF555555;
     m_dmg_colors[3] = 0xFF000000;
 }
 
-void Ppu::switchBank(size_t bank)
+void Ppu::mapMemory(Memory* mem)
+{
+    mem->mapBuffer(OAM_START, oam(), OAM_SIZE);
+
+    mem->mapRegister(BGP_ADDR, MmioReg::rw(&m_dmg_bgp));
+    mem->mapRegister(OBP0_ADDR, MmioReg::rw(&m_dmg_obp[0]));
+    mem->mapRegister(OBP1_ADDR, MmioReg::rw(&m_dmg_obp[1]));
+    mem->mapRegister(SCX_ADDR, MmioReg::rw(&m_scx));
+    mem->mapRegister(SCY_ADDR, MmioReg::rw(&m_scy));
+    mem->mapRegister(LCDC_ADDR, MmioReg::rw(&m_lcdc));
+    mem->mapRegister(STAT_ADDR, MmioReg::rw(&m_stat, 0b01111100));
+    mem->mapRegister(LY_ADDR, MmioReg::ro(&m_ly));
+
+    switchBank(mem, 0);
+}
+
+void Ppu::switchBank(Memory* mem, size_t bank)
 {
     m_vram_bank = bank;
-    mem()->remapBuffer(VRAM_START, vram(), VRAM_SIZE);
+    mem->remapBuffer(VRAM_START, vram(), VRAM_SIZE);
 }
 
 u32 Ppu::getColor(u8 palette, u8 idx)

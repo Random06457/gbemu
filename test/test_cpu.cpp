@@ -34,9 +34,8 @@ using namespace gbemu::core;
     u8 code[] = { __VA_ARGS__ }; \
     u8 ram[0x100]; \
     Memory mem; \
-    Memory fake_mem; \
-    InterruptController ints(&fake_mem); \
-    Timer timer(&fake_mem); \
+    InterruptController ints; \
+    Timer timer; \
     mem.mapBuffer(0x0000, code, sizeof(code)); \
     mem.mapBuffer(0x1000, ram, sizeof(ram)); \
     Cpu cpu(&mem, &timer, &ints);
