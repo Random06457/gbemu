@@ -31,7 +31,7 @@ def gen_disas_code_instr(instr):
         disas = disas.replace("d8", "a8")
         disas = disas.replace("r8", "a8")
         disas = disas.replace("s8", "a8")
-        disas = disas.replace("a8", "{:02X}")
+        disas = disas.replace("a8", "${:02X}")
         suffix = ", read8()"
 
     if suffix:
