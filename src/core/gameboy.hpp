@@ -7,6 +7,7 @@
 #include "ppu.hpp"
 #include "audio.hpp"
 #include "timer.hpp"
+#include "joypad.hpp"
 #include "int_controller.hpp"
 #include "memory.hpp"
 #include <vector>
@@ -41,6 +42,7 @@ public:
     Timer* timer() { return m_timer.get(); }
     Memory* mem() { return m_memory.get(); }
     InterruptController* interrupts() { return m_interrupt_controller.get(); }
+    Joypad* joypad() { return m_joypad.get(); }
     Cart* cart() { return m_cart.get(); }
     GameboyType gbType() { return m_gb_type; }
     bool isGb(GameboyType type) { return m_gb_type == type; }
@@ -57,6 +59,7 @@ private:
     std::unique_ptr<Cpu> m_cpu;
     std::unique_ptr<Ppu> m_ppu;
     std::unique_ptr<Audio> m_audio;
+    std::unique_ptr<Joypad> m_joypad;
     GameboyType m_gb_type;
     std::unique_ptr<Cart> m_cart;
 };

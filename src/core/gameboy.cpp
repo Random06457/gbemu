@@ -19,6 +19,7 @@ Gameboy::Gameboy() :
     m_cpu(std::make_unique<Cpu>(mem(), timer(), interrupts())),
     m_ppu(std::make_unique<Ppu>()),
     m_audio(std::make_unique<Audio>()),
+    m_joypad(std::make_unique<Joypad>()),
     m_gb_type(GameboyType_DMG)
 {
     // map bootrom
@@ -39,6 +40,7 @@ Gameboy::Gameboy() :
     m_audio->mapMemory(mem());
     m_ppu->mapMemory(mem());
     m_timer->mapMemory(mem());
+    m_joypad->mapMemory(mem());
 }
 
 
