@@ -29,6 +29,7 @@ void Cpu::reset()
     m_regs.hl = 0;
     m_regs.pc = 0;
     m_regs.sp = 0xFFFF;
+    m_halted = false;
 }
 
 void Cpu::step()
@@ -273,13 +274,14 @@ void Cpu::execute(u8 op)
 
     auto op_add_hl_r16 = [this] (u16 a) ALWAYS_INLINE
     {
-        u8 b = regs().hl;
-        u8 d = a + b;
+        m_timer->tick(4);
 
-        Z = d == 0;
+        u16 b = regs().hl;
+        u16 d = a + b;
+
         N = 0;
         H = !!(((a & 0xF) + (b & 0xF)) & 0x10);
-        C = d < a + b;
+        C = (d & 0xFF) < (a & 0xFF) + (b & 0xFF);
 
         regs().hl = d;
     };

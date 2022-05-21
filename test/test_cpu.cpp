@@ -298,7 +298,7 @@ TEST(cpu, ld_r8_d8)
     ASSERT_EQ(REG_A, 0x44);
 }
 
-// 0x_07 / 0x_0F
+// 0x_7 / 0x_F
 TEST(cpu, rotate_a)
 {
     CPU_CREATE(
@@ -357,25 +357,43 @@ TEST(cpu, ld_mem_a16_sp)
     ASSERT_EQ(ram[1], 0xAA);
 }
 
-// TODO:
-// // 0x_09
-// TEST(cpu, add_r16_r16)
-// {
-//     CPU_CREATE(
-//         OP_ADD_HL_BC,
-//         OP_ADD_HL_DE,
-//         OP_ADD_HL_HL,
-//         OP_ADD_HL_SP,
-//         );
+// 0x_09
+TEST(cpu, add_r16_r16)
+{
+    CPU_CREATE(
+        OP_ADD_HL_BC,
+        OP_ADD_HL_DE,
+        OP_ADD_HL_HL,
+        OP_ADD_HL_SP,
+        );
 
-//     REG_HL = 0x00FE;
-//     REG_DE = 0x0002;
-//     REG_SP = 0x4440;
+    Z = 0;
+    REG_HL = 0x00FE;
+    REG_BC = 0x0002;
+    cpu.step();
+    ASSERT_EQ(REG_HL, 0x100);
+    CHECK_FLAGS(0, 0, 1, 1);
 
-//     CPU_RUN();
-// }
+    REG_HL = 0x000F;
+    REG_DE = 0x0002;
+    cpu.step();
+    ASSERT_EQ(REG_HL, 0x11);
+    CHECK_FLAGS(0, 0, 1, 0);
 
-// 0x_0A
+    REG_HL = 0x0011;
+    cpu.step();
+    ASSERT_EQ(REG_HL, 0x22);
+    CHECK_FLAGS(0, 0, 0, 0);
+
+    REG_HL = 0x0111;
+    REG_SP = 0x1234;
+    cpu.step();
+    ASSERT_EQ(REG_HL, 0x1345);
+    CHECK_FLAGS(0, 0, 0, 0);
+
+}
+
+// 0x_A
 TEST(cpu, ld_r8_mem)
 {
     CPU_CREATE(
