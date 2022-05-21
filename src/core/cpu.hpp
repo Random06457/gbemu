@@ -52,6 +52,7 @@ public:
     void writeReg(VREG8 reg, u8 data);
 
     void processInt();
+    void unhalt() { m_halted = false; }
 
 private:
 
@@ -67,6 +68,7 @@ private:
     Timer* m_timer;
     InterruptController* m_interrupt_controller;
     bool m_logging_enable;
+    bool m_halted;
 
 // TODO: handle endianness
 #define REG_8_16(x, y) \

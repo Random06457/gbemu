@@ -35,6 +35,13 @@ void Cpu::step()
 {
     TRACE("step\n");
 
+    if (m_halted)
+    {
+        // TODO: ?
+        m_timer->tick(4);
+        return;
+    }
+
     static u16 last_pc = 0;
 
     // m_logging_enable = true;
@@ -415,7 +422,7 @@ void Cpu::execute(u8 op)
             fetch8();
             break;
         case OP_HALT:
-            UNIMPLEMENTED("HALT");
+            m_halted = true;
             break;
 
         case OP_JR_NZ_r8: JR_R8(NZ);
@@ -444,6 +451,17 @@ void Cpu::execute(u8 op)
         case OP_LD_DE_d16: regs().de = fetch16(); break;
         case OP_LD_HL_d16: regs().hl = fetch16(); break;
         case OP_LD_SP_d16: regs().sp = fetch16(); break;
+
+        case OP_LD_SP_HL: m_timer->tick(4); regs().sp = regs().hl; break;
+
+        case OP_RST_00H: op_call(true, 0x00); break;
+        case OP_RST_08H: op_call(true, 0x08); break;
+        case OP_RST_10H: op_call(true, 0x10); break;
+        case OP_RST_18H: op_call(true, 0x18); break;
+        case OP_RST_20H: op_call(true, 0x20); break;
+        case OP_RST_28H: op_call(true, 0x28); break;
+        case OP_RST_30H: op_call(true, 0x30); break;
+        case OP_RST_38H: op_call(true, 0x38); break;
 
         case OP_LD_MEM_BC_A: LD(BC8, A);
         case OP_LD_MEM_DE_A: LD(DE8, A);

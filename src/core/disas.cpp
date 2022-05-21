@@ -267,7 +267,7 @@ std::string Disas::disassemble()
         case OP_RST_38H: return "RST 38H";
 
         default:
-            UNIMPLEMENTED("Unimplemented or invalid opcode (0x${:02X})", op);
+            UNIMPLEMENTED("Invalid opcode (0x{:02X})", op);
     }
 
 }

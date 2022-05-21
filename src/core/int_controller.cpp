@@ -48,6 +48,7 @@ void InterruptController::processInterrupts(Cpu* cpu)
 
             LOG("*** INTERRUPT {} ***\n", s_int_names[i]);
 
+            cpu->unhalt();
             cpu->regs().pc = addr;
 
             break;

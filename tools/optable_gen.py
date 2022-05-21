@@ -17,7 +17,7 @@ def gen_disas_code(table):
 
     print()
     print("    default:")
-    print("        UNIMPLEMENTED(\"Unimplemented or invalid opcode (0x{:02X})\", op);")
+    print("        UNIMPLEMENTED(\"Invalid opcode (0x{:02X})\", op);")
     print("}")
 
 def gen_disas_code_instr(instr):
