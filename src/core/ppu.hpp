@@ -2,6 +2,7 @@
 
 #include "device.hpp"
 #include "io.hpp"
+#include "int_controller.hpp"
 
 namespace gbemu::core
 {
@@ -34,7 +35,7 @@ enum PpuMode : u8
 class Ppu : public Device
 {
 public:
-    Ppu();
+    Ppu(InterruptController* interrupt);
 
 public:
 
@@ -62,6 +63,7 @@ public:
     bool newFrameAvailable() const { return m_new_frame_available; }
 
 private:
+    InterruptController* m_interrupt;
     size_t m_vram_bank;
     u8 m_vram[2][VRAM_SIZE]; // switchable bank in CGB mode
     OamEntry m_oam[40];
@@ -89,13 +91,14 @@ private:
         u8 hblank_int_enable : 1;
         u8 vblank_int_enable : 1;
         u8 oam_int_enable : 1;
-        u8 lyc_int : 1;
+        u8 lyc_int_enable : 1;
     } PACKED m_stat;
 
     u8 m_scy;
     u8 m_scx;
 
     u8 m_ly;
+    u8 m_lyc;
 
     u32 m_dmg_colors[4];
 

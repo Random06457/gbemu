@@ -8,7 +8,7 @@ namespace gbemu::core
 enum InterruptType : u8
 {
     InterruptType_Vblank,
-    InterruptType_Lcd,
+    InterruptType_LCDSTA,
     InterruptType_Timer,
     InterruptType_Serial,
     InterruptType_Joypad,

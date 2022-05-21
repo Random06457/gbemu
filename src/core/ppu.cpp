@@ -40,12 +40,15 @@ void Ppu::drawTiles(bool bg)
     }
 }
 
-Ppu::Ppu() : m_vram_bank(0)
+Ppu::Ppu(InterruptController* interrupt) :
+    m_interrupt(interrupt),
+    m_vram_bank(0)
 {
     m_dmg_colors[0] = 0xFFFFFFFF;
     m_dmg_colors[2] = 0xFFAAAAAA;
     m_dmg_colors[1] = 0xFF555555;
     m_dmg_colors[3] = 0xFF000000;
+    std::memset(&m_stat, 0, sizeof(m_stat));
 }
 
 void Ppu::mapMemory(Memory* mem)
@@ -60,6 +63,7 @@ void Ppu::mapMemory(Memory* mem)
     mem->mapRegister(LCDC_ADDR, MmioReg::rw(&m_lcdc));
     mem->mapRegister(STAT_ADDR, MmioReg::rw(&m_stat, 0b01111100));
     mem->mapRegister(LY_ADDR, MmioReg::ro(&m_ly));
+    mem->mapRegister(LYC_ADDR, MmioReg::ro(&m_lyc));
 
     switchBank(mem, 0);
 }
@@ -86,23 +90,49 @@ void Ppu::step(size_t clocks)
     constexpr size_t line_cycles = oam_cycles + transfer_cycles + hblank_cycles;
     constexpr size_t vblank_cycles = line_cycles * 10;
     constexpr size_t screen_cycles = line_cycles * (SCREEN_HEIGHT + 10);
+    size_t line_off = clocks % line_cycles;
 
     m_ly = (clocks % screen_cycles) / line_cycles;
-    size_t line_off = clocks % line_cycles;
+
+    m_stat.lyc_eq_lc = m_ly == m_lyc;
+    if (m_stat.lyc_eq_lc && m_stat.lyc_int_enable)
+        m_interrupt->requestInterrupt(InterruptType_LCDSTA);
 
     PpuMode prev_mode = m_stat.mode;
 
     if (m_ly > SCREEN_HEIGHT)
-        m_stat.mode = PpuMode_VBlank;
+    {
+        if (prev_mode != PpuMode_VBlank)
+        {
+            m_stat.mode = PpuMode_VBlank;
+            if (m_stat.vblank_int_enable)
+                m_interrupt->requestInterrupt(InterruptType_LCDSTA);
+        }
+    }
     else if (line_off >= hblank_off)
-        m_stat.mode = PpuMode_HBlank;
-    else if (line_off > transfer_off)
-        m_stat.mode = PpuMode_PixelTransfer;
-    else
+    {
+        if (prev_mode != PpuMode_HBlank)
+        {
+            m_stat.mode = PpuMode_HBlank;
+            if (m_stat.hblank_int_enable)
+                m_interrupt->requestInterrupt(InterruptType_LCDSTA);
+        }
+    }
+    else if (line_off >= transfer_off)
+    {
+        if (prev_mode != PpuMode_PixelTransfer)
+            m_stat.mode = PpuMode_PixelTransfer;
+    }
+    else if (prev_mode != PpuMode_OamSearch)
+    {
         m_stat.mode = PpuMode_OamSearch;
+        if (m_stat.oam_int_enable)
+            m_interrupt->requestInterrupt(InterruptType_LCDSTA);
+    }
 
     if (prev_mode == PpuMode_HBlank && m_stat.mode == PpuMode_VBlank)
     {
+        m_interrupt->requestInterrupt(InterruptType_Vblank);
         drawTiles(true);
         drawTiles(false);
         m_new_frame_available = true;

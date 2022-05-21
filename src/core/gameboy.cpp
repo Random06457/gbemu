@@ -15,9 +15,9 @@ Gameboy::Gameboy() :
     m_wram1(std::vector<u8>(WRAM1_SIZE)),
     m_memory(std::make_unique<Memory>()),
     m_interrupt_controller(std::make_unique<InterruptController>()),
-    m_timer(std::make_unique<Timer>()),
+    m_timer(std::make_unique<Timer>(interrupts())),
     m_cpu(std::make_unique<Cpu>(mem(), timer(), interrupts())),
-    m_ppu(std::make_unique<Ppu>()),
+    m_ppu(std::make_unique<Ppu>(interrupts())),
     m_audio(std::make_unique<Audio>()),
     m_joypad(std::make_unique<Joypad>()),
     m_gb_type(GameboyType_DMG)

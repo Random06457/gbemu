@@ -5,7 +5,8 @@
 namespace gbemu::core
 {
 
-Timer::Timer()
+Timer::Timer(InterruptController* interrupt) :
+    m_interrupt(interrupt)
 {
 }
 
@@ -39,7 +40,7 @@ void Timer::tick(size_t clocks)
         if (m_tima == 0)
         {
             m_tima = m_tma;
-            // TODO: request interrupt
+            m_interrupt->requestInterrupt(InterruptType_Timer);
         }
     }
 }

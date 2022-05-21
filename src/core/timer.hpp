@@ -3,6 +3,7 @@
 #include "attributes.hpp"
 #include "device.hpp"
 #include "result.hpp"
+#include "int_controller.hpp"
 
 namespace gbemu::core
 {
@@ -21,7 +22,7 @@ class Timer : public Device
     };
 
 public:
-    Timer();
+    Timer(InterruptController* interrupt);
 
     Result<void> resetDiv(u8 b);
     void tick(size_t clocks);
@@ -29,6 +30,7 @@ public:
     virtual void mapMemory(Memory* mem) override;
 
 private:
+    InterruptController* m_interrupt;
     size_t m_div_start;
     size_t m_system_clock; // T-states
 

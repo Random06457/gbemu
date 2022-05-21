@@ -35,7 +35,7 @@ using namespace gbemu::core;
     u8 ram[0x100]; \
     Memory mem; \
     InterruptController ints; \
-    Timer timer; \
+    Timer timer(&ints); \
     mem.mapBuffer(0x0000, code, sizeof(code)); \
     mem.mapBuffer(0x1000, ram, sizeof(ram)); \
     Cpu cpu(&mem, &timer, &ints);
