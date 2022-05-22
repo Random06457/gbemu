@@ -5,6 +5,7 @@
 #include "core/gameboy.hpp"
 #include "core/ppu.hpp"
 #include "common/logging.hpp"
+#include <unordered_set>
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -26,24 +27,66 @@ s32 gui_main(gbemu::core::Gameboy& gb)
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
 
+    bool stepping = false;
+    bool inBreak = false;
+    std::unordered_set<s16> breakpoints;
+
+    // breakpoints.insert(0x0100);
+    // breakpoints.insert(0x0034);
+    // breakpoints.insert(0x001A);
+
+
+    s32 old_key_run = GLFW_RELEASE;
+    s32 old_key_step = GLFW_RELEASE;
+
+    u32 ctr = 0;
+
     // Main loop
     while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
 
-        // Rendering
+        if (breakpoints.contains(gb.cpu()->regs().pc) || stepping)
+        {
+            gb.cpu()->setLogging(true);
+            if (!inBreak)
+            {
+                LOG("PRESS A KEY\n");
+                inBreak = true;
+            }
+            s32 key_run = glfwGetKey(window, GLFW_KEY_R);
+            s32 key_step = glfwGetKey(window, GLFW_KEY_S);
 
-        s32 display_w, display_h;
-        glfwGetFramebufferSize(window, &display_w, &display_h);
-        glViewport(0, 0, display_w, display_h);
+            if (key_step == GLFW_RELEASE && old_key_step == GLFW_PRESS)
+            {
+                stepping = true;
+                inBreak = false;
+                gb.step();
+            }
 
+            if (key_run == GLFW_RELEASE && old_key_run == GLFW_PRESS)
+            {
+                stepping = false;
+            }
 
-        while (!gb.ppu()->newFrameAvailable())
+            old_key_run = key_run;
+            old_key_step = key_step;
+        }
+        else // runnning
+        {
+            gb.cpu()->setLogging(false);
             gb.step();
+        }
 
-        gb.ppu()->render();
-
-        glfwSwapBuffers(window);
+        // Rendering
+        if (gb.ppu()->newFrameAvailable())
+        {
+            s32 display_w, display_h;
+            glfwGetFramebufferSize(window, &display_w, &display_h);
+            glViewport(0, 0, display_w, display_h);
+            gb.ppu()->render();
+            glfwSwapBuffers(window);
+        }
     }
 
     // Cleanup
