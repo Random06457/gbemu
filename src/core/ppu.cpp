@@ -31,7 +31,9 @@ void Ppu::drawTiles(bool bg)
 
     for (size_t i = 0; i < 32*32; i++)
     {
-        u8* src = tiles + map[i] * 0x10;
+        u8 tile_off = m_lcdc.bg_tile_area ? map[i] : map[i] ^ 0x80;
+
+        u8* src = tiles + tile_off * 0x10;
 
         size_t x = (i % 32) * 8;
         size_t y = (i / 32) * 8;
@@ -48,7 +50,6 @@ Ppu::Ppu(InterruptController* interrupt) :
     m_dmg_colors[2] = 0xFFAAAAAA;
     m_dmg_colors[1] = 0xFF555555;
     m_dmg_colors[3] = 0xFF000000;
-    std::memset(&m_stat, 0, sizeof(m_stat));
 }
 
 void Ppu::mapMemory(Memory* mem)
@@ -147,6 +148,7 @@ void Ppu::dumpBg()
     fmt::print("palette : 0x{:02X}\n", m_dmg_bgp);
     File::writeAllBytes("bg.raw", m_bg_texture, sizeof(m_bg_texture));
     File::writeAllBytes("bg_map.bin", bgMap(), 32*32*0x10);
+    File::writeAllBytes("window_map.bin", windowMap(), 32*32*0x10);
     File::writeAllBytes("bg_tiles.bin", bgTiles(), 0x100*0x10);
 }
 
