@@ -34,7 +34,7 @@ void Cpu::reset()
 
 void Cpu::step()
 {
-    TRACE("step\n");
+    TRACE("step : PC={:04X}\n", regs().pc);
 
     if (m_halted)
     {
@@ -43,22 +43,35 @@ void Cpu::step()
         return;
     }
 
-    static u16 last_pc = 0;
-
     // m_logging_enable = true;
-    m_logging_enable = regs().pc >= 0x100;
+    // m_logging_enable |= regs().pc >= 0x100;
 
-    // assert(regs().pc < 0x100);
+    // if (regs().pc >= 0x100)
+    //     UNREACHABLE("PC >= 0x100");
     // assert(regs().pc < ROM1_END);
 
     u8 op = fetch8();
 
     execute(op);
 
-    assert(last_pc != regs().pc);
-
+    static u16 last_pc = 0;
+    if (last_pc == regs().pc)
+        UNREACHABLE("INFINITY LOOP AT PC={:04X}", regs().pc);
     last_pc = regs().pc;
 }
+
+// retrio tests
+// 01 : failed
+// 02 : hang
+// O3 : unimplement 0xE8
+// 04 : failed
+// 05 : failed
+// 06 : passed
+// 07 : failed
+// 08 : failed
+// 09 : unimplemented 0x2F
+// 10 : passed
+// 11 unimplement 0x27
 
 u8 Cpu::read8(u16 addr)
 {
@@ -411,7 +424,7 @@ void Cpu::execute(u8 op)
     mem[1] = m_memory->read8(regs().pc+0).value_or(0);
     mem[2] = m_memory->read8(regs().pc+1).value_or(0);
 
-    TRACE("{}\n", Disas::disassemble(&mem, sizeof(mem)));
+    TRACE("{:04X}: {}\n", regs().pc-1, Disas::disassemble(&mem, sizeof(mem)));
 
     switch (op)
     {

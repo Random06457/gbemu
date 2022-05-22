@@ -53,6 +53,7 @@ public:
 
     void processInt();
     void unhalt() { m_halted = false; }
+    void setLogging(bool enable) { m_logging_enable = enable; }
 
 private:
 
