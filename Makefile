@@ -89,7 +89,6 @@ CXXFILES_IMGUI := \
 	3rd-party/imgui/imgui_draw.cpp \
 	3rd-party/imgui/imgui_tables.cpp \
 	3rd-party/imgui/imgui_widgets.cpp \
-	3rd-party/imgui/imgui_demo.cpp \
 	3rd-party/imgui/imgui.cpp
 
 CXXFILES_EMU += $(CXXFILES_FMTLIB) $(CXXFILES_IMGUI)

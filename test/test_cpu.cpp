@@ -24,6 +24,8 @@ using namespace gbemu::core;
 #define H cpu.regs().flags.h
 #define C cpu.regs().flags.c
 
+#define CPU_LOG     false
+
 #define CHECK_FLAGS(z_, n_, h_, c_) \
     ASSERT_EQ(Z, z_); \
     ASSERT_EQ(N, n_); \
@@ -38,7 +40,8 @@ using namespace gbemu::core;
     Timer timer(&ints); \
     mem.mapBuffer(0x0000, code, sizeof(code)); \
     mem.mapBuffer(0x1000, ram, sizeof(ram)); \
-    Cpu cpu(&mem, &timer, &ints);
+    Cpu cpu(&mem, &timer, &ints); \
+    cpu.setLogging(CPU_LOG);
 
 #define CPU_RUN() \
     while (REG_PC != sizeof(code)) \
@@ -372,18 +375,18 @@ TEST(cpu, add_r16_r16)
     REG_BC = 0x0002;
     cpu.step();
     ASSERT_EQ(REG_HL, 0x100);
-    CHECK_FLAGS(0, 0, 1, 1);
-
-    REG_HL = 0x000F;
-    REG_DE = 0x0002;
-    cpu.step();
-    ASSERT_EQ(REG_HL, 0x11);
-    CHECK_FLAGS(0, 0, 1, 0);
-
-    REG_HL = 0x0011;
-    cpu.step();
-    ASSERT_EQ(REG_HL, 0x22);
     CHECK_FLAGS(0, 0, 0, 0);
+
+    REG_HL = 0xF000;
+    REG_DE = 0x2000;
+    cpu.step();
+    ASSERT_EQ(REG_HL, 0x1000);
+    CHECK_FLAGS(0, 0, 0, 1);
+
+    REG_HL = 0x0811;
+    cpu.step();
+    ASSERT_EQ(REG_HL, 0x1022);
+    CHECK_FLAGS(0, 0, 1, 0);
 
     REG_HL = 0x0111;
     REG_SP = 0x1234;
@@ -573,4 +576,143 @@ TEST(cpu, ld_r8_r8)
         }
     }
 
+}
+
+#define TEST_OP_R8_R8(reg_y, x, y, res, res_z, res_n, res_h, res_c) \
+    REG_PC = 0; \
+    REG_A = x; \
+    cpu.writeReg(reg_y, y); \
+    cpu.step(); \
+    ASSERT_EQ(REG_A, res); \
+    ASSERT_EQ(Z, res_z); \
+    ASSERT_EQ(N, res_n); \
+    ASSERT_EQ(H, res_h); \
+    ASSERT_EQ(C, res_c);
+
+// 0x8_
+TEST(cpu, add_r8_r8)
+{
+    CPU_CREATE(OP_ADD_A_B);
+
+    for (size_t i = 0; i < 7; i++)
+    {
+        REG_HL = 0x1000;
+
+        TEST_OP_R8_R8((Cpu::VREG8)i, 0xF, 1, 0x10, 0, 0, 1, 0);
+
+        TEST_OP_R8_R8((Cpu::VREG8)i, 0xF2, 0xE, 0x00, 1, 0, 1, 1);
+
+        code[0]++;
+    }
+
+    TEST_OP_R8_R8(Cpu::VREG8_A, 0x88, 0x88, 0x10, 0, 0, 1, 1);
+
+    TEST_OP_R8_R8(Cpu::VREG8_A, 0x80, 0x80, 0x00, 1, 0, 0, 1);
+
+    TEST_OP_R8_R8(Cpu::VREG8_A, 0x11, 0x11, 0x22, 0, 0, 0, 0);
+}
+// 0x8_
+TEST(cpu, addc_r8_r8)
+{
+    CPU_CREATE(OP_ADC_A_B);
+
+    for (size_t i = 0; i < 7; i++)
+    {
+        REG_HL = 0x1000;
+
+        C = 0;
+        TEST_OP_R8_R8((Cpu::VREG8)i, 0xE, 1, 0x0F, 0, 0, 0, 0);
+        C = 1;
+        TEST_OP_R8_R8((Cpu::VREG8)i, 0xE, 1, 0x10, 0, 0, 1, 0);
+
+        C = 0;
+        TEST_OP_R8_R8((Cpu::VREG8)i, 0xF2, 0xE, 0x00, 1, 0, 1, 1);
+        C = 1;
+        TEST_OP_R8_R8((Cpu::VREG8)i, 0xF2, 0xE, 0x01, 0, 0, 1, 1);
+
+        code[0]++;
+    }
+
+    C = 0;
+    TEST_OP_R8_R8(Cpu::VREG8_A, 0x88, 0x88, 0x10, 0, 0, 1, 1);
+    C = 1;
+    TEST_OP_R8_R8(Cpu::VREG8_A, 0x88, 0x88, 0x11, 0, 0, 1, 1);
+
+    C = 0;
+    TEST_OP_R8_R8(Cpu::VREG8_A, 0x80, 0x80, 0x00, 1, 0, 0, 1);
+    C = 1;
+    TEST_OP_R8_R8(Cpu::VREG8_A, 0x80, 0x80, 0x01, 0, 0, 0, 1);
+
+    C = 0;
+    TEST_OP_R8_R8(Cpu::VREG8_A, 0x11, 0x11, 0x22, 0, 0, 0, 0);
+    C = 1;
+    TEST_OP_R8_R8(Cpu::VREG8_A, 0x11, 0x11, 0x23, 0, 0, 0, 0);
+}
+
+
+// 0x9_
+TEST(cpu, sub_r8_r8)
+{
+    CPU_CREATE(OP_SUB_B);
+
+    for (size_t i = 0; i < 7; i++)
+    {
+        REG_HL = 0x1000;
+
+        TEST_OP_R8_R8((Cpu::VREG8)i, 0, 1, 0xFF, 0, 1, 1, 1);
+
+        TEST_OP_R8_R8((Cpu::VREG8)i, 0x10, 0x10, 0x00, 1, 1, 0, 0);
+
+        TEST_OP_R8_R8((Cpu::VREG8)i, 0x10, 0x1, 0x0F, 0, 1, 1, 0);
+
+        code[0]++;
+    }
+
+    TEST_OP_R8_R8(Cpu::VREG8_A, 0x88, 0x88, 0x00, 1, 1, 0, 0);
+
+    TEST_OP_R8_R8(Cpu::VREG8_A, 0x80, 0x80, 0x00, 1, 1, 0, 0);
+
+    TEST_OP_R8_R8(Cpu::VREG8_A, 0x11, 0x11, 0x00, 1, 1, 0, 0);
+}
+// 0x9_
+TEST(cpu, sbc_r8_r8)
+{
+    CPU_CREATE(OP_SBC_A_B);
+
+    for (size_t i = 0; i < 7; i++)
+    {
+        REG_HL = 0x1000;
+
+        C = 0;
+        TEST_OP_R8_R8((Cpu::VREG8)i, 0, 1, 0xFF, 0, 1, 1, 1);
+        C = 1;
+        TEST_OP_R8_R8((Cpu::VREG8)i, 0, 1, 0xFE, 0, 1, 1, 1);
+
+        C = 0;
+        TEST_OP_R8_R8((Cpu::VREG8)i, 0x10, 0x10, 0x00, 1, 1, 0, 0);
+        C = 1;
+        TEST_OP_R8_R8((Cpu::VREG8)i, 0x10, 0x10, 0xFF, 0, 1, 1, 1);
+
+        C = 0;
+        TEST_OP_R8_R8((Cpu::VREG8)i, 0x10, 0x1, 0x0F, 0, 1, 1, 0);
+        C = 1;
+        TEST_OP_R8_R8((Cpu::VREG8)i, 0x10, 0x1, 0x0E, 0, 1, 1, 0);
+
+        code[0]++;
+    }
+
+    C = 0;
+    TEST_OP_R8_R8(Cpu::VREG8_A, 0x88, 0x88, 0x00, 1, 1, 0, 0);
+    C = 1;
+    TEST_OP_R8_R8(Cpu::VREG8_A, 0x88, 0x88, 0xFF, 0, 1, 1, 1);
+
+    C = 0;
+    TEST_OP_R8_R8(Cpu::VREG8_A, 0x80, 0x80, 0x00, 1, 1, 0, 0);
+    C = 1;
+    TEST_OP_R8_R8(Cpu::VREG8_A, 0x80, 0x80, 0xFF, 0, 1, 1, 1);
+
+    C = 0;
+    TEST_OP_R8_R8(Cpu::VREG8_A, 0x11, 0x11, 0x00, 1, 1, 0, 0);
+    C = 1;
+    TEST_OP_R8_R8(Cpu::VREG8_A, 0x11, 0x11, 0xFF, 0, 1, 1, 1);
 }
