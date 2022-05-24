@@ -54,14 +54,14 @@ void Cpu::step()
 }
 
 // retrio tests
-// 01 : failed
+// 01 : unimplemented 0x27
 // 02 : hang
-// O3 : unimplement 0xE8
+// O3 : unimplemented 0xE8
 // 04 : passed (w/ hack)
 // 05 : passed (w/ hack)
 // 06 : passed
 // 07 : failed
-// 08 : failed
+// 08 : passed
 // 09 : unimplemented 0x2F
 // 10 : passed
 // 11 unimplement 0x27
@@ -454,7 +454,7 @@ void Cpu::execute(u8 op)
         case OP_POP_BC: POP(bc);
         case OP_POP_DE: POP(de);
         case OP_POP_HL: POP(hl);
-        case OP_POP_AF: POP(af);
+        case OP_POP_AF: regs().af = pop16(); regs().f &= 0xF0; break;
 
         case OP_LD_BC_d16: regs().bc = fetch16(); break;
         case OP_LD_DE_d16: regs().de = fetch16(); break;
