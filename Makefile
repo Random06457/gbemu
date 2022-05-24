@@ -22,7 +22,8 @@ ASAN ?= 1
 WARN := -Wall -Wextra -Werror \
 	-Wno-unused-parameter \
 	-Wno-unused-private-field \
-	-Wno-unused-variable
+	-Wno-unused-variable \
+	-Wno-unused-function
 
 CXXFLAGS := -std=$(STD) -g$(DEBUG) $(OPT) $(WARN)
 CPPFLAGS := -MMD
@@ -76,14 +77,23 @@ CXXFILES_TEST := \
 	test/test_memory.cpp
 
 # fmtlib
-CXXFILES_FMT += \
+CXXFILES_FMTLIB := \
 	3rd-party/fmt/src/format.cc \
 	3rd-party/fmt/src/os.cc
 INCDIRS += 3rd-party/fmt/include
 
-CXXFILES_EMU += $(CXXFILES_FMT)
-CXXFILES_TEST += $(CXXFILES_FMT)
+# imgui
+CXXFILES_IMGUI := \
+	3rd-party/imgui/imgui_impl_opengl3.cpp \
+	3rd-party/imgui/imgui_impl_glfw.cpp \
+	3rd-party/imgui/imgui_draw.cpp \
+	3rd-party/imgui/imgui_tables.cpp \
+	3rd-party/imgui/imgui_widgets.cpp \
+	3rd-party/imgui/imgui_demo.cpp \
+	3rd-party/imgui/imgui.cpp
 
+CXXFILES_EMU += $(CXXFILES_FMTLIB) $(CXXFILES_IMGUI)
+CXXFILES_TEST += $(CXXFILES_FMTLIB)
 
 OFILES_EMU := $(CXXFILES_EMU:%.cpp=$(BUILD)/%.o)
 OFILES_EMU := $(OFILES_EMU:%.cc=$(BUILD)/%.o)
