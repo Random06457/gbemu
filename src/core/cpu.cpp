@@ -57,10 +57,10 @@ void Cpu::step()
 // 01 : passed
 // 02 : hang
 // O3 : unimplemented 0xE8
-// 04 : passed (w/ hack)
-// 05 : passed (w/ hack)
+// 04 : passed
+// 05 : passed
 // 06 : passed
-// 07 : failed (ret nz/nc/z/c)
+// 07 : passed
 // 08 : passed
 // 09 : passed
 // 10 : passed
@@ -193,7 +193,7 @@ void Cpu::writeReg(VREG8 reg, u8 data)
 #define PUSH(x) push16(regs().x); break
 #define POP(x) regs().x = pop16(); break
 #define CALL_A16(cond) op_call(cond, fetch16()); break
-#define RET(cond) op_ret(cond, pop16()); break
+#define RET(cond) op_ret(cond); break
 #define JR_R8(cond) op_jr(cond, fetch8()); break
 #define JP_A16(cond) op_jp(cond, fetch16()); break
 
@@ -258,10 +258,13 @@ void Cpu::execute(u8 op)
         }
     };
 
-    auto op_ret = [this] (bool cond, u16 x) ALWAYS_INLINE
+    auto op_ret = [this] (bool cond) ALWAYS_INLINE
     {
+        m_timer->tick(4);
         if (cond)
-            regs().pc = x;
+        {
+            regs().pc = pop16();
+        }
     };
 
     auto op_call = [this] (bool cond, u16 addr) ALWAYS_INLINE
@@ -312,9 +315,7 @@ void Cpu::execute(u8 op)
         u8 a = readReg(dst);
         u8 b = readReg(src);
         u8 e = (c && regs().flags.c) ? 1 : 0;
-        u8 d = a + b + e;
-        if (regs().pc != 0xC005) // TODO: debug this
-            d = a - b - e;
+        u8 d = a - b - e;
 
         Z = d == 0;
         N = 1;

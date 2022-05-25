@@ -716,3 +716,31 @@ TEST(cpu, sbc_r8_r8)
     C = 1;
     TEST_OP_R8_R8(Cpu::VREG8_A, 0x11, 0x11, 0xFF, 0, 1, 1, 1);
 }
+
+#define TEST_RET2(op, flag_expr, exp_pc, exp_sp) \
+    REG_SP = 0x1000; \
+    REG_PC = 0x0000; \
+    code[0] = op; \
+    flag_expr; \
+    cpu.step(); \
+    ASSERT_EQ(REG_PC, exp_pc); \
+    ASSERT_EQ(REG_SP, exp_sp);
+
+// 0x[C/D]0 / 0x[C/D]8 / 0x[C/D]9
+TEST(cpu, ret)
+{
+    CPU_CREATE(OP_RET_NZ);
+
+    ram[0] = 0xCD;
+    ram[1] = 0xAB;
+
+    TEST_RET2(OP_RET_NZ, Z=1, 0x0001, 0x1000);
+    TEST_RET2(OP_RET_NZ, Z=0, 0xABCD, 0x1002);
+    TEST_RET2(OP_RET_Z, Z=1, 0xABCD, 0x1002);
+    TEST_RET2(OP_RET_Z, Z=0, 0x0001, 0x1000);
+
+    TEST_RET2(OP_RET_NC, C=1, 0x0001, 0x1000);
+    TEST_RET2(OP_RET_NC, C=0, 0xABCD, 0x1002);
+    TEST_RET2(OP_RET_C, C=1, 0xABCD, 0x1002);
+    TEST_RET2(OP_RET_C, C=0, 0x0001, 0x1000);
+}
