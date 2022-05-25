@@ -54,17 +54,17 @@ void Cpu::step()
 }
 
 // retrio tests
-// 01 : unimplemented 0x27
+// 01 : passed
 // 02 : hang
 // O3 : unimplemented 0xE8
 // 04 : passed (w/ hack)
 // 05 : passed (w/ hack)
 // 06 : passed
-// 07 : failed
+// 07 : failed (ret nz/nc/z/c)
 // 08 : passed
-// 09 : unimplemented 0x2F
+// 09 : passed
 // 10 : passed
-// 11 unimplement 0x27
+// 11 : passed
 
 u8 Cpu::read8(u16 addr)
 {
@@ -644,6 +644,48 @@ void Cpu::execute(u8 op)
             C = 0;
             break;
 
+        case OP_DAA:
+            if (!N)
+            {
+                if (C || regs().a > 0x99)
+                {
+                    regs().a += 0x60;
+                    C = 1;
+                }
+
+                if (H || (regs().a & 0x0F) > 0x09)
+                    regs().a += 0x6;
+            }
+            else
+            {
+                if (C)
+                {
+                    regs().a -= 0x60;
+                    C = 1;
+                }
+                if (H)
+                    regs().a -= 0x6;
+            }
+
+            Z = regs().a == 0;
+            H = 0;
+            break;
+        case OP_SCF:
+            N = 0;
+            H = 0;
+            C = 1;
+            break;
+        case OP_CPL:
+            regs().a ^= 0xFF;
+            N = 1;
+            H = 1;
+            break;
+        case OP_CCF:
+            N = 0;
+            H = 0;
+            C = !C;
+            break;
+
         default:
             UNIMPLEMENTED("Unimplemented opcode (0x{:02X})", op);
     }
@@ -714,6 +756,10 @@ void Cpu::executeCB(u8 op)
     {
         u8 b = readReg(r);
         b = ((b & 0xF) << 4) | ((b >> 4) & 0xF);
+        Z = b == 0;
+        N = 0;
+        H = 0;
+        C = 0;
         writeReg(r, b);
     };
 
@@ -722,9 +768,9 @@ void Cpu::executeCB(u8 op)
     MAKE_OP1(0x10, 8, op_sl.operator()<u8>, false, true); // rl
     MAKE_OP1(0x18, 8, op_sr.operator()<u8>, false, true); // rr
     MAKE_OP1(0x20, 8, op_sl.operator()<u8>, false, false); // sla
-    MAKE_OP1(0x28, 8, op_sr.operator()<u8>, false, false); // sra
+    MAKE_OP1(0x28, 8, op_sr.operator()<s8>, false, false); // sra
     MAKE_OP1(0x30, 8, op_swap); // swap
-    MAKE_OP1(0x38, 8, op_sl.operator()<s8>, false, false); // srl
+    MAKE_OP1(0x38, 8, op_sr.operator()<u8>, false, false); // srl
 
     MAKE_OP_IDX(0x40, 0x40, op_bit);
     MAKE_OP_IDX(0x80, 0x40, op_res);
