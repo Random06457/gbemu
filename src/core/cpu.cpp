@@ -56,7 +56,7 @@ void Cpu::step()
 // retrio tests
 // 01 : passed
 // 02 : hang
-// O3 : unimplemented 0xE8
+// O3 : passed
 // 04 : passed
 // 05 : passed
 // 06 : passed
@@ -686,6 +686,40 @@ void Cpu::execute(u8 op)
             H = 0;
             C = !C;
             break;
+
+        case OP_ADD_SP_r8:
+        {
+            m_timer->tick(8);
+
+            u16 a = regs().sp;
+            s16 b = (s8)fetch8();
+            u16 d = a + b;
+
+            Z = 0;
+            N = 0;
+            H = !!(((a & 0xF) + (b & 0xF)) & 0x10);
+            C = !!(((a & 0xFF) + (b & 0xFF)) & 0x100);
+
+            regs().sp = d;
+            break;
+        }
+
+        case OP_LD_HL_SPI_r8:
+        {
+            m_timer->tick(4);
+
+            u16 a = regs().sp;
+            u16 b = (s8)fetch8();
+            u16 d = a + b;
+
+            Z = 0;
+            N = 0;
+            H = !!(((a & 0xF) + (b & 0xF)) & 0x10);
+            C = !!(((a & 0xFF) + (b & 0xFF)) & 0x100);
+
+            regs().hl = d;
+            break;
+        }
 
         default:
             UNIMPLEMENTED("Unimplemented opcode (0x{:02X})", op);

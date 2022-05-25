@@ -744,3 +744,32 @@ TEST(cpu, ret)
     TEST_RET2(OP_RET_C, C=1, 0xABCD, 0x1002);
     TEST_RET2(OP_RET_C, C=0, 0x0001, 0x1000);
 }
+
+#define TEST_OP_SP_S8(x, y, res, h, c) \
+    REG_PC = 0; \
+    REG_SP = x; \
+    code[1] = code[3] = y; \
+    cpu.step(); \
+    ASSERT_EQ(REG_HL, res); \
+    CHECK_FLAGS(0, 0, h, c); \
+    REG_SP = x; \
+    cpu.step(); \
+    ASSERT_EQ(REG_SP, res); \
+    CHECK_FLAGS(0, 0, h, c);
+
+
+TEST(cpu, op_sp_s8)
+{
+    CPU_CREATE(OP_LD_HL_SPI_r8, 0xFF, OP_ADD_SP_r8, 0xFF);
+
+    TEST_OP_SP_S8(0x0000, 0xFF, 0xFFFF, 0, 0);
+
+    TEST_OP_SP_S8(0x0001, 0xFF, 0x0000, 1, 1);
+
+    TEST_OP_SP_S8(0x0001, 0x1, 0x0002, 0, 0);
+
+    TEST_OP_SP_S8(0x0001, 0xF, 0x0010, 1, 0);
+
+    TEST_OP_SP_S8(0x00F1, 0x10, 0x0101, 0, 1);
+
+}
