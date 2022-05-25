@@ -5,8 +5,9 @@
 namespace gbemu::core
 {
 
-Joypad::Joypad() :
-    m_p1(0)
+Joypad::Joypad(InterruptController* interrupts) :
+    m_p1({0}),
+    m_interrupts(interrupts)
 {
 
 }

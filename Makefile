@@ -60,6 +60,7 @@ CXXFILES_EMU := \
 	src/core/timer.cpp \
 	src/core/ppu.cpp \
 	src/gui/gui_main.cpp \
+	src/gui/joypad_process.cpp \
 	src/gui/ppu_render.cpp
 
 CXXFILES_TEST := \

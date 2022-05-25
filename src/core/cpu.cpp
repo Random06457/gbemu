@@ -75,7 +75,7 @@ u8 Cpu::read8(u16 addr)
     if (!ret)
     {
         TRACE("INVALID MEMORY : 0x{:04X}\n", addr);
-        UNREACHABLE("INVALID MEMORY : 0x{:04X}", addr);
+        UNREACHABLE("INVALID MEMORY : 0x{:04X} (PC={:04X})", addr, regs().pc);
     }
 
     // TODO: handle error
@@ -432,6 +432,7 @@ void Cpu::execute(u8 op)
             fetch8();
             break;
         case OP_HALT:
+            // TODO: halt bug
             m_halted = true;
             break;
 

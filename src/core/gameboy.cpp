@@ -19,7 +19,7 @@ Gameboy::Gameboy() :
     m_cpu(std::make_unique<Cpu>(mem(), timer(), interrupts())),
     m_ppu(std::make_unique<Ppu>(interrupts())),
     m_audio(std::make_unique<Audio>()),
-    m_joypad(std::make_unique<Joypad>()),
+    m_joypad(std::make_unique<Joypad>(interrupts())),
     m_gb_type(GameboyType_DMG)
 {
     // map bootrom
@@ -41,6 +41,10 @@ Gameboy::Gameboy() :
     m_ppu->mapMemory(mem());
     m_timer->mapMemory(mem());
     m_joypad->mapMemory(mem());
+
+    // stub register
+    static u8 stub = 0;
+    mem()->mapRegister(KEY1_ADDR, MmioReg::ro(&stub));
 }
 
 
@@ -96,6 +100,7 @@ Result<void> Gameboy::setCartridge(std::unique_ptr<Cart> cart)
 
 void Gameboy::step()
 {
+    joypad()->processInput();
     interrupts()->processInterrupts(cpu());
     cpu()->step();
     ppu()->step(timer()->systemClocks());

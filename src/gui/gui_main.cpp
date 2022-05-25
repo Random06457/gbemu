@@ -105,6 +105,19 @@ static void drawBreakpoints()
     // ImGui::EndChild();
 }
 
+static void drawJoypad(gbemu::core::Gameboy& gb)
+{
+    if (ImGui::BeginTabItem("Joypad"))
+    {
+        s32 p1 = gb.mem()->read8(gbemu::core::P1_ADDR).value_or(0);
+        if (ImGui::InputInt("P1", &p1, 1, 100, ImGuiInputTextFlags_CharsHexadecimal))
+            p1 = std::clamp(p1, 0, 0xFF);
+        gb.mem()->write8(gbemu::core::P1_ADDR, p1);
+
+        ImGui::EndTabItem();
+    }
+}
+
 static void drawCPU(gbemu::core::Gameboy& gb)
 {
     if (ImGui::BeginTabItem("CPU"))
@@ -191,12 +204,15 @@ static void drawImGui(gbemu::core::Gameboy& gb)
         if (ImGui::BeginTabBar("Debug"))
         {
             drawCPU(gb);
+            drawJoypad(gb);
         }
         ImGui::EndTabBar();
     }
     ImGui::End();
 
 }
+
+GLFWwindow* g_window;
 
 s32 gui_main(gbemu::core::Gameboy& gb)
 {
@@ -205,22 +221,22 @@ s32 gui_main(gbemu::core::Gameboy& gb)
     if (!glfwInit())
         return 1;
 
-    GLFWwindow* window = glfwCreateWindow(256*3, 256*3, "Gameboy", NULL, NULL);
-    // GLFWwindow* window = glfwCreateWindow(gbemu::core::SCREEN_WIDTH*3, gbemu::core::SCREEN_HEIGHT*3, "Gameboy", NULL, NULL);
-    if (window == NULL)
+    g_window = glfwCreateWindow(256*3, 256*3, "Gameboy", NULL, NULL);
+    // g_window = glfwCreateWindow(gbemu::core::SCREEN_WIDTH*3, gbemu::core::SCREEN_HEIGHT*3, "Gameboy", NULL, NULL);
+    if (g_window == NULL)
         return 1;
 
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(g_window);
     glfwSwapInterval(1); // Enable vsync
 
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplGlfw_InitForOpenGL(g_window, true);
     ImGui_ImplOpenGL3_Init("#version 130");
 
 
     // Main loop
-    while (!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(g_window))
     {
         glfwPollEvents();
 
@@ -242,13 +258,13 @@ s32 gui_main(gbemu::core::Gameboy& gb)
             ImGui::Render();
 
             s32 display_w, display_h;
-            glfwGetFramebufferSize(window, &display_w, &display_h);
+            glfwGetFramebufferSize(g_window, &display_w, &display_h);
             glViewport(0, 0, display_w, display_h);
             gb.ppu()->render();
 
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-            glfwSwapBuffers(window);
+            glfwSwapBuffers(g_window);
         }
     }
 
@@ -257,7 +273,7 @@ s32 gui_main(gbemu::core::Gameboy& gb)
     ImGui::DestroyContext();
 
     // Cleanup
-    glfwDestroyWindow(window);
+    glfwDestroyWindow(g_window);
     glfwTerminate();
 
     return 0;
