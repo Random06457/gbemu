@@ -55,7 +55,7 @@ void Cpu::step()
 
 // retrio tests
 // 01 : passed
-// 02 : hang
+// 02 : passed
 // O3 : passed
 // 04 : passed
 // 05 : passed
@@ -600,7 +600,7 @@ void Cpu::execute(u8 op)
             m_interrupt_controller->setIME(false);
             break;
         case OP_EI: // EI
-            m_interrupt_controller->setIME(false);
+            m_interrupt_controller->setIME(true);
             break;
 
         case OP_JP_a16: JP_A16(true);

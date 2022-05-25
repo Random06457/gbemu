@@ -15,10 +15,10 @@ class Timer : public Device
 
     static constexpr size_t TAC_FREQUENCY[] =
     {
-        4096,
-        262144,
-        65536,
-        16384,
+        4096, // T-cycles / 1024
+        262144, // T-cycles / 16
+        65536, // T-cycles / 64
+        16384, // T-cycles / 256
     };
 
 public:

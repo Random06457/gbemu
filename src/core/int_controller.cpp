@@ -37,19 +37,26 @@ void InterruptController::requestInterrupt(InterruptType type)
 
 void InterruptController::processInterrupts(Cpu* cpu)
 {
+    if (!m_ime && !cpu->isHalted())
+        return;
+
     for (size_t i = 0; i < InterruptType_Count; i++)
     {
         u8 bit = 1 << i;
-        u16 addr = 0x40 + 8 * i;
         if ((m_if.raw & bit) && (m_ie.raw & bit))
         {
-            m_if.raw &= ~bit;
-            m_ime = false;
-
-            LOG("*** INTERRUPT {} ***\n", s_int_names[i]);
+            // LOG("*** INTERRUPT {} ***\n", s_int_names[i]);
 
             cpu->unhalt();
-            cpu->regs().pc = addr;
+
+            if (m_ime)
+            {
+                u16 addr = 0x40 + 8 * i;
+                m_if.raw &= ~bit;
+                m_ime = false;
+                cpu->push16(cpu->regs().pc);
+                cpu->regs().pc = addr;
+            }
 
             break;
         }

@@ -1,12 +1,14 @@
 #include "timer.hpp"
 #include "io.hpp"
 #include "memory.hpp"
+#include "common/logging.hpp"
 
 namespace gbemu::core
 {
 
 Timer::Timer(InterruptController* interrupt) :
-    m_interrupt(interrupt)
+    m_interrupt(interrupt),
+    m_system_clock(0)
 {
 }
 
