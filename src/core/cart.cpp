@@ -1,6 +1,8 @@
 #include "cart.hpp"
 #include "unit.hpp"
 #include "common/logging.hpp"
+#include "memory.hpp"
+#include "io.hpp"
 
 namespace gbemu::core
 {
@@ -56,6 +58,35 @@ const char* CartHeader::cartType(CartridgeType cart_type)
         case CartridgeType_HuC3: return "HuC3";
         case CartridgeType_HuC1_RAM_BATTERY: return "HuC1+RAM+BATTERY";
         default: UNREACHABLE("Invalid CartridgeType");
+    }
+}
+
+Cart::Cart(std::vector<u8> rom) :
+    m_rom(rom),
+    m_external_ram(),
+    m_header(data<const CartHeader>())
+{
+    m_external_ram.resize(EXTRAM_SIZE);
+}
+
+void Cart::mapMemory(Memory* mem, bool bootrom_enabled)
+{
+    // map the part of the cartridge that doesn't overlap with the bootrom
+    size_t off = bootrom_enabled ? BOOTROM_SIZE : 0;
+    mem->remapBuffer(off, data(off), ROM0_SIZE - off);
+
+    switch (m_header->cart_type)
+    {
+        // TODO: map rest of cartridge
+        case CartridgeType_ROM:
+        case CartridgeType_MBC1:
+            mem->remapBuffer(ROM1_START, data(ROM0_SIZE), ROM1_SIZE);
+            mem->remapBuffer(EXTRAM_START, m_external_ram.data(), EXTRAM_SIZE);
+            break;
+
+        default:
+            LOG("type : {}({})", CartHeader::cartType(m_header->cart_type), m_header->cart_type);
+            UNIMPLEMENTED("Only MBC1 supported");
     }
 }
 

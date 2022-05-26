@@ -82,20 +82,7 @@ Result<void> Gameboy::setCartridge(std::unique_ptr<Cart> cart)
 
     // TODO: change m_gb_type
 
-    // map the part of the cartridge that doesn't overlap with the bootrom
-    mem()->remapBuffer(BOOTROM_END, m_cart->data(BOOTROM_SIZE), ROM0_SIZE - BOOTROM_SIZE);
-
-    switch (m_cart->header()->cart_type)
-    {
-        // TODO: map rest of cartridge
-        case CartridgeType_ROM:
-        case CartridgeType_MBC1:
-            mem()->remapBuffer(ROM1_START, m_cart->data(ROM0_SIZE), ROM1_SIZE);
-            break;
-        default:
-            fmt::print("type : {}\n", m_cart->header()->cart_type);
-            UNIMPLEMENTED("Only MBC1 supported");
-    }
+    m_cart->mapMemory(mem(), m_bootrom_enabled);
 
     return {};
 }

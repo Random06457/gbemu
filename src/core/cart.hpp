@@ -10,6 +10,8 @@
 namespace gbemu::core
 {
 
+class Memory;
+
 static constexpr size_t ROM_BANK_SIZE = 16_kb;
 static constexpr size_t RAM_BANK_SIZE = 8_kb;
 
@@ -91,16 +93,19 @@ static_assert(sizeof(CartHeader) == 0x150);
 class Cart
 {
 public:
-    Cart(std::vector<u8> rom) : m_rom(rom), m_header(data<const CartHeader>()) {}
+    Cart(std::vector<u8> rom);
 
     template<typename T = void>
     T* data(size_t off = 0) { return reinterpret_cast<T*>(m_rom.data() + off); }
+
+    void mapMemory(Memory* mem, bool bootrom_enabled);
 
     GETTER_CONST(auto, header);
     GETTER(auto&, rom);
 
 private:
     std::vector<u8> m_rom;
+    std::vector<u8> m_external_ram;
     const CartHeader* m_header;
 };
 
