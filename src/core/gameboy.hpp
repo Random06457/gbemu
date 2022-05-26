@@ -9,6 +9,7 @@
 #include "timer.hpp"
 #include "joypad.hpp"
 #include "int_controller.hpp"
+#include "serial.hpp"
 #include "memory.hpp"
 #include <vector>
 #include <memory>
@@ -60,6 +61,7 @@ private:
     std::unique_ptr<Ppu> m_ppu;
     std::unique_ptr<Audio> m_audio;
     std::unique_ptr<Joypad> m_joypad;
+    std::unique_ptr<Serial> m_serial;
     GameboyType m_gb_type;
     std::unique_ptr<Cart> m_cart;
 };

@@ -10,6 +10,7 @@ namespace gbemu::core
 
 class Timer : public Device
 {
+public:
     static constexpr size_t SYSTEM_FREQUENCY = 4194304; // T-states
     static constexpr size_t DIV_FREQUENCY = 16384; // T-states
 

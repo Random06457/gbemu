@@ -74,7 +74,7 @@ u8 Cpu::read8(u16 addr)
 
     if (!ret)
     {
-        TRACE("INVALID MEMORY : 0x{:04X}\n", addr);
+        TRACE("INVALID MEMORY : 0x{:04X} (PC={:04X})", addr, regs().pc);
         UNREACHABLE("INVALID MEMORY : 0x{:04X} (PC={:04X})", addr, regs().pc);
     }
 
@@ -91,8 +91,8 @@ void Cpu::write8(u16 addr, u8 x)
 
     if (!ret)
     {
-        TRACE("INVALID MEMORY : 0x{:04X}\n", addr);
-        // UNREACHABLE("INVALID MEMORY : 0x{:04X}", addr);
+        TRACE("INVALID MEMORY : 0x{:04X} (PC={:04X})", addr, regs().pc);
+        // UNREACHABLE("INVALID MEMORY : 0x{:04X} (PC={:04X})", addr, regs().pc);
     }
 
     // TODO: handle error

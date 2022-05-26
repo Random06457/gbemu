@@ -56,6 +56,7 @@ CXXFILES_EMU := \
 	src/core/gameboy.cpp \
 	src/core/int_controller.cpp \
 	src/core/joypad.cpp \
+	src/core/serial.cpp \
 	src/core/memory.cpp \
 	src/core/timer.cpp \
 	src/core/ppu.cpp \

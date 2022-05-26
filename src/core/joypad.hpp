@@ -11,7 +11,7 @@ class Joypad : public Device
 public:
     Joypad(InterruptController* interrupts);
 
-    void mapMemory(Memory* mem) override;
+    virtual void mapMemory(Memory* mem) override;
     void processInput();
 private:
     union

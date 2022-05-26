@@ -20,6 +20,7 @@ Gameboy::Gameboy() :
     m_ppu(std::make_unique<Ppu>(interrupts())),
     m_audio(std::make_unique<Audio>()),
     m_joypad(std::make_unique<Joypad>(interrupts())),
+    m_serial(std::make_unique<Serial>(interrupts())),
     m_gb_type(GameboyType_DMG)
 {
     // map bootrom
@@ -41,6 +42,7 @@ Gameboy::Gameboy() :
     m_ppu->mapMemory(mem());
     m_timer->mapMemory(mem());
     m_joypad->mapMemory(mem());
+    m_serial->mapMemory(mem());
 
     // stub register
     static u8 stub = 0;
