@@ -23,8 +23,8 @@ private:
             u8 left_b : 1;
             u8 up_select : 1;
             u8 down_start : 1;
-            u8 select_button : 1;
             u8 select_direction : 1;
+            u8 select_button : 1;
         };
     } PACKED m_p1;
 
