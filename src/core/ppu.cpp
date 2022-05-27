@@ -216,26 +216,26 @@ Ppu::Ppu(InterruptController* interrupt) :
 
 void Ppu::mapMemory(Memory* mem)
 {
-    mem->mapBuffer(OAM_START, oam(), OAM_SIZE);
+    mem->mapMemory(Mmio::RW(OAM_START, oam(), OAM_SIZE));
 
-    mem->mapRegister(BGP_ADDR, MmioReg::rw(&m_dmg_bgp));
-    mem->mapRegister(OBP0_ADDR, MmioReg::rw(&m_dmg_obp[0]));
-    mem->mapRegister(OBP1_ADDR, MmioReg::rw(&m_dmg_obp[1]));
-    mem->mapRegister(SCX_ADDR, MmioReg::rw(&m_scx));
-    mem->mapRegister(SCY_ADDR, MmioReg::rw(&m_scy));
-    mem->mapRegister(LCDC_ADDR, MmioReg::rw(&m_lcdc));
-    mem->mapRegister(STAT_ADDR, MmioReg::rw(&m_stat, 0b01111100));
-    mem->mapRegister(LY_ADDR, MmioReg::ro(&m_ly));
-    mem->mapRegister(LYC_ADDR, MmioReg::ro(&m_lyc));
-    mem->mapRegister(WX_ADDR, MmioReg::rw(&m_wx));
-    mem->mapRegister(WX_ADDR, MmioReg::rw(&m_wy));
+    mem->mapMemory(Mmio::RW(BGP_ADDR, &m_dmg_bgp, 1));
+    mem->mapMemory(Mmio::RW(OBP0_ADDR, &m_dmg_obp[0], 1));
+    mem->mapMemory(Mmio::RW(OBP1_ADDR, &m_dmg_obp[1], 1));
+    mem->mapMemory(Mmio::RW(SCX_ADDR, &m_scx, 1));
+    mem->mapMemory(Mmio::RW(SCY_ADDR, &m_scy, 1));
+    mem->mapMemory(Mmio::RW(LCDC_ADDR, &m_lcdc, 1));
+    mem->mapMemory(Mmio::RW(STAT_ADDR, &m_stat, 1, 0b01111100));
+    mem->mapMemory(Mmio::RO(LY_ADDR, &m_ly, 1));
+    mem->mapMemory(Mmio::RO(LYC_ADDR, &m_lyc, 1));
+    mem->mapMemory(Mmio::RW(WX_ADDR, &m_wx, 1));
+    mem->mapMemory(Mmio::RW(WX_ADDR, &m_wy, 1));
 
-    mem->mapRegister(DMA_ADDR, MmioReg::rw(&m_dma, std::bind(&Ppu::startDMA, this, std::placeholders::_1)));
+    mem->mapMemory(DMA_ADDR, 1, Mmio::readFunc(&m_dma), std::bind(&Ppu::startDMA, this, std::placeholders::_1, std::placeholders::_2));
 
     switchBank(mem, 0);
 }
 
-Result<void> Ppu::startDMA(u8 addr)
+Result<void> Ppu::startDMA(u16 off, u8 addr)
 {
     m_dma = addr;
     m_dma_transfered = 0;
@@ -245,7 +245,7 @@ Result<void> Ppu::startDMA(u8 addr)
 void Ppu::switchBank(Memory* mem, size_t bank)
 {
     m_vram_bank = bank;
-    mem->remapBuffer(VRAM_START, vram(), VRAM_SIZE);
+    mem->remapMemory(Mmio::RW(VRAM_START, vram(), VRAM_SIZE));
 }
 
 u32 Ppu::getColor(u8 palette, u8 idx, bool transparency)

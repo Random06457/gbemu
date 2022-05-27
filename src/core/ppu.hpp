@@ -56,7 +56,7 @@ public:
     u8* bgMap() { return vram() + (m_lcdc.bg_map_area ? 0x1C00 : 0x1800); }
     u8* windowMap() { return vram() + (m_lcdc.window_map_area ? 0x1C00 : 0x1800); }
 
-    Result<void> startDMA(u8 addr);
+    Result<void> startDMA(u16 off, u8 addr);
 
     void drawLine(size_t screen_y);
     void oamSearch(size_t screen_y);

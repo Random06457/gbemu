@@ -24,17 +24,17 @@ Gameboy::Gameboy() :
     m_gb_type(GameboyType_DMG)
 {
     // map bootrom
-    mem()->mapBuffer(BOOTROM_START, m_bootrom.data(), m_bootrom.size());
+    mem()->mapMemory(Mmio::RO(BOOTROM_START, m_bootrom.data(), m_bootrom.size()));
 
     // map HRAM
-    mem()->mapBuffer(HRAM_START, m_hram.data(), m_hram.size());
+    mem()->mapMemory(Mmio::RW(HRAM_START, m_hram.data(), m_hram.size()));
 
     // map WRAM (todo: make WRAM1 switchable for CGB)
-    mem()->mapBuffer(WRAM0_START, m_wram0.data(), m_wram0.size());
-    mem()->mapBuffer(WRAM1_START, m_wram1.data(), m_wram1.size());
+    mem()->mapMemory(Mmio::RW(WRAM0_START, m_wram0.data(), m_wram0.size()));
+    mem()->mapMemory(Mmio::RW(WRAM1_START, m_wram1.data(), m_wram1.size()));
 
     // map bootrom disable register
-    mem()->mapRegister(BOOT_ADDR, MmioReg::wo(std::bind(&Gameboy::disableBootRom, this, std::placeholders::_1)));
+    mem()->mapMemory(Mmio::WO(BOOT_ADDR, 1, std::bind(&Gameboy::disableBootRom, this, std::placeholders::_1, std::placeholders::_2)));
 
     // map registers
     m_interrupt_controller->mapMemory(mem());
@@ -46,11 +46,11 @@ Gameboy::Gameboy() :
 
     // stub register
     static u8 stub = 0;
-    mem()->mapRegister(KEY1_ADDR, MmioReg::ro(&stub));
+    mem()->mapMemory(Mmio::RO(KEY1_ADDR, &stub, 1));
 }
 
 
-Result<void> Gameboy::disableBootRom(u8 data)
+Result<void> Gameboy::disableBootRom(u16 off, u8 data)
 {
     if (data == 0)
         return {};
@@ -58,10 +58,11 @@ Result<void> Gameboy::disableBootRom(u8 data)
     if (m_bootrom_enabled)
     {
         // unmap bootrom
-        mem()->unmapAddress(BOOTROM_START);
-        mem()->unmapAddress(BOOTROM_END);
+        mem()->unmapMemory(BOOTROM_START);
+        mem()->unmapMemory(BOOTROM_END);
         // map entire cartridge bank 0
-        mem()->mapBuffer(ROM0_START, cart()->data(), ROM0_SIZE);
+        // TODO: move to cart and implement mbc reg
+        mem()->mapMemory(Mmio::RO(ROM0_START, cart()->data(), ROM0_SIZE));
     }
     m_bootrom_enabled = false;
     return {};

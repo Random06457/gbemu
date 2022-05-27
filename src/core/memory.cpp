@@ -4,149 +4,111 @@
 namespace gbemu::core
 {
 
-Result<void> MmioBuffer::read(u16 addr, void* buff, size_t size)
+
+Result<void> Memory::mapMemory(Mmio entry)
 {
-    ERROR_IF(!matches(addr, size), MemoryError_BufferOOBRead);
+    ERROR_IF(isRegionMapped(entry.start(), entry.size()), MemoryError_MapReservedRegion);
 
-    std::memcpy(buff, m_buffer + addr - m_address, size);
-
-    return {};
-}
-
-Result<void> MmioBuffer::write(u16 addr, void* buff, size_t size)
-{
-    ERROR_IF(!matches(addr, size), MemoryError_BufferOOBWrite);
-
-    std::memcpy(m_buffer + addr - m_address, buff, size);
-
-    return {};
-}
-
-
-bool Memory::isRegionMapped(u16 addr, size_t size)
-{
-    // check if the region intersects with a buffer
-    return std::ranges::any_of(m_buffers,
-        [&addr, &size](auto& x) {
-            return x.intersect(addr, size);
-        }) ||
-        // check if the region intersects with a register
-        std::ranges::any_of(m_registers,
-        [&addr, &size](auto& x) {
-            return x.first >= addr && x.first < addr + size;
-        });
-}
-
-Result<void> Memory::mapBuffer(u16 addr, void* buff, size_t size)
-{
-    ERROR_IF(isRegionMapped(addr, size), MemoryError_MapReservedRegion);
-
-    // find position
-    auto it = m_buffers.begin();
-    while(it != m_buffers.end() && it->start() < addr)
-        ++it;
-
-    m_buffers.insert(it, {addr, buff, size});
-
-    return {};
-}
-
-Result<void> Memory::mapRegister(u16 addr, MmioReg reg)
-{
-    ERROR_IF(isRegionMapped(addr, 1), MemoryError_MapReservedRegion);
-
-    m_registers[addr] = reg;
-
-    return {};
-}
-
-Result<MmioBuffer*> Memory::getMappedBuffer(u16 addr)
-{
-    auto it = std::ranges::find_if(m_buffers, [&addr](auto& buf) { return buf.start() == addr; });
-    if (it != m_buffers.end())
-        return &*it;
-
-    return tl::make_unexpected(MemoryError_CannotFindMapped);
-}
-Result<MmioReg*> Memory::getMappedReg(u16 addr)
-{
-    if (m_registers.contains(addr))
-        return &m_registers[addr];
-
-    return tl::make_unexpected(MemoryError_CannotFindMapped);
-}
-
-Result<void> Memory::unmapAddress(u16 addr)
-{
-    auto it = std::ranges::find_if(m_buffers, [&addr](auto& buf) { return buf.start() == addr; });
-    if (it != m_buffers.end())
+    if (entry.size() == 1)
     {
-        m_buffers.erase(it);
+        m_fast_entries[entry.start()] = entry;
         return {};
     }
 
-    if (m_registers.contains(addr))
+    // find position
+    auto it = m_entries.begin();
+    while(it != m_entries.end() && it->start() < entry.start())
+        ++it;
+
+    m_entries.insert(it, entry);
+
+    return {};
+}
+
+Result<void> Memory::remapMemory(Mmio entry)
+{
+    auto old_entry = getEntry(entry.start());
+
+    ERROR_IF(!old_entry && isRegionMapped(entry.start(), entry.size()), MemoryError_RemapWithDifferentAddr);
+
+    ERROR_IF(old_entry && old_entry.value()->size() != entry.size(), MemoryError_RemapWithDifferentSize);
+
+    if (old_entry)
     {
-        m_registers.erase(addr);
+        Result<void> ret = unmapMemory(old_entry.value()->start());
+        if (!ret)
+            return ret;
+    }
+
+    return mapMemory(entry);
+}
+
+Result<void> Memory::unmapMemory(u16 addr)
+{
+    if (m_fast_entries.contains(addr))
+    {
+        m_fast_entries.erase(addr);
+        return {};
+    }
+
+    auto it = std::ranges::find_if(m_entries, [&addr](auto& buf) { return buf.start() == addr; });
+    if (it != m_entries.end())
+    {
+        m_entries.erase(it);
         return {};
     }
 
     return tl::make_unexpected(MemoryError_UnmapUnmappedAddress);
 }
 
-Result<void> Memory::remapBuffer(u16 addr, void* buff)
+
+bool Memory::isRegionMapped(u16 addr, size_t size)
 {
-    auto b = PROPAGATE_ERROR(getMappedBuffer(addr));
-    b->setBuffer(buff);
-    return {};
+    // check if the region intersects with a buffer
+    return std::ranges::any_of(m_entries,
+        [&addr, &size](auto& x) {
+            return x.intersect(addr, size);
+        }) ||
+        // check if the region intersects with a register
+        std::ranges::any_of(m_fast_entries,
+        [&addr, &size](auto& x) {
+            return x.first >= addr && x.first < addr + size;
+        });
 }
 
-Result<void> Memory::remapBuffer(u16 addr, void* buff, size_t size)
+
+Result<Mmio*> Memory::getEntry(u16 addr)
 {
-    auto b = getMappedBuffer(addr);
-    if (!b)
-        return mapBuffer(addr, buff, size);
+    if (m_fast_entries.contains(addr))
+        return &m_fast_entries[addr];
 
-    ERROR_IF(b.value()->start() != addr || b.value()->size() != size, MemoryError_RemapBufferWithDifferentSize);
+    auto it = std::ranges::find_if(m_entries, [&addr](auto& buf) { return buf.start() == addr; });
+    if (it != m_entries.end())
+        return &*it;
 
-    return remapBuffer(addr, buff);
+    return tl::make_unexpected(MemoryError_CannotFindMapped);
 }
-
-// Result<void> Memory::read(u16 addr, void* dst, size_t size)
-// {
-//     u8* ptr = reinterpret_cast<u8*>(dst);
-//     u16 off = 0;
-
-//     for (auto& buff : m_buffers)
-//     {
-//         if (buff.matches(addr))
-//         {
-//             size_t available_size = buff.end() - addr;
-//         }
-//     }
-// }
-// Result<void> write(u16 addr, const void* src, size_t size);
-
 
 Result<u8> Memory::read8(u16 addr)
 {
-    for (auto& buff : m_buffers)
-        if (buff.matches(addr))
-            return buff.read8(addr);
+    if (m_fast_entries.contains(addr))
+        return m_fast_entries[addr].m_read_func(0);
 
-    if (m_registers.contains(addr))
-        return m_registers[addr].read();
+    for (auto& entry : m_entries)
+        if (entry.matches(addr))
+            return entry.m_read_func(addr - entry.start());
+
 
     return tl::make_unexpected(MemoryError_ReadUnmappedMemory);
 }
 Result<void> Memory::write8(u16 addr, u8 data)
 {
-    for (auto& buff : m_buffers)
-        if (buff.matches(addr))
-            return buff.write8(addr, data);
+    if (m_fast_entries.contains(addr))
+        return m_fast_entries[addr].m_write_func(0, data);
 
-    if (m_registers.contains(addr))
-        return m_registers[addr].write(data);
+    for (auto& entry : m_entries)
+        if (entry.matches(addr))
+            return entry.m_write_func(addr - entry.start(), data);
 
     return tl::make_unexpected(MemoryError_WriteUnmappedMemory);
 }

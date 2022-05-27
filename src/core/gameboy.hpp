@@ -35,7 +35,7 @@ public:
     Result<void> powerOn();
     void step();
 
-    Result<void> disableBootRom(u8 data);
+    Result<void> disableBootRom(u16 off, u8 data);
 
 public:
     Cpu* cpu() { return m_cpu.get(); }

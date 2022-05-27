@@ -11,13 +11,13 @@ Audio::Audio()
 
 void Audio::mapMemory(Memory* mem)
 {
-    mem->mapRegister(NR50_ADDR, MmioReg::rw(&m_nr50));
-    mem->mapRegister(NR51_ADDR, MmioReg::rw(&m_nr51));
-    mem->mapRegister(NR52_ADDR, MmioReg::rw(&m_nr52, 1 << 7));
-    mem->mapRegister(NR11_ADDR, MmioReg::rw(&m_nr11)); // todo: read mask
-    mem->mapRegister(NR12_ADDR, MmioReg::rw(&m_nr12));
-    mem->mapRegister(NR13_ADDR, MmioReg::rw(&m_nr13));
-    mem->mapRegister(NR14_ADDR, MmioReg::rw(&m_nr14));
+    mem->mapMemory(Mmio::RW(NR50_ADDR, &m_nr50, 1));
+    mem->mapMemory(Mmio::RW(NR51_ADDR, &m_nr51, 1));
+    mem->mapMemory(Mmio::RW(NR52_ADDR, &m_nr52, 1, 1 << 7));
+    mem->mapMemory(Mmio::RW(NR11_ADDR, &m_nr11, 1)); // todo: read mask
+    mem->mapMemory(Mmio::RW(NR12_ADDR, &m_nr12, 1));
+    mem->mapMemory(Mmio::RW(NR13_ADDR, &m_nr13, 1));
+    mem->mapMemory(Mmio::RW(NR14_ADDR, &m_nr14, 1));
 
 }
 

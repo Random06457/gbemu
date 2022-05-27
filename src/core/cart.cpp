@@ -72,17 +72,19 @@ Cart::Cart(std::vector<u8> rom) :
 void Cart::mapMemory(Memory* mem, bool bootrom_enabled)
 {
     // map the part of the cartridge that doesn't overlap with the bootrom
-    size_t off = bootrom_enabled ? BOOTROM_SIZE : 0;
-    mem->remapBuffer(off, data(off), ROM0_SIZE - off);
+    u16 off = bootrom_enabled ? BOOTROM_SIZE : 0;
+    mem->remapMemory(Mmio::RO(off, data(off), ROM0_SIZE - off));
 
     switch (m_header->cart_type)
     {
-        // TODO: map rest of cartridge
         case CartridgeType_ROM:
-        case CartridgeType_MBC1:
-            mem->remapBuffer(ROM1_START, data(ROM0_SIZE), ROM1_SIZE);
-            mem->remapBuffer(EXTRAM_START, m_external_ram.data(), EXTRAM_SIZE);
+            mem->remapMemory(Mmio::RO(ROM1_START, data(ROM0_SIZE), ROM1_SIZE));
+            mem->remapMemory(Mmio::RW(EXTRAM_START, m_external_ram.data(), EXTRAM_SIZE));
             break;
+
+        case CartridgeType_MBC1:
+            mem->mapMemory(Mmio::RO(ROM1_START, data(ROM0_SIZE), ROM1_SIZE));
+            mem->mapMemory(Mmio::RW(EXTRAM_START, m_external_ram.data(), EXTRAM_SIZE));
 
         default:
             LOG("type : {}({})", CartHeader::cartType(m_header->cart_type), m_header->cart_type);

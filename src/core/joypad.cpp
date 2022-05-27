@@ -14,7 +14,7 @@ Joypad::Joypad(InterruptController* interrupts) :
 
 void Joypad::mapMemory(Memory* mem)
 {
-    mem->mapRegister(P1_ADDR, MmioReg::rw(&m_p1, 0b00110000));
+    mem->mapMemory(Mmio::RW(P1_ADDR, &m_p1, 1, 0b00110000));
 }
 
 }

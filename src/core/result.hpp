@@ -20,7 +20,8 @@ enum Error
     MemoryError_WriteUnmappedMemory,
     MemoryError_UnmapUnmappedAddress,
     MemoryError_CannotFindMapped,
-    MemoryError_RemapBufferWithDifferentSize,
+    MemoryError_RemapWithDifferentSize,
+    MemoryError_RemapWithDifferentAddr,
 };
 
 template<typename T>
