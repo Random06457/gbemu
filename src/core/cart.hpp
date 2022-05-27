@@ -6,6 +6,7 @@
 #include "attributes.hpp"
 #include "macro.hpp"
 #include "unit.hpp"
+#include "result.hpp"
 
 namespace gbemu::core
 {
@@ -95,6 +96,14 @@ class Cart
 public:
     Cart(std::vector<u8> rom);
 
+private:
+    auto writeFunc(Result<void> (Cart::*func)(Memory* mem, u16, u8), Memory* mem) { return std::bind(func, this, mem, std::placeholders::_1, std::placeholders::_2); }
+    Result<void> mbc1WriteRom0(Memory* mem, u16 off, u8 data);
+    Result<void> mbc1WriteRom1(Memory* mem, u16 off, u8 data);
+    void mbc1RemapBank1(Memory* mem);
+    void mbc1RemapRAM(Memory* mem);
+
+public:
     template<typename T = void>
     T* data(size_t off = 0) { return reinterpret_cast<T*>(m_rom.data() + off); }
 
@@ -107,6 +116,19 @@ private:
     std::vector<u8> m_rom;
     std::vector<u8> m_external_ram;
     const CartHeader* m_header;
+
+    union
+    {
+        u8 m_mbc1_rom_bank;
+        struct
+        {
+            u8 m_mbc1_rom_bank_lo : 5;
+            u8 m_mbc1_rom_bank_hi : 2;
+        };
+    } PACKED;
+    u8 m_mbc1_ram_bank;
+    u8 m_mbc1_mode; // 0=rom 1=ram
+    bool m_mbc1_ram_enabled;
 };
 
 }

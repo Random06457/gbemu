@@ -61,8 +61,7 @@ Result<void> Gameboy::disableBootRom(u16 off, u8 data)
         mem()->unmapMemory(BOOTROM_START);
         mem()->unmapMemory(BOOTROM_END);
         // map entire cartridge bank 0
-        // TODO: move to cart and implement mbc reg
-        mem()->mapMemory(Mmio::RO(ROM0_START, cart()->data(), ROM0_SIZE));
+        cart()->mapMemory(mem(), false);
     }
     m_bootrom_enabled = false;
     return {};

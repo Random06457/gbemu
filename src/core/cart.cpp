@@ -66,7 +66,10 @@ Cart::Cart(std::vector<u8> rom) :
     m_external_ram(),
     m_header(data<const CartHeader>())
 {
-    m_external_ram.resize(EXTRAM_SIZE);
+    m_external_ram.resize(m_header->ramSize());
+    m_mbc1_mode = 0;
+    m_mbc1_ram_bank = 0;
+    m_mbc1_rom_bank = 1;
 }
 
 void Cart::mapMemory(Memory* mem, bool bootrom_enabled)
@@ -78,18 +81,129 @@ void Cart::mapMemory(Memory* mem, bool bootrom_enabled)
     switch (m_header->cart_type)
     {
         case CartridgeType_ROM:
-            mem->remapMemory(Mmio::RO(ROM1_START, data(ROM0_SIZE), ROM1_SIZE));
-            mem->remapMemory(Mmio::RW(EXTRAM_START, m_external_ram.data(), EXTRAM_SIZE));
+            mem->remapMemory(Mmio::RO(ROM1_START, data(ROM1_START), ROM1_SIZE));
+            if (m_external_ram.size() > 0)
+                mem->remapMemory(Mmio::RW(EXTRAM_START, m_external_ram.data(), EXTRAM_SIZE));
             break;
 
         case CartridgeType_MBC1:
-            mem->mapMemory(Mmio::RO(ROM1_START, data(ROM0_SIZE), ROM1_SIZE));
-            mem->mapMemory(Mmio::RW(EXTRAM_START, m_external_ram.data(), EXTRAM_SIZE));
+        case CartridgeType_MBC1_RAM:
+        case CartridgeType_MBC1_RAM_BATTERY:
+        {
+            auto write0 = writeFunc(&Cart::mbc1WriteRom0, mem);
+
+            mem->getEntry(ROM0_START).value()->m_write_func = write0;
+            if (bootrom_enabled)
+                mem->getEntry(BOOTROM_END).value()->m_write_func = write0;
+
+            mbc1RemapBank1(mem);
+            mbc1RemapRAM(mem);;
+            break;
+        }
 
         default:
-            LOG("type : {}({})", CartHeader::cartType(m_header->cart_type), m_header->cart_type);
+            LOG("type : {}({})\n", CartHeader::cartType(m_header->cart_type), m_header->cart_type);
             UNIMPLEMENTED("Only MBC1 supported");
     }
 }
+
+Result<void> Cart::mbc1WriteRom0(Memory* mem, u16 off, u8 data)
+{
+    // LOG("mbc1WriteRom0 [{:04X}] = {:02X}\n", off, data);
+
+    // RAM ENABLE
+    if (off < 0x2000)
+    {
+        // LOG("MBC1 WRITE (RAM Enable) [{:04X}] = {:02X}\n", off, data);
+
+        m_mbc1_ram_enabled = data == 10;
+        mbc1RemapRAM(mem);
+    }
+
+    // ROM Bank Number
+    else if (off < 0x4000)
+    {
+        // LOG("MBC1 WRITE (ROM Bank Number) [{:04X}] = {:02X}\n", off, data);
+        size_t bank_count = header()->romSize() / ROM_BANK_SIZE;
+
+        // higher 3 bits are ignored
+        data &= 0x1F;
+
+        // Bank 0 cannot be mapped twice
+        if (data == 0)
+            data = 1;
+
+        // if a rom needs less than 5 bits, the higher bits are discarded
+        data &= bank_count - 1;
+
+        // set lower 5 bits
+        // m_rom_bank &= ~0x1F;
+        // m_rom_bank |= data;
+        m_mbc1_rom_bank_lo = data;
+
+        mbc1RemapBank1(mem);
+    }
+    return {};
+}
+
+Result<void> Cart::mbc1WriteRom1(Memory* mem, u16 off, u8 data)
+{
+    off += ROM1_START;
+
+    // RAM Bank Number / Rom Bank Number High
+    if (off < 0x6000)
+    {
+        // LOG("MBC1 WRITE (RAM Bank Number) [{:04X}] = {:02X}\n", off, data);
+        // 2 bit register
+        data &= 3;
+
+        // ROM
+        if (m_mbc1_mode == 0)
+        {
+            m_mbc1_rom_bank_hi = data;
+            mbc1RemapBank1(mem);
+        }
+        // RAM
+        else
+        {
+            m_mbc1_ram_bank = data;
+            mbc1RemapRAM(mem);
+        }
+    }
+
+    // Mode Select
+    else if (off < 0x8000)
+    {
+        // LOG("MBC1 WRITE (Mode Select) [{:04X}] = {:02X}\n", off, data);
+        m_mbc1_mode = data & 1;
+    }
+    return {};
+}
+
+void Cart::mbc1RemapBank1(Memory* mem)
+{
+    // LOG("MBC1 ROM BANK 1 -> {}\n", m_mbc1_rom_bank);
+
+    u8* bank = m_rom.data() + ROM_BANK_SIZE * m_mbc1_rom_bank;
+    auto read1 = Mmio::readFunc(bank);
+    auto write1 = writeFunc(&Cart::mbc1WriteRom1, mem);
+    mem->remapMemory(Mmio{ROM1_START, ROM_BANK_SIZE, read1, write1});
+}
+
+void Cart::mbc1RemapRAM(Memory* mem)
+{
+    // LOG("MBC1 RAM BANK -> {}\n", m_mbc1_ram_bank);
+
+    if (m_mbc1_ram_enabled)
+    {
+        u8* bank = m_external_ram.data() + RAM_BANK_SIZE * m_mbc1_ram_bank;
+        mem->remapMemory(Mmio::RW(EXTRAM_START, bank, RAM_BANK_SIZE));
+    }
+    else
+    {
+        mem->unmapMemory(EXTRAM_START);
+    }
+}
+
 
 };
