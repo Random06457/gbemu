@@ -70,6 +70,8 @@ public:
 
     bool newFrameAvailable() const { return m_new_frame_available; }
 
+    auto lcdc() { return m_lcdc; }
+
 private:
     InterruptController* m_interrupt;
     size_t m_vram_bank;
@@ -80,16 +82,20 @@ private:
     u8 m_dmg_obp[2]; // non-CGB
     bool m_new_frame_available;
 
-    struct
+    union
     {
-        u8 bg_and_window_enable : 1;
-        u8 obj_enable : 1;
-        u8 obj_size : 1; // 0=8x8, 1=8x16
-        u8 bg_map_area : 1; // 0=9800-9BFF, 1=9C00-9FFF
-        u8 bg_tile_area : 1; // 0=8800-97FF, 1=8000-8FFF
-        u8 window_enable : 1;
-        u8 window_map_area : 1; // 0=9800-9BFF, 1=9C00-9FFF
-        u8 lcd_enable : 1;
+        struct
+        {
+            u8 bg_and_window_enable : 1;
+            u8 obj_enable : 1;
+            u8 obj_size : 1; // 0=8x8, 1=8x16
+            u8 bg_map_area : 1; // 0=9800-9BFF, 1=9C00-9FFF
+            u8 bg_tile_area : 1; // 0=8800-97FF, 1=8000-8FFF
+            u8 window_enable : 1;
+            u8 window_map_area : 1; // 0=9800-9BFF, 1=9C00-9FFF
+            u8 lcd_enable : 1;
+        };
+        u8 raw;
     } PACKED m_lcdc;
 
     struct
@@ -110,6 +116,9 @@ private:
 
     u8 m_scy;
     u8 m_scx;
+
+    u8 m_wy;
+    u8 m_wx;
 
     u8 m_ly;
     u8 m_lyc;

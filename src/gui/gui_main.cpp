@@ -18,6 +18,17 @@ static void glfw_error_callback(int error, const char* description)
     UNREACHABLE("Glfw Error {}: {}\n", error, description);
 }
 
+#define MMIO_REG_INPUT(name) mmioRegisterInput(gb, #name, gbemu::core::name##_ADDR)
+
+static void mmioRegisterInput(gbemu::core::Gameboy& gb, const char* name, u16 addr)
+{
+    s32 reg = gb.mem()->read8(addr).value_or(0);
+    if (ImGui::InputInt(name, &reg, 1, 100, ImGuiInputTextFlags_CharsHexadecimal))
+        reg = std::clamp(reg, 0, 0xFF);
+    gb.mem()->write8(gbemu::core::P1_ADDR, reg);
+}
+
+
 static bool s_is_running = true;
 static std::unordered_set<u16> s_breakpoints;
 
@@ -109,10 +120,28 @@ static void drawJoypad(gbemu::core::Gameboy& gb)
 {
     if (ImGui::BeginTabItem("Joypad"))
     {
-        s32 p1 = gb.mem()->read8(gbemu::core::P1_ADDR).value_or(0);
-        if (ImGui::InputInt("P1", &p1, 1, 100, ImGuiInputTextFlags_CharsHexadecimal))
-            p1 = std::clamp(p1, 0, 0xFF);
-        gb.mem()->write8(gbemu::core::P1_ADDR, p1);
+        MMIO_REG_INPUT(P1);
+
+        ImGui::EndTabItem();
+    }
+}
+
+static void drawPpu(gbemu::core::Gameboy& gb)
+{
+    if (ImGui::BeginTabItem("PPU"))
+    {
+        MMIO_REG_INPUT(SCX);
+        MMIO_REG_INPUT(SCY);
+        MMIO_REG_INPUT(WX);
+        MMIO_REG_INPUT(WY);
+        MMIO_REG_INPUT(LY);
+        MMIO_REG_INPUT(LYC);
+
+        ImGui::Text("LCDC : 0x%02X", gb.ppu()->lcdc().raw);
+        ImGui::Text("BG and Win Enabled : %s", gb.ppu()->lcdc().bg_and_window_enable ? "True" : "False");
+        ImGui::Text("Win Enabled : %s", gb.ppu()->lcdc().window_enable ? "True" : "False");
+        ImGui::Text("OBJ Size : 8x%d", gb.ppu()->lcdc().obj_size == 0 ? 8 : 16);
+        ImGui::Text("OBJ Enabled : %s", gb.ppu()->lcdc().obj_enable ? "True" : "False");
 
         ImGui::EndTabItem();
     }
@@ -226,6 +255,7 @@ static void drawImGui(gbemu::core::Gameboy& gb)
         {
             drawCPU(gb);
             drawJoypad(gb);
+            drawPpu(gb);
             drawOam(gb);
         }
         ImGui::EndTabBar();

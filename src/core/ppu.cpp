@@ -65,11 +65,8 @@ void Ppu::drawLine(size_t screen_y)
         return color_code;
     };
 
-    auto fetchBgColor = [this, fetchTileColor] (u8* tile_data, u8* tile_map, size_t screen_x, size_t screen_y) ALWAYS_INLINE -> u8
+    auto fetchBgColorFromBgCoord = [this, fetchTileColor] (u8* tile_data, u8* tile_map, size_t bg_x, size_t bg_y) ALWAYS_INLINE -> u8
     {
-        size_t bg_x = (screen_x + m_scx) % BG_WIDTH;
-        size_t bg_y = (screen_y + m_scy) % BG_HEIGHT;
-
         size_t tile_x = bg_x / TILE_WIDTH;
         size_t tile_y = bg_y / TILE_HEIGHT;
 
@@ -81,6 +78,22 @@ void Ppu::drawLine(size_t screen_y)
             tile_idx ^= 0x80;
 
         return fetchTileColor(tile_data, tile_idx, tile_off_x, tile_off_y);
+    };
+
+    auto fetchBgColor = [this, fetchBgColorFromBgCoord] (u8* tile_data, u8* tile_map, size_t screen_x, size_t screen_y) ALWAYS_INLINE -> u8
+    {
+        size_t bg_x = (screen_x + m_scx) % BG_WIDTH;
+        size_t bg_y = (screen_y + m_scy) % BG_HEIGHT;
+
+        return fetchBgColorFromBgCoord(tile_data, tile_map, bg_x, bg_y);
+    };
+
+    auto fetchWinColor = [this, fetchBgColorFromBgCoord] (u8* tile_data, u8* tile_map, size_t screen_x, size_t screen_y) ALWAYS_INLINE -> u8
+    {
+        size_t win_x = screen_x + m_wx + 7;
+        size_t win_y = screen_y + m_wy;
+
+        return fetchBgColorFromBgCoord(tile_data, tile_map, win_x, win_y);
     };
 
     auto fetchSpriteColor = [this, fetchTileColor] (OamEntry& oam, size_t sprite_x, size_t sprite_y, u8 bg_color) ALWAYS_INLINE -> std::tuple<u8, u8>
@@ -127,7 +140,19 @@ void Ppu::drawLine(size_t screen_y)
 
     for (size_t screen_x = 0; screen_x < SCREEN_WIDTH; screen_x++)
     {
-        u8 bg_color = fetchBgColor(tiles, bg_map, screen_x, screen_y);
+        bool debug_win = false;
+
+        u8 bg_color = 0;
+        if (m_lcdc.bg_and_window_enable)
+        {
+            bg_color = (m_lcdc.window_enable && screen_x+7 >= m_wx && screen_y >= m_wy)
+                ? fetchWinColor(tiles, win_map, screen_x, screen_y)
+                : fetchBgColor(tiles, bg_map, screen_x, screen_y);
+
+            // if (m_lcdc.window_enable)
+            // if (m_lcdc.window_enable && screen_x+7 >= m_wx && screen_y >= m_wy)
+            //     debug_win = true;
+        }
 
         auto [sprite_color, sprite_palette] = m_lcdc.obj_enable
             ? fetchSpriteLayerColor(m_line_oam, m_line_oam_count, screen_x, screen_y, bg_color)
@@ -136,6 +161,8 @@ void Ppu::drawLine(size_t screen_y)
         *dst++ = sprite_color == 0
             ? getColor(m_dmg_bgp, bg_color, false)
             : getColor(m_dmg_obp[sprite_palette], sprite_color, false);
+        // if (debug_win)
+        //     dst[-1] = 0xFFFF0000;
     }
 }
 
@@ -200,6 +227,8 @@ void Ppu::mapMemory(Memory* mem)
     mem->mapRegister(STAT_ADDR, MmioReg::rw(&m_stat, 0b01111100));
     mem->mapRegister(LY_ADDR, MmioReg::ro(&m_ly));
     mem->mapRegister(LYC_ADDR, MmioReg::ro(&m_lyc));
+    mem->mapRegister(WX_ADDR, MmioReg::rw(&m_wx));
+    mem->mapRegister(WX_ADDR, MmioReg::rw(&m_wy));
 
     mem->mapRegister(DMA_ADDR, MmioReg::rw(&m_dma, std::bind(&Ppu::startDMA, this, std::placeholders::_1)));
 
