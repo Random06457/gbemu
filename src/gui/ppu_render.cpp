@@ -61,35 +61,39 @@ void Ppu::render()
     static u32 tex = 0;
     static u32 program = 0;
     static u32 vbo = 0;
-    static u32 scy_loc = 0;
+    // static u32 scy_loc = 0;
     static u32 tex_loc = 0;
 
 
-    size_t tex_w = 256;
-    size_t tex_h = 256;
+    // size_t tex_w = 256;
+    // size_t tex_h = 256;
+    // u32* tex_data = m_bg_texture;
+    size_t tex_w = SCREEN_WIDTH;
+    size_t tex_h = SCREEN_HEIGHT;
+    u32* tex_data = m_screen_texture;
     // size_t tex_w = 10;
     // size_t tex_h = 10;
 
-    // std::fill_n(m_bg_texture, tex_w * tex_h, 0xFFFFFFFF);
+    // std::fill_n(tex_data, tex_w * tex_h, 0xFFFFFFFF);
 
     for (size_t x = 0; x < tex_w; x++)
-        m_bg_texture[x] = 0xFF0000FF;
+        tex_data[x] = 0xFF0000FF;
 
     for (size_t x = 0; x < tex_w; x++)
-        m_bg_texture[(tex_h-1)*tex_w + x] = 0xFFFF0000;
+        tex_data[(tex_h-1)*tex_w + x] = 0xFFFF0000;
 
     for (size_t y = 0; y < tex_h; y++)
-        m_bg_texture[y*tex_w] = 0xFF0000FF;
+        tex_data[y*tex_w] = 0xFF0000FF;
 
     for (size_t y = 0; y < tex_h; y++)
-        m_bg_texture[y*tex_w+tex_w-1] = 0xFFFF0000;
+        tex_data[y*tex_w+tex_w-1] = 0xFFFF0000;
 
 
     if (!init)
     {
         glGenTextures(1, &tex);
         glBindTexture(GL_TEXTURE_2D, tex);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex_w, tex_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_bg_texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex_w, tex_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_data);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -97,7 +101,7 @@ void Ppu::render()
 
         program = compileProgram();
         tex_loc = glGetUniformLocation(program, "u_texture");
-        scy_loc = glGetUniformLocation(program, "u_scy");
+        // scy_loc = glGetUniformLocation(program, "u_scy");
 
         u32 tex_coord_loc = glGetAttribLocation(program, "pos");
 
@@ -123,11 +127,11 @@ void Ppu::render()
     }
 
     glUniform1f(tex_loc, tex);
-    glUniform1i(scy_loc, m_scy);
+    // glUniform1i(scy_loc, m_scy);
 
 
     glBindTexture(GL_TEXTURE_2D, tex);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tex_w, tex_h, GL_RGBA, GL_UNSIGNED_BYTE, m_bg_texture);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tex_w, tex_h, GL_RGBA, GL_UNSIGNED_BYTE, tex_data);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 

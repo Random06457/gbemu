@@ -3,6 +3,7 @@
 #include "device.hpp"
 #include "io.hpp"
 #include "int_controller.hpp"
+#include "result.hpp"
 
 namespace gbemu::core
 {
@@ -18,9 +19,10 @@ struct OamEntry
     u8 cgb_palette : 2;
     u8 vram_bank : 1;
     u8 dmg_palette : 1;
+    // TODO: is this order correct? this doesn't match pandocs
+    u8 bg_and_window_over_obj : 1;
     u8 flip_x : 1;
     u8 flip_y : 1;
-    u8 bg_and_window_over_obj : 1;
 } PACKED;
 static_assert(sizeof(OamEntry) == 4);
 
@@ -45,13 +47,19 @@ public:
     auto oam() { return  m_oam; }
     void switchBank(Memory* mem, size_t bank);
 
-    void step(size_t clocks);
+    void step(Memory* mem, size_t clocks);
 
-    u32 getColor(u8 palette, u8 idx);
+    u32 getColor(u8 palette, u8 idx, bool transparency);
 
+    u8* spriteTiles() { return vram(); }
     u8* bgTiles() { return vram() + (m_lcdc.bg_tile_area ? 0 : 0x800); }
     u8* bgMap() { return vram() + (m_lcdc.bg_map_area ? 0x1C00 : 0x1800); }
     u8* windowMap() { return vram() + (m_lcdc.window_map_area ? 0x1C00 : 0x1800); }
+
+    Result<void> startDMA(u8 addr);
+
+    void drawLine(size_t screen_y);
+    void oamSearch(size_t screen_y);
 
     void drawTiles(bool bg);
     void drawTile(u32* dst, u8* tile);
@@ -94,6 +102,12 @@ private:
         u8 lyc_int_enable : 1;
     } PACKED m_stat;
 
+    u8 m_dma;
+    size_t m_dma_transfered;
+
+    u8 m_line_oam[10];
+    size_t m_line_oam_count;
+
     u8 m_scy;
     u8 m_scx;
 
@@ -102,6 +116,7 @@ private:
 
     u32 m_dmg_colors[4];
 
+    u32 m_screen_texture[SCREEN_WIDTH*SCREEN_HEIGHT];
     u32 m_bg_texture[32*32*8*8];
     u32 m_window_texture[32*32*8*8];
 };

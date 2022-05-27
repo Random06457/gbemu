@@ -118,6 +118,27 @@ static void drawJoypad(gbemu::core::Gameboy& gb)
     }
 }
 
+static void drawOam(gbemu::core::Gameboy& gb)
+{
+    if (ImGui::BeginTabItem("OAM"))
+    {
+        ImGui::BeginChild("OAM");
+
+        auto oam_table = gb.ppu()->oam();
+
+        for (size_t i = 0; i < 40; i++)
+        {
+            ImGui::Text("X=0x%X; Y=0x%X; Tile=0x%X; Pri=%d; FlipX=%d; FlipY = %d; Pal=%d",
+                oam_table[i].x, oam_table[i].y, oam_table[i].tile, oam_table[i].bg_and_window_over_obj,
+                oam_table[i].flip_x, oam_table[i].flip_y, oam_table[i].dmg_palette);
+        }
+
+        ImGui::EndChild();
+
+        ImGui::EndTabItem();
+    }
+}
+
 static void drawCPU(gbemu::core::Gameboy& gb)
 {
     if (ImGui::BeginTabItem("CPU"))
@@ -205,6 +226,7 @@ static void drawImGui(gbemu::core::Gameboy& gb)
         {
             drawCPU(gb);
             drawJoypad(gb);
+            drawOam(gb);
         }
         ImGui::EndTabBar();
     }
@@ -221,8 +243,8 @@ s32 gui_main(gbemu::core::Gameboy& gb)
     if (!glfwInit())
         return 1;
 
-    g_window = glfwCreateWindow(256*3, 256*3, "Gameboy", NULL, NULL);
-    // g_window = glfwCreateWindow(gbemu::core::SCREEN_WIDTH*3, gbemu::core::SCREEN_HEIGHT*3, "Gameboy", NULL, NULL);
+    // g_window = glfwCreateWindow(256*3, 256*3, "Gameboy", NULL, NULL);
+    g_window = glfwCreateWindow(gbemu::core::SCREEN_WIDTH*5, gbemu::core::SCREEN_HEIGHT*5, "Gameboy", NULL, NULL);
     if (g_window == NULL)
         return 1;
 

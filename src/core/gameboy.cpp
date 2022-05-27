@@ -92,7 +92,7 @@ void Gameboy::step()
     joypad()->processInput();
     interrupts()->processInterrupts(cpu());
     cpu()->step();
-    ppu()->step(timer()->systemClocks());
+    ppu()->step(mem(), timer()->systemClocks());
 }
 
 Result<void> Gameboy::powerOn()
