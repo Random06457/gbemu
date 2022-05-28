@@ -37,6 +37,8 @@ ifneq ($(ASAN),0)
 	LDFLAGS += -fsanitize=address
 endif
 ifneq ($(LTO),0)
+	CXXFLAGS += -flto
+	CFLAGS += -flto
 	LDFLAGS += -flto
 endif
 
@@ -51,6 +53,7 @@ CXXFILES_EMU := \
 	src/common/logging.cpp \
 	src/core/mbc/rom.cpp \
 	src/core/mbc/mbc1.cpp \
+	src/core/mbc/mbc3.cpp \
 	src/core/audio.cpp \
 	src/core/cart.cpp \
 	src/core/cpu.cpp \
@@ -71,6 +74,7 @@ CXXFILES_TEST := \
 	src/common/logging.cpp \
 	src/core/mbc/rom.cpp \
 	src/core/mbc/mbc1.cpp \
+	src/core/mbc/mbc3.cpp \
 	src/core/audio.cpp \
 	src/core/cart.cpp \
 	src/core/cpu.cpp \
