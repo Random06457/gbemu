@@ -25,8 +25,8 @@ InterruptController::InterruptController()
 
 void InterruptController::mapMemory(Memory* mem)
 {
-    mem->mapMemory(Mmio::RW(IE_ADDR, &m_ie, 1));
-    mem->mapMemory(Mmio::RW(IF_ADDR, &m_if, 1));
+    mem->mapRW(IE_ADDR, &m_ie);
+    mem->mapRW(IF_ADDR, &m_if);
 }
 
 

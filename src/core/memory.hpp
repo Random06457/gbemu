@@ -7,6 +7,7 @@
 #include "types.hpp"
 #include "result.hpp"
 #include "macro.hpp"
+#include <cassert>
 
 namespace gbemu::core
 {
@@ -14,83 +15,171 @@ namespace gbemu::core
 using MmioReadFunc = std::function<Result<u8>(u16)>;
 using MmioWriteFunc = std::function<Result<void>(u16, u8)>;
 
-class Mmio
+struct Mmio
 {
 public:
-    Mmio(u16 addr, size_t size, MmioReadFunc read, MmioWriteFunc write) :
+    Mmio(u16 addr, size_t size, MmioReadFunc read) :
         m_address(addr),
         m_size(size),
-        m_read_func(read),
-        m_write_func(write)
+        m_is_read(true),
+        m_read(read),
+        m_write(nullptr)
+    {}
+
+    Mmio(u16 addr, size_t size, MmioWriteFunc write) :
+        m_address(addr),
+        m_size(size),
+        m_is_read(false),
+        m_read(nullptr),
+        m_write(write)
     {}
 
     Mmio(){}
 
+    constexpr bool intersect(u16 addr, size_t size) { return !(addr + size <= m_address || addr >= m_address + m_size); }
+    constexpr bool matches(u16 addr, size_t size=1) { return addr >= m_address && addr + size <= m_address + m_size; }
+
+    constexpr u16 start() const { return m_address; }
+    constexpr u16 end() const { return m_address + m_size; }
+    constexpr u16 size() const { return m_size; }
+    constexpr bool isRead() const { return m_is_read; }
+    constexpr bool isWrite() const { return !m_is_read; }
+
+    u16 m_address;
+    u16 m_size;
+    bool m_is_read;
+    // don't make a union to make it a POD type
+    MmioReadFunc m_read;
+    MmioWriteFunc m_write;
+};
+
+// Wrappers around Mmio
+struct MmioRead : Mmio
+{
 private:
     static inline Result<u8> readBuffImpl(const void* buff, u8 mask, u16 off)
     {
         return reinterpret_cast<const u8*>(buff)[off] & mask;
     }
+public:
+    static inline Result<u8> invalidRead(u16 off) { return tl::make_unexpected(MemoryError_ReadToWriteOnlyAddress); }
+    static inline MmioReadFunc readFunc(const void* buff, u8 mask = 0xFF)
+    {
+        return std::bind(readBuffImpl, buff, mask, std::placeholders::_1);
+    }
 
+
+    MmioRead(u16 addr, size_t size, MmioReadFunc read) : Mmio(addr, size, read) {}
+    MmioRead(u16 addr, size_t size, const void* buff, u8 mask = 0xFF) : Mmio(addr, size, readFunc(buff, mask)) {}
+};
+
+struct MmioWrite : Mmio
+{
+private:
     static inline Result<void> writeBuffImpl(void* buff, u8 mask, u16 off, u8 value)
     {
         u8* ptr = reinterpret_cast<u8*>(buff) + off;
         *ptr = (*ptr & ~mask) | (value & mask);
         return {};
     }
-
 public:
-    static inline Result<u8> invalidRead(u16 off) { return tl::make_unexpected(MemoryError_ReadToWriteOnlyAddress); }
     static inline Result<void> invalidWrite(u16 off, u8 value) { return tl::make_unexpected(MemoryError_WriteToReadOnlyAddress); }
-
-    static inline MmioReadFunc readFunc(const void* buff, u8 mask = 0xFF)
-    {
-        return std::bind(readBuffImpl, buff, mask, std::placeholders::_1);
-    }
     static inline MmioWriteFunc writeFunc(void* buff, u8 mask = 0xFF)
     {
         return std::bind(writeBuffImpl, buff, mask, std::placeholders::_1, std::placeholders::_2);
     }
 
-    static inline Mmio RO(u16 addr, size_t size, MmioReadFunc read) { return { addr, size, read, invalidWrite }; }
-    static inline Mmio WO(u16 addr, size_t size, MmioWriteFunc write) { return { addr, size, invalidRead, write }; }
-    static inline Mmio RW(u16 addr, void* buff, size_t size, u8 wmask = 0xFF, u8 rmask = 0xFF)
-    { return { addr, size, readFunc(buff, rmask), writeFunc(buff, wmask) }; }
-    static inline Mmio RO(u16 addr, void* buff, size_t size, u8 mask = 0xFF) { return { addr, size, readFunc(buff, mask), invalidWrite }; }
-    static inline Mmio WO(u16 addr, void* buff, size_t size, u8 mask = 0xFF) { return { addr, size, invalidRead, writeFunc(buff, mask) }; }
 
-
-    bool intersect(u16 addr, size_t size)
-    {
-        return !(addr + size <= m_address || addr >= m_address + m_size);
-    }
-
-    bool matches(u16 addr, size_t size=1)
-    {
-        return addr >= m_address && addr + size <= m_address + m_size;
-    }
-
-    u16 start() const { return m_address; }
-    u16 end() const { return m_address + m_size; }
-    size_t size() const { return m_size; }
-
-public:
-    u16 m_address;
-    size_t m_size;
-    MmioReadFunc m_read_func;
-    MmioWriteFunc m_write_func;
+    MmioWrite(u16 addr, size_t size, MmioWriteFunc write) : Mmio(addr, size, write) {}
+    MmioWrite(u16 addr, size_t size, void* buff, u8 mask = 0xFF) : Mmio(addr, size, writeFunc(buff, mask)) {}
 };
 
 class Memory
 {
-public:
-    Result<void> mapMemory(Mmio entry);
-    Result<void> mapMemory(u16 addr, size_t size, MmioReadFunc read, MmioWriteFunc write) { return mapMemory({addr, size, read, write}); }
-    Result<void> remapMemory(Mmio entry);
-    Result<void> unmapMemory(u16 addr);
-    Result<Mmio*> getEntry(u16 addr);
+private:
 
-    bool isRegionMapped(u16 addr, size_t size);
+struct Mapper
+{
+    Result<void> map(const Mmio& entry);
+    Result<void> unmap(u16 addr);
+    Result<void> remap(const Mmio& entry);
+    Result<Mmio*> findEntry(u16 addr);
+    bool isRegionMapped(u16 addr, u16 size);
+
+
+    std::vector<Mmio> m_entries;
+    std::unordered_map<u16, Mmio> m_fast_entries;
+};
+
+public:
+
+    bool isRegionReadable(u16 addr, u16 size) { return m_read_map.isRegionMapped(addr, size); }
+    bool isRegionWritable(u16 addr, u16 size) { return m_write_map.isRegionMapped(addr, size); }
+    bool isRegionReadAndWritable(u16 addr, u16 size) { return isRegionReadable(addr, size) && isRegionWritable(addr, size); }
+    bool isRegionReadOrWritable(u16 addr, u16 size) { return isRegionReadable(addr, size) || isRegionWritable(addr, size); }
+
+    Result<void> mapRO(const MmioRead& read) { return m_read_map.map(read); }
+    Result<void> mapWO(const MmioWrite& write) { return m_write_map.map(write); }
+    Result<void> mapRW(const MmioRead& read, const MmioWrite& write)
+    {
+        auto res1 = mapRO(read);
+        auto res2 = mapWO(write);
+        return res1 ? res1 : res2;
+    }
+
+    Result<void> unmapRO(u16 addr) { return m_read_map.unmap(addr); }
+    Result<void> unmapWO(u16 addr) { return m_write_map.unmap(addr); }
+    Result<void> unmapRW(u16 addr)
+    {
+        auto res1 = unmapRO(addr);
+        auto res2 = unmapWO(addr);
+        return res1 ? res1 : res2;
+    }
+
+    Result<void> remapRO(const MmioRead& read) { assert(read.isRead()); return m_read_map.remap(read); }
+    Result<void> remapWO(const MmioWrite& write) { assert(write.isWrite()); return m_write_map.remap(write); }
+    Result<void> remapRW(const MmioRead& read, const MmioWrite& write)
+    {
+        auto res1 = remapRO(read);
+        auto res2 = remapWO(write);
+        return res1 ? res1 : res2;
+    }
+
+    // Helper functions
+    Result<void> mapRW(u16 addr, void* buff, u16 size = 1, u8 wmask = 0xFF, u8 rmask = 0xFF)
+    {
+        return mapRW(MmioRead(addr, size, buff, rmask), MmioWrite(addr, size, buff, wmask));
+    }
+    Result<void> mapRO(u16 addr, void* buff, u16 size = 1, u8 mask = 0xFF)
+    {
+        return mapRO(MmioRead(addr, size, buff, mask));
+    }
+    Result<void> mapWO(u16 addr, void* buff, u16 size = 1, u8 mask = 0xFF)
+    {
+        return mapWO(MmioWrite(addr, size, buff, mask));
+    }
+
+    Result<void> remapRW(u16 addr, void* buff, u16 size = 1, u8 wmask = 0xFF, u8 rmask = 0xFF)
+    {
+        return remapRW(MmioRead(addr, size, buff, rmask), MmioWrite(addr, size, buff, wmask));
+    }
+    Result<void> remapRO(u16 addr, void* buff, u16 size = 1, u8 mask = 0xFF)
+    {
+        return remapRO(MmioRead(addr, size, buff, mask));
+    }
+    Result<void> remapWO(u16 addr, void* buff, u16 size = 1, u8 mask = 0xFF)
+    {
+        return remapWO(MmioWrite(addr, size, buff, mask));
+    }
+
+    Result<void> mapRW(u16 addr, MmioReadFunc read, MmioWriteFunc write, u16 size = 1)
+    {
+        return mapRW(MmioRead(addr, size, read), MmioWrite(addr, size, write));
+    }
+    Result<void> remapRW(u16 addr, MmioReadFunc read, MmioWriteFunc write, u16 size = 1)
+    {
+        return remapRW(MmioRead(addr, size, read), MmioWrite(addr, size, write));
+    }
 
     // TODO:
     // Result<void> read(u16 addr, void* dst, size_t size);
@@ -101,8 +190,8 @@ public:
     Result<void> write8(u16 addr, u8 data);
 
 private:
-    std::vector<Mmio> m_entries;
-    std::unordered_map<u16, Mmio> m_fast_entries;
+    Mapper m_read_map;
+    Mapper m_write_map;
 };
 
 }

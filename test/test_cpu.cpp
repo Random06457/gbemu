@@ -38,8 +38,8 @@ using namespace gbemu::core;
     Memory mem; \
     InterruptController ints; \
     Timer timer(&ints); \
-    mem.mapMemory(Mmio::RW(0x0000, code, sizeof(code))); \
-    mem.mapMemory(Mmio::RW(0x1000, ram, sizeof(ram))); \
+    mem.mapRW(0x0000, code, sizeof(code)); \
+    mem.mapRW(0x1000, ram, sizeof(ram)); \
     Cpu cpu(&mem, &timer, &ints); \
     cpu.setLogging(CPU_LOG);
 
@@ -53,7 +53,7 @@ TEST(cpu, read_vregs)
     CPU_CREATE(0xFF, 0x03, 0x10, 0x04);
 
     u8 io[] = { 0x00, 0x00, 0xBB, 0x00, 0xAA };
-    mem.mapMemory(Mmio::RW(0xFF00, io, sizeof(io)));
+    mem.mapRW(0xFF00, io, sizeof(io));
 
     REG_A = 0x11;
     REG_B = 0x22;

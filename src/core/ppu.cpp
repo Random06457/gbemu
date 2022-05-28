@@ -90,8 +90,8 @@ void Ppu::drawLine(size_t screen_y)
 
     auto fetchWinColor = [this, fetchBgColorFromBgCoord] (u8* tile_data, u8* tile_map, size_t screen_x, size_t screen_y) ALWAYS_INLINE -> u8
     {
-        size_t win_x = screen_x + m_wx + 7;
-        size_t win_y = screen_y + m_wy;
+        size_t win_x = screen_x - m_wx + 7;
+        size_t win_y = screen_y - m_wy;
 
         return fetchBgColorFromBgCoord(tile_data, tile_map, win_x, win_y);
     };
@@ -216,21 +216,21 @@ Ppu::Ppu(InterruptController* interrupt) :
 
 void Ppu::mapMemory(Memory* mem)
 {
-    mem->mapMemory(Mmio::RW(OAM_START, oam(), OAM_SIZE));
+    mem->mapRW(OAM_START, oam(), OAM_SIZE);
 
-    mem->mapMemory(Mmio::RW(BGP_ADDR, &m_dmg_bgp, 1));
-    mem->mapMemory(Mmio::RW(OBP0_ADDR, &m_dmg_obp[0], 1));
-    mem->mapMemory(Mmio::RW(OBP1_ADDR, &m_dmg_obp[1], 1));
-    mem->mapMemory(Mmio::RW(SCX_ADDR, &m_scx, 1));
-    mem->mapMemory(Mmio::RW(SCY_ADDR, &m_scy, 1));
-    mem->mapMemory(Mmio::RW(LCDC_ADDR, &m_lcdc, 1));
-    mem->mapMemory(Mmio::RW(STAT_ADDR, &m_stat, 1, 0b01111100));
-    mem->mapMemory(Mmio::RO(LY_ADDR, &m_ly, 1));
-    mem->mapMemory(Mmio::RO(LYC_ADDR, &m_lyc, 1));
-    mem->mapMemory(Mmio::RW(WX_ADDR, &m_wx, 1));
-    mem->mapMemory(Mmio::RW(WX_ADDR, &m_wy, 1));
+    mem->mapRW(BGP_ADDR, &m_dmg_bgp, 1);
+    mem->mapRW(OBP0_ADDR, &m_dmg_obp[0]);
+    mem->mapRW(OBP1_ADDR, &m_dmg_obp[1]);
+    mem->mapRW(SCX_ADDR, &m_scx);
+    mem->mapRW(SCY_ADDR, &m_scy);
+    mem->mapRW(LCDC_ADDR, &m_lcdc);
+    mem->mapRW(STAT_ADDR, &m_stat, 1, 0b01111100);
+    mem->mapRO(LY_ADDR, &m_ly);
+    mem->mapRW(LYC_ADDR, &m_lyc);
+    mem->mapRW(WX_ADDR, &m_wx);
+    mem->mapRW(WY_ADDR, &m_wy);
 
-    mem->mapMemory(DMA_ADDR, 1, Mmio::readFunc(&m_dma), std::bind(&Ppu::startDMA, this, std::placeholders::_1, std::placeholders::_2));
+    mem->mapRW(DMA_ADDR, MmioRead::readFunc(&m_dma), std::bind(&Ppu::startDMA, this, std::placeholders::_1, std::placeholders::_2));
 
     switchBank(mem, 0);
 }
@@ -245,7 +245,7 @@ Result<void> Ppu::startDMA(u16 off, u8 addr)
 void Ppu::switchBank(Memory* mem, size_t bank)
 {
     m_vram_bank = bank;
-    mem->remapMemory(Mmio::RW(VRAM_START, vram(), VRAM_SIZE));
+    mem->mapRW(VRAM_START, vram(), VRAM_SIZE);
 }
 
 u32 Ppu::getColor(u8 palette, u8 idx, bool transparency)

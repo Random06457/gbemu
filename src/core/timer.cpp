@@ -14,10 +14,10 @@ Timer::Timer(InterruptController* interrupt) :
 
 void Timer::mapMemory(Memory* mem)
 {
-    mem->mapMemory(DIV_ADDR, 1, Mmio::readFunc(&m_div), std::bind(&Timer::resetDiv, this, std::placeholders::_1));
-    mem->mapMemory(Mmio::RW(TIMA_ADDR, &m_tima, 1));
-    mem->mapMemory(Mmio::RW(TMA_ADDR, &m_tma, 1));
-    mem->mapMemory(Mmio::RW(TAC_ADDR, &m_tac, 1));
+    mem->mapRW(DIV_ADDR, MmioRead::readFunc(&m_div), std::bind(&Timer::resetDiv, this, std::placeholders::_1));
+    mem->mapRW(TIMA_ADDR, &m_tima);
+    mem->mapRW(TMA_ADDR, &m_tma);
+    mem->mapRW(TAC_ADDR, &m_tac);
 }
 
 Result<void> Timer::resetDiv(u8 b)

@@ -15,8 +15,8 @@ Serial::Serial(InterruptController* interrupts) :
 
 void Serial::mapMemory(Memory* mem)
 {
-    mem->mapMemory(Mmio::RW(SB_ADDR, &m_sb, 1));
-    mem->mapMemory(Mmio::RW(SC_ADDR, &m_sc, 1));
+    mem->mapRW(SB_ADDR, &m_sb);
+    mem->mapRW(SC_ADDR, &m_sc);
 }
 
 u8 Serial::getInputBit()

@@ -76,25 +76,22 @@ void Cart::mapMemory(Memory* mem, bool bootrom_enabled)
 {
     // map the part of the cartridge that doesn't overlap with the bootrom
     u16 off = bootrom_enabled ? BOOTROM_SIZE : 0;
-    mem->remapMemory(Mmio::RO(off, data(off), ROM0_SIZE - off));
+    mem->remapRO(off, data(off), ROM0_SIZE - off);
 
     switch (m_header->cart_type)
     {
         case CartridgeType_ROM:
-            mem->remapMemory(Mmio::RO(ROM1_START, data(ROM1_START), ROM1_SIZE));
+            mem->remapRO(ROM1_START, data(ROM1_START), ROM1_SIZE);
             if (m_external_ram.size() > 0)
-                mem->remapMemory(Mmio::RW(EXTRAM_START, m_external_ram.data(), EXTRAM_SIZE));
+                mem->remapRW(EXTRAM_START, m_external_ram.data(), EXTRAM_SIZE);
             break;
 
         case CartridgeType_MBC1:
         case CartridgeType_MBC1_RAM:
         case CartridgeType_MBC1_RAM_BATTERY:
         {
-            auto write0 = writeFunc(&Cart::mbc1WriteRom0, mem);
-
-            mem->getEntry(ROM0_START).value()->m_write_func = write0;
-            if (bootrom_enabled)
-                mem->getEntry(BOOTROM_END).value()->m_write_func = write0;
+            mem->mapWO(MmioWrite(ROM0_START, ROM0_SIZE, writeFunc(&Cart::mbc1WriteRom0, mem)));
+            mem->mapWO(MmioWrite(ROM1_START, ROM1_SIZE, writeFunc(&Cart::mbc1WriteRom1, mem)));
 
             mbc1RemapBank1(mem);
             mbc1RemapRAM(mem);;
@@ -185,9 +182,7 @@ void Cart::mbc1RemapBank1(Memory* mem)
     // LOG("MBC1 ROM BANK 1 -> {}\n", m_mbc1_rom_bank);
 
     u8* bank = m_rom.data() + ROM_BANK_SIZE * m_mbc1_rom_bank;
-    auto read1 = Mmio::readFunc(bank);
-    auto write1 = writeFunc(&Cart::mbc1WriteRom1, mem);
-    mem->remapMemory(Mmio{ROM1_START, ROM_BANK_SIZE, read1, write1});
+    mem->remapRO(ROM1_START, bank, ROM_BANK_SIZE);
 }
 
 void Cart::mbc1RemapRAM(Memory* mem)
@@ -197,11 +192,11 @@ void Cart::mbc1RemapRAM(Memory* mem)
     if (m_mbc1_ram_enabled)
     {
         u8* bank = m_external_ram.data() + RAM_BANK_SIZE * m_mbc1_ram_bank;
-        mem->remapMemory(Mmio::RW(EXTRAM_START, bank, RAM_BANK_SIZE));
+        mem->remapRW(EXTRAM_START, bank, RAM_BANK_SIZE);
     }
     else
     {
-        mem->unmapMemory(EXTRAM_START);
+        mem->unmapRW(EXTRAM_START);
     }
 }
 
