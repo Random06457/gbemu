@@ -76,17 +76,17 @@ void Ppu::render()
 
     // std::fill_n(tex_data, tex_w * tex_h, 0xFFFFFFFF);
 
-    for (size_t x = 0; x < tex_w; x++)
-        tex_data[x] = 0xFF0000FF;
+    // for (size_t x = 0; x < tex_w; x++)
+    //     tex_data[x] = 0xFF0000FF;
 
-    for (size_t x = 0; x < tex_w; x++)
-        tex_data[(tex_h-1)*tex_w + x] = 0xFFFF0000;
+    // for (size_t x = 0; x < tex_w; x++)
+    //     tex_data[(tex_h-1)*tex_w + x] = 0xFFFF0000;
 
-    for (size_t y = 0; y < tex_h; y++)
-        tex_data[y*tex_w] = 0xFF0000FF;
+    // for (size_t y = 0; y < tex_h; y++)
+    //     tex_data[y*tex_w] = 0xFF0000FF;
 
-    for (size_t y = 0; y < tex_h; y++)
-        tex_data[y*tex_w+tex_w-1] = 0xFFFF0000;
+    // for (size_t y = 0; y < tex_h; y++)
+    //     tex_data[y*tex_w+tex_w-1] = 0xFFFF0000;
 
 
     if (!init)
