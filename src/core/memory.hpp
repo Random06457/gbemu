@@ -150,7 +150,7 @@ public:
     {
         return mapRW(MmioRead(addr, size, buff, rmask), MmioWrite(addr, size, buff, wmask));
     }
-    Result<void> mapRO(u16 addr, void* buff, u16 size = 1, u8 mask = 0xFF)
+    Result<void> mapRO(u16 addr, const void* buff, u16 size = 1, u8 mask = 0xFF)
     {
         return mapRO(MmioRead(addr, size, buff, mask));
     }
@@ -163,7 +163,7 @@ public:
     {
         return remapRW(MmioRead(addr, size, buff, rmask), MmioWrite(addr, size, buff, wmask));
     }
-    Result<void> remapRO(u16 addr, void* buff, u16 size = 1, u8 mask = 0xFF)
+    Result<void> remapRO(u16 addr, const void* buff, u16 size = 1, u8 mask = 0xFF)
     {
         return remapRO(MmioRead(addr, size, buff, mask));
     }

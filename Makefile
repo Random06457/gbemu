@@ -49,6 +49,8 @@ CXXFILES_EMU := \
 	src/common/arg_parser.cpp \
 	src/common/fs.cpp \
 	src/common/logging.cpp \
+	src/core/mbc/rom.cpp \
+	src/core/mbc/mbc1.cpp \
 	src/core/audio.cpp \
 	src/core/cart.cpp \
 	src/core/cpu.cpp \
@@ -67,6 +69,8 @@ CXXFILES_EMU := \
 CXXFILES_TEST := \
 	src/common/arg_parser.cpp \
 	src/common/logging.cpp \
+	src/core/mbc/rom.cpp \
+	src/core/mbc/mbc1.cpp \
 	src/core/audio.cpp \
 	src/core/cart.cpp \
 	src/core/cpu.cpp \

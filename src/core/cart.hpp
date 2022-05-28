@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <array>
+#include <memory>
 #include "types.hpp"
 #include "attributes.hpp"
 #include "macro.hpp"
@@ -91,17 +91,31 @@ struct CartHeader
 } PACKED;
 static_assert(sizeof(CartHeader) == 0x150);
 
+class Mbc
+{
+public:
+    Mbc(const std::vector<u8>& rom) : m_rom(rom) {}
+    virtual ~Mbc() {};
+
+    virtual void map(Memory* mem) = 0;
+
+    auto header() const { return reinterpret_cast<const CartHeader*>(m_rom.data()); }
+
+protected:
+    template<typename T>
+    auto writeFunc(Result<void> (T::*func)(Memory* mem, u16, u8), Memory* mem)
+    {
+        return std::bind(func, reinterpret_cast<T*>(this), mem, std::placeholders::_1, std::placeholders::_2);
+    }
+
+protected:
+    const std::vector<u8>& m_rom;
+};
+
 class Cart
 {
 public:
     Cart(std::vector<u8> rom);
-
-private:
-    auto writeFunc(Result<void> (Cart::*func)(Memory* mem, u16, u8), Memory* mem) { return std::bind(func, this, mem, std::placeholders::_1, std::placeholders::_2); }
-    Result<void> mbc1WriteRom0(Memory* mem, u16 off, u8 data);
-    Result<void> mbc1WriteRom1(Memory* mem, u16 off, u8 data);
-    void mbc1RemapBank1(Memory* mem);
-    void mbc1RemapRAM(Memory* mem);
 
 public:
     template<typename T = void>
@@ -114,21 +128,8 @@ public:
 
 private:
     std::vector<u8> m_rom;
-    std::vector<u8> m_external_ram;
     const CartHeader* m_header;
-
-    union
-    {
-        u8 m_mbc1_rom_bank;
-        struct
-        {
-            u8 m_mbc1_rom_bank_lo : 5;
-            u8 m_mbc1_rom_bank_hi : 2;
-        };
-    } PACKED;
-    u8 m_mbc1_ram_bank;
-    u8 m_mbc1_mode; // 0=rom 1=ram
-    bool m_mbc1_ram_enabled;
+    std::unique_ptr<Mbc> m_mbc;
 };
 
 }
