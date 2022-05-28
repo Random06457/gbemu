@@ -16,7 +16,8 @@ namespace gbemu::core
 Cpu::Cpu(Memory* memory, Timer* timer, InterruptController* interrupt) :
     m_memory(memory),
     m_timer(timer),
-    m_interrupt_controller(interrupt)
+    m_interrupt_controller(interrupt),
+    m_logging_enable(false)
 {
     reset();
 }

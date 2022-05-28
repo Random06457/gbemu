@@ -5,6 +5,7 @@
 #include "io.hpp"
 #include "mbc/rom.hpp"
 #include "mbc/mbc1.hpp"
+#include "mbc/mbc3.hpp"
 
 namespace gbemu::core
 {
@@ -76,10 +77,16 @@ Cart::Cart(std::vector<u8> rom) :
         case CartridgeType_MBC1:
         case CartridgeType_MBC1_RAM:
         case CartridgeType_MBC1_RAM_BATTERY:
-        {
             m_mbc = std::unique_ptr<Mbc>(new Mbc1(m_rom));
             break;
-        }
+
+        case CartridgeType_MBC3:
+        case CartridgeType_MBC3_RAM:
+        case CartridgeType_MBC3_RAM_BATTERY:
+        case CartridgeType_MBC3_TIMER_BATTERY:
+        case CartridgeType_MBC3_TIMER_RAM_BATTERY:
+            m_mbc = std::unique_ptr<Mbc>(new Mbc3(m_rom));
+            break;
 
         default:
             LOG("type : {}({})\n", CartHeader::cartType(m_header->cart_type), m_header->cart_type);

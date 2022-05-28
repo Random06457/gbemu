@@ -11,34 +11,34 @@ Mbc1::Mbc1(std::vector<u8>& rom) :
 {
     m_extram.resize(header()->ramSize());
 
-    m_mbc1_mode = 0;
-    m_mbc1_ram_bank = 0;
-    m_mbc1_rom_bank = 1;
+    m_mode = 0;
+    m_ram_bank = 0;
+    m_rom_bank = 1;
 }
 
 void Mbc1::map(Memory* mem)
 {
-    mem->mapWO(MmioWrite(0x0000, 0x2000, writeFunc(&Mbc1::mbc1WriteRamEnable, mem)));
-    mem->mapWO(MmioWrite(0x2000, 0x2000, writeFunc(&Mbc1::mbc1WriteRomBankNumber, mem)));
-    mem->mapWO(MmioWrite(0x4000, 0x2000, writeFunc(&Mbc1::mbc1WriteRamBankNumber, mem)));
-    mem->mapWO(MmioWrite(0x6000, 0x2000, writeFunc(&Mbc1::mbc1WriteSelectMode, mem)));
+    mem->mapWO(MmioWrite(0x0000, 0x2000, writeFunc<Mbc1>(&Mbc1::writeRamEnable, mem)));
+    mem->mapWO(MmioWrite(0x2000, 0x2000, writeFunc<Mbc1>(&Mbc1::writeRomBankNumber, mem)));
+    mem->mapWO(MmioWrite(0x4000, 0x2000, writeFunc<Mbc1>(&Mbc1::writeRamBankNumber, mem)));
+    mem->mapWO(MmioWrite(0x6000, 0x2000, writeFunc<Mbc1>(&Mbc1::writeSelectMode, mem)));
 
-    mbc1RemapBank1(mem);
-    mbc1RemapRAM(mem);
+    remapBank1(mem);
+    remapRAM(mem);
 }
 
 
-Result<void> Mbc1::mbc1WriteRamEnable(Memory* mem, u16 off, u8 data)
+Result<void> Mbc1::writeRamEnable(Memory* mem, u16 off, u8 data)
 {
     // 4 bits
     data &= 0b1111;
 
-    m_mbc1_ram_enabled = data == 10;
-    mbc1RemapRAM(mem);
+    m_ram_enabled = data == 10;
+    remapRAM(mem);
 
     return {};
 }
-Result<void> Mbc1::mbc1WriteRomBankNumber(Memory* mem, u16 off, u8 data)
+Result<void> Mbc1::writeRomBankNumber(Memory* mem, u16 off, u8 data)
 {
     // 5 bits
     data &= 0b11111;
@@ -52,57 +52,57 @@ Result<void> Mbc1::mbc1WriteRomBankNumber(Memory* mem, u16 off, u8 data)
     // if a rom needs less than 5 bits, the higher bits are discarded
     data &= bank_count - 1;
 
-    m_mbc1_rom_bank_lo = data;
+    m_rom_bank_lo = data;
 
-    mbc1RemapBank1(mem);
+    remapBank1(mem);
 
     return {};
 }
-Result<void> Mbc1::mbc1WriteRamBankNumber(Memory* mem, u16 off, u8 data)
+Result<void> Mbc1::writeRamBankNumber(Memory* mem, u16 off, u8 data)
 {
     // 2 bits
     data &= 0b11;
 
     // ROM
-    if (m_mbc1_mode == 0)
+    if (m_mode == 0)
     {
-        m_mbc1_rom_bank_hi = data;
-        mbc1RemapBank1(mem);
+        m_rom_bank_hi = data;
+        remapBank1(mem);
     }
     // RAM
     else
     {
-        m_mbc1_ram_bank = data;
-        mbc1RemapRAM(mem);
+        m_ram_bank = data;
+        remapRAM(mem);
     }
 
     return {};
 }
-Result<void> Mbc1::mbc1WriteSelectMode(Memory* mem, u16 off, u8 data)
+Result<void> Mbc1::writeSelectMode(Memory* mem, u16 off, u8 data)
 {
     // 1 bit
     data &= 0b1;
 
-    m_mbc1_mode = data;
+    m_mode = data;
 
     return {};
 }
 
-void Mbc1::mbc1RemapBank1(Memory* mem)
+void Mbc1::remapBank1(Memory* mem)
 {
-    // LOG("MBC1 ROM BANK 1 -> {}\n", m_mbc1_rom_bank);
+    // LOG("MBC1 ROM BANK 1 -> {}\n", m_rom_bank);
 
-    auto bank = m_rom.data() + ROM_BANK_SIZE * m_mbc1_rom_bank;
+    auto bank = m_rom.data() + ROM_BANK_SIZE * m_rom_bank;
     mem->remapRO(ROM1_START, bank, ROM_BANK_SIZE);
 }
 
-void Mbc1::mbc1RemapRAM(Memory* mem)
+void Mbc1::remapRAM(Memory* mem)
 {
-    // LOG("MBC1 RAM BANK -> {}\n", m_mbc1_ram_bank);
+    // LOG("MBC1 RAM BANK -> {}\n", m_ram_bank);
 
-    if (m_mbc1_ram_enabled)
+    if (m_ram_enabled)
     {
-        auto bank = m_extram.data() + RAM_BANK_SIZE * m_mbc1_ram_bank;
+        auto bank = m_extram.data() + RAM_BANK_SIZE * m_ram_bank;
         mem->remapRW(EXTRAM_START, bank, RAM_BANK_SIZE);
     }
     else

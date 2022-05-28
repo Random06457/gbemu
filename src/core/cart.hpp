@@ -102,10 +102,15 @@ public:
     auto header() const { return reinterpret_cast<const CartHeader*>(m_rom.data()); }
 
 protected:
-    template<typename T>
-    auto writeFunc(Result<void> (T::*func)(Memory* mem, u16, u8), Memory* mem)
+    template<typename T, typename ...TArgs>
+    auto writeFunc(Result<void> (T::*func)(TArgs..., u16, u8), TArgs... args)
     {
-        return std::bind(func, reinterpret_cast<T*>(this), mem, std::placeholders::_1, std::placeholders::_2);
+        return std::bind(func, reinterpret_cast<T*>(this), std::forward<TArgs>(args)..., std::placeholders::_1, std::placeholders::_2);
+    }
+    template<typename T, typename ...TArgs>
+    auto readFunc(Result<u8> (T::*func)(TArgs..., u16), TArgs... args)
+    {
+        return std::bind(func, reinterpret_cast<T*>(this), std::forward<TArgs>(args)..., std::placeholders::_1);
     }
 
 protected:
