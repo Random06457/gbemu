@@ -16,13 +16,12 @@ struct OamEntry
     u8 y;
     u8 x;
     u8 tile;
-    u8 cgb_palette : 2;
+    u8 cgb_palette : 3;
     u8 vram_bank : 1;
     u8 dmg_palette : 1;
-    // TODO: is this order correct? this doesn't match pandocs
-    u8 bg_and_window_over_obj : 1;
     u8 flip_x : 1;
     u8 flip_y : 1;
+    u8 bg_and_window_over_obj : 1;
 } PACKED;
 static_assert(sizeof(OamEntry) == 4);
 

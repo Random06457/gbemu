@@ -98,7 +98,10 @@ void Ppu::drawLine(size_t screen_y)
 
     auto fetchSpriteColor = [this, fetchTileColor] (OamEntry& oam, size_t sprite_x, size_t sprite_y, u8 bg_color) ALWAYS_INLINE -> std::tuple<u8, u8>
     {
-        u8 sprite_color = fetchTileColor(spriteTiles(), oam.tile, sprite_x, sprite_y);
+        u8 tile_idx = oam.tile;
+        if (m_lcdc.obj_size == 1)
+            tile_idx &= ~1;
+        u8 sprite_color = fetchTileColor(spriteTiles(), tile_idx, sprite_x, sprite_y);
         u8 palette = oam.dmg_palette;
 
         if (sprite_color == 0)
