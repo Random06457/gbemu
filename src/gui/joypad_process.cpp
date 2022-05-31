@@ -1,6 +1,6 @@
-#include "core/joypad.hpp"
 #include <GLFW/glfw3.h>
-#include "common/logging.hpp"
+#include "core/int_controller.hpp"
+#include "core/joypad.hpp"
 
 extern GLFWwindow* g_window;
 

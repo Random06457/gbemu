@@ -1,9 +1,8 @@
+#include "common/logging.hpp"
 #include "apu.hpp"
 #include "io.hpp"
 #include "memory.hpp"
 #include "timer.hpp"
-#include "common/logging.hpp"
-#include "common/fs.hpp"
 
 namespace gbemu::core
 {

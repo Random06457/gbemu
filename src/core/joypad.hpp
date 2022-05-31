@@ -1,10 +1,11 @@
 #pragma once
 
 #include "device.hpp"
-#include "int_controller.hpp"
 
 namespace gbemu::core
 {
+
+class InterruptController;
 
 class Joypad : public Device
 {

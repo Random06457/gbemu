@@ -1,6 +1,5 @@
 #pragma once
 
-#include "macro.hpp"
 #include "types.hpp"
 
 namespace gbemu::core

@@ -1,6 +1,7 @@
-#include "serial.hpp"
-#include "memory.hpp"
+#include "int_controller.hpp"
 #include "io.hpp"
+#include "memory.hpp"
+#include "serial.hpp"
 #include "timer.hpp"
 
 namespace gbemu::core

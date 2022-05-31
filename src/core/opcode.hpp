@@ -1,19 +1,17 @@
 #pragma once
 
-#include "types.hpp"
-
 #define MAKE_OP(i, name) OP_##name = i,
 enum
 {
 
-MAKE_OP(0x00, NOP)                      // NOP 
+MAKE_OP(0x00, NOP)                      // NOP
 MAKE_OP(0x01, LD_BC_d16)                // LD BC, d16
 MAKE_OP(0x02, LD_MEM_BC_A)              // LD (BC), A
 MAKE_OP(0x03, INC_BC)                   // INC BC
 MAKE_OP(0x04, INC_B)                    // INC B
 MAKE_OP(0x05, DEC_B)                    // DEC B
 MAKE_OP(0x06, LD_B_d8)                  // LD B, d8
-MAKE_OP(0x07, RLCA)                     // RLCA 
+MAKE_OP(0x07, RLCA)                     // RLCA
 MAKE_OP(0x08, LD_MEM_a16_SP)            // LD (a16), SP
 MAKE_OP(0x09, ADD_HL_BC)                // ADD HL, BC
 MAKE_OP(0x0A, LD_A_MEM_BC)              // LD A, (BC)
@@ -21,7 +19,7 @@ MAKE_OP(0x0B, DEC_BC)                   // DEC BC
 MAKE_OP(0x0C, INC_C)                    // INC C
 MAKE_OP(0x0D, DEC_C)                    // DEC C
 MAKE_OP(0x0E, LD_C_d8)                  // LD C, d8
-MAKE_OP(0x0F, RRCA)                     // RRCA 
+MAKE_OP(0x0F, RRCA)                     // RRCA
 MAKE_OP(0x10, STOP_d8)                  // STOP d8
 MAKE_OP(0x11, LD_DE_d16)                // LD DE, d16
 MAKE_OP(0x12, LD_MEM_DE_A)              // LD (DE), A
@@ -29,7 +27,7 @@ MAKE_OP(0x13, INC_DE)                   // INC DE
 MAKE_OP(0x14, INC_D)                    // INC D
 MAKE_OP(0x15, DEC_D)                    // DEC D
 MAKE_OP(0x16, LD_D_d8)                  // LD D, d8
-MAKE_OP(0x17, RLA)                      // RLA 
+MAKE_OP(0x17, RLA)                      // RLA
 MAKE_OP(0x18, JR_r8)                    // JR r8
 MAKE_OP(0x19, ADD_HL_DE)                // ADD HL, DE
 MAKE_OP(0x1A, LD_A_MEM_DE)              // LD A, (DE)
@@ -37,7 +35,7 @@ MAKE_OP(0x1B, DEC_DE)                   // DEC DE
 MAKE_OP(0x1C, INC_E)                    // INC E
 MAKE_OP(0x1D, DEC_E)                    // DEC E
 MAKE_OP(0x1E, LD_E_d8)                  // LD E, d8
-MAKE_OP(0x1F, RRA)                      // RRA 
+MAKE_OP(0x1F, RRA)                      // RRA
 MAKE_OP(0x20, JR_NZ_r8)                 // JR NZ, r8
 MAKE_OP(0x21, LD_HL_d16)                // LD HL, d16
 MAKE_OP(0x22, LD_MEM_HLI_A)             // LD (HL+), A
@@ -45,7 +43,7 @@ MAKE_OP(0x23, INC_HL)                   // INC HL
 MAKE_OP(0x24, INC_H)                    // INC H
 MAKE_OP(0x25, DEC_H)                    // DEC H
 MAKE_OP(0x26, LD_H_d8)                  // LD H, d8
-MAKE_OP(0x27, DAA)                      // DAA 
+MAKE_OP(0x27, DAA)                      // DAA
 MAKE_OP(0x28, JR_Z_r8)                  // JR Z, r8
 MAKE_OP(0x29, ADD_HL_HL)                // ADD HL, HL
 MAKE_OP(0x2A, LD_A_MEM_HLI)             // LD A, (HL+)
@@ -53,7 +51,7 @@ MAKE_OP(0x2B, DEC_HL)                   // DEC HL
 MAKE_OP(0x2C, INC_L)                    // INC L
 MAKE_OP(0x2D, DEC_L)                    // DEC L
 MAKE_OP(0x2E, LD_L_d8)                  // LD L, d8
-MAKE_OP(0x2F, CPL)                      // CPL 
+MAKE_OP(0x2F, CPL)                      // CPL
 MAKE_OP(0x30, JR_NC_r8)                 // JR NC, r8
 MAKE_OP(0x31, LD_SP_d16)                // LD SP, d16
 MAKE_OP(0x32, LD_MEM_HLD_A)             // LD (HL-), A
@@ -61,7 +59,7 @@ MAKE_OP(0x33, INC_SP)                   // INC SP
 MAKE_OP(0x34, INC_MEM_HL)               // INC (HL)
 MAKE_OP(0x35, DEC_MEM_HL)               // DEC (HL)
 MAKE_OP(0x36, LD_MEM_HL_d8)             // LD (HL), d8
-MAKE_OP(0x37, SCF)                      // SCF 
+MAKE_OP(0x37, SCF)                      // SCF
 MAKE_OP(0x38, JR_C_r8)                  // JR C, r8
 MAKE_OP(0x39, ADD_HL_SP)                // ADD HL, SP
 MAKE_OP(0x3A, LD_A_MEM_HLD)             // LD A, (HL-)
@@ -69,7 +67,7 @@ MAKE_OP(0x3B, DEC_SP)                   // DEC SP
 MAKE_OP(0x3C, INC_A)                    // INC A
 MAKE_OP(0x3D, DEC_A)                    // DEC A
 MAKE_OP(0x3E, LD_A_d8)                  // LD A, d8
-MAKE_OP(0x3F, CCF)                      // CCF 
+MAKE_OP(0x3F, CCF)                      // CCF
 MAKE_OP(0x40, LD_B_B)                   // LD B, B
 MAKE_OP(0x41, LD_B_C)                   // LD B, C
 MAKE_OP(0x42, LD_B_D)                   // LD B, D
@@ -124,7 +122,7 @@ MAKE_OP(0x72, LD_MEM_HL_D)              // LD (HL), D
 MAKE_OP(0x73, LD_MEM_HL_E)              // LD (HL), E
 MAKE_OP(0x74, LD_MEM_HL_H)              // LD (HL), H
 MAKE_OP(0x75, LD_MEM_HL_L)              // LD (HL), L
-MAKE_OP(0x76, HALT)                     // HALT 
+MAKE_OP(0x76, HALT)                     // HALT
 MAKE_OP(0x77, LD_MEM_HL_A)              // LD (HL), A
 MAKE_OP(0x78, LD_A_B)                   // LD A, B
 MAKE_OP(0x79, LD_A_C)                   // LD A, C
@@ -207,9 +205,9 @@ MAKE_OP(0xC5, PUSH_BC)                  // PUSH BC
 MAKE_OP(0xC6, ADD_A_d8)                 // ADD A, d8
 MAKE_OP(0xC7, RST_00H)                  // RST 00H
 MAKE_OP(0xC8, RET_Z)                    // RET Z
-MAKE_OP(0xC9, RET)                      // RET 
+MAKE_OP(0xC9, RET)                      // RET
 MAKE_OP(0xCA, JP_Z_a16)                 // JP Z, a16
-MAKE_OP(0xCB, PREFIX)                   // PREFIX 
+MAKE_OP(0xCB, PREFIX)                   // PREFIX
 MAKE_OP(0xCC, CALL_Z_a16)               // CALL Z, a16
 MAKE_OP(0xCD, CALL_a16)                 // CALL a16
 MAKE_OP(0xCE, ADC_A_d8)                 // ADC A, d8
@@ -222,7 +220,7 @@ MAKE_OP(0xD5, PUSH_DE)                  // PUSH DE
 MAKE_OP(0xD6, SUB_d8)                   // SUB d8
 MAKE_OP(0xD7, RST_10H)                  // RST 10H
 MAKE_OP(0xD8, RET_C)                    // RET C
-MAKE_OP(0xD9, RETI)                     // RETI 
+MAKE_OP(0xD9, RETI)                     // RETI
 MAKE_OP(0xDA, JP_C_a16)                 // JP C, a16
 MAKE_OP(0xDC, CALL_C_a16)               // CALL C, a16
 MAKE_OP(0xDE, SBC_A_d8)                 // SBC A, d8
@@ -241,14 +239,14 @@ MAKE_OP(0xEF, RST_28H)                  // RST 28H
 MAKE_OP(0xF0, LDH_A_MEM_a8)             // LDH A, (a8)
 MAKE_OP(0xF1, POP_AF)                   // POP AF
 MAKE_OP(0xF2, LD_A_MEM_C)               // LD A, (C)
-MAKE_OP(0xF3, DI)                       // DI 
+MAKE_OP(0xF3, DI)                       // DI
 MAKE_OP(0xF5, PUSH_AF)                  // PUSH AF
 MAKE_OP(0xF6, OR_d8)                    // OR d8
 MAKE_OP(0xF7, RST_30H)                  // RST 30H
 MAKE_OP(0xF8, LD_HL_SPI_r8)             // LD HL, SP+r8
 MAKE_OP(0xF9, LD_SP_HL)                 // LD SP, HL
 MAKE_OP(0xFA, LD_A_MEM_a16)             // LD A, (a16)
-MAKE_OP(0xFB, EI)                       // EI 
+MAKE_OP(0xFB, EI)                       // EI
 MAKE_OP(0xFE, CP_d8)                    // CP d8
 MAKE_OP(0xFF, RST_38H)                  // RST 38H
 

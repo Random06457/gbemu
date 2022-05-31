@@ -1,12 +1,11 @@
 #pragma once
 
+#include <bits/unique_ptr.h>
 #include <vector>
-#include <memory>
-#include "types.hpp"
 #include "attributes.hpp"
-#include "macro.hpp"
-#include "unit.hpp"
 #include "result.hpp"
+#include "types.hpp"
+#include "unit.hpp"
 
 namespace gbemu::core
 {
@@ -128,8 +127,8 @@ public:
 
     void mapMemory(Memory* mem, bool bootrom_enabled);
 
-    GETTER_CONST(auto, header);
-    GETTER(auto&, rom);
+    auto header() const { return m_header; }
+    auto& rom() { return m_rom; };
 
 private:
     std::vector<u8> m_rom;

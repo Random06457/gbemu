@@ -2,11 +2,12 @@
 
 #include "device.hpp"
 #include "io.hpp"
-#include "int_controller.hpp"
 #include "result.hpp"
 
 namespace gbemu::core
 {
+
+class InterruptController;
 
 static constexpr size_t SCREEN_WIDTH = 160;
 static constexpr size_t SCREEN_HEIGHT = 144;

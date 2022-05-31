@@ -1,7 +1,8 @@
-#include "timer.hpp"
+#include "common/logging.hpp"
+#include "int_controller.hpp"
 #include "io.hpp"
 #include "memory.hpp"
-#include "common/logging.hpp"
+#include "timer.hpp"
 
 namespace gbemu::core
 {

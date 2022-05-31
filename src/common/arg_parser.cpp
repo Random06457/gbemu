@@ -1,6 +1,6 @@
+#include "common/logging.hpp"
 #include "arg_parser.hpp"
 #include "macro.hpp"
-#include "common/logging.hpp"
 
 std::optional<ArgParser::ParsedArg> ArgParser::getArg(const std::string& name)
 {

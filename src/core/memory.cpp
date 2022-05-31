@@ -1,5 +1,5 @@
-#include "memory.hpp"
 #include <algorithm>
+#include "memory.hpp"
 
 namespace gbemu::core
 {

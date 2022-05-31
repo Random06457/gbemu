@@ -1,12 +1,12 @@
 #pragma once
 
-#include "types.hpp"
+#include <algorithm>
+#include <assert.h>
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include <assert.h>
-#include <algorithm>
+#include "types.hpp"
 
 class ArgParser
 {

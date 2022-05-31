@@ -1,7 +1,7 @@
 #pragma once
 
-#include "types.hpp"
 #include "attributes.hpp"
+#include "types.hpp"
 
 namespace gbemu::core
 {

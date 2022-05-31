@@ -1,13 +1,9 @@
 #pragma once
 
-#include <span>
 #include <unordered_map>
-#include <functional>
-#include <cstring>
 #include "types.hpp"
-#include "result.hpp"
 #include "macro.hpp"
-#include <cassert>
+#include "result.hpp"
 
 namespace gbemu::core
 {
@@ -136,8 +132,8 @@ public:
         return res1 ? res1 : res2;
     }
 
-    Result<void> remapRO(const MmioRead& read) { assert(read.isRead()); return m_read_map.remap(read); }
-    Result<void> remapWO(const MmioWrite& write) { assert(write.isWrite()); return m_write_map.remap(write); }
+    Result<void> remapRO(const MmioRead& read) { return m_read_map.remap(read); }
+    Result<void> remapWO(const MmioWrite& write) { return m_write_map.remap(write); }
     Result<void> remapRW(const MmioRead& read, const MmioWrite& write)
     {
         auto res1 = remapRO(read);

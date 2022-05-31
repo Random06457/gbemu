@@ -1,7 +1,7 @@
 #include <GLES3/gl3.h>
 #include "common/fs.hpp"
-#include "core/ppu.hpp"
 #include "common/logging.hpp"
+#include "core/ppu.hpp"
 
 namespace gbemu::core
 {

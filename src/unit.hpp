@@ -1,8 +1,5 @@
 #pragma once
 
-#include "types.hpp"
-
-
 inline constexpr unsigned long long operator "" _kb(unsigned long long x)
 {
     return x * 1024;

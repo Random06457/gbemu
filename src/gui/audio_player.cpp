@@ -3,10 +3,10 @@
 #include <SDL2/SDL_audio.h>
 #include <SDL2/SDL.h>
 #include <cassert>
-#include "common/logging.hpp"
-#include "common/fs.hpp"
-#include <vector>
 #include <cmath>
+#include <vector>
+#include "common/fs.hpp"
+#include "common/logging.hpp"
 
 namespace gbemu::core
 {

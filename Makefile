@@ -18,6 +18,7 @@ OPT := -O0
 DEBUG ?= 3
 LTO ?= 0
 ASAN ?= 1
+TIME_TRACE ?= 0
 
 WARN := -Wall -Wextra -Werror \
 	-Wno-unused-parameter \
@@ -41,6 +42,10 @@ ifneq ($(LTO),0)
 	CXXFLAGS += -flto
 	CFLAGS += -flto
 	LDFLAGS += -flto
+endif
+ifneq ($(TIME_TRACE),0)
+	CXXFLAGS += -ftime-trace
+	CFLAGS += -ftime-trace
 endif
 
 INCDIRS := \

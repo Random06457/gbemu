@@ -1,12 +1,12 @@
-#include "cpu.hpp"
-#include "io.hpp"
-#include "opcode.hpp"
-#include "common/logging.hpp"
-#include "disas.hpp"
-#include "timer.hpp"
-#include "memory.hpp"
-#include "int_controller.hpp"
 #include <cassert>
+#include "common/logging.hpp"
+#include "cpu.hpp"
+#include "disas.hpp"
+#include "int_controller.hpp"
+#include "io.hpp"
+#include "memory.hpp"
+#include "opcode.hpp"
+#include "timer.hpp"
 
 #define TRACE(...) do { if (m_logging_enable) { LOG(__VA_ARGS__); } } while (0)
 

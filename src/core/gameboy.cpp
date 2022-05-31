@@ -1,7 +1,15 @@
-#include "gameboy.hpp"
-#include "io.hpp"
-#include <assert.h>
 #include "common/logging.hpp"
+#include "apu.hpp"
+#include "cpu.hpp"
+#include "cart.hpp"
+#include "gameboy.hpp"
+#include "int_controller.hpp"
+#include "io.hpp"
+#include "joypad.hpp"
+#include "memory.hpp"
+#include "ppu.hpp"
+#include "serial.hpp"
+#include "timer.hpp"
 
 namespace gbemu::core
 {
@@ -49,6 +57,10 @@ Gameboy::Gameboy() :
     mem()->mapRO(KEY1_ADDR, &stub);
 }
 
+Gameboy::~Gameboy()
+{
+
+}
 
 Result<void> Gameboy::disableBootRom(u16 off, u8 data)
 {

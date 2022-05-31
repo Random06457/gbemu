@@ -1,7 +1,7 @@
+#include "common/logging.hpp"
+#include "cpu.hpp"
 #include "int_controller.hpp"
 #include "io.hpp"
-#include "cpu.hpp"
-#include "common/logging.hpp"
 #include "memory.hpp"
 
 namespace gbemu::core

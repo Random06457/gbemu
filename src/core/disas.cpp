@@ -1,6 +1,6 @@
 #include <string>
-#include "disas.hpp"
 #include "common/logging.hpp"
+#include "disas.hpp"
 #include "opcode.hpp"
 
 namespace gbemu::core

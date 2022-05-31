@@ -5,7 +5,7 @@
 namespace gbemu::core
 {
 static constexpr size_t AUDIO_SAMPLE_RATE = 44100;
-static constexpr size_t AUDIO_BUFFER_SIZE = 0x100000;
+static constexpr size_t AUDIO_BUFFER_SIZE = 0x1000;
 
 class Apu : public Device
 {

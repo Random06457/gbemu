@@ -1,18 +1,20 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <GLES3/gl3.h>
-#include "types.hpp"
-#include "core/gameboy.hpp"
-#include "core/ppu.hpp"
-#include "core/disas.hpp"
-#include "common/logging.hpp"
+#include <chrono>
 #include <unordered_set>
-#include <tuple>
-#include "core/opcode.hpp"
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_opengl3.h"
 #include "imgui/imgui_impl_glfw.h"
-#include <chrono>
+
+#include "types.hpp"
+#include "common/logging.hpp"
+#include "core/cpu.hpp"
+#include "core/disas.hpp"
+#include "core/gameboy.hpp"
+#include "core/memory.hpp"
+#include "core/opcode.hpp"
+#include "core/ppu.hpp"
 
 static void glfw_error_callback(int error, const char* description)
 {

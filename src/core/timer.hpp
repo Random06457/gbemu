@@ -3,10 +3,11 @@
 #include "attributes.hpp"
 #include "device.hpp"
 #include "result.hpp"
-#include "int_controller.hpp"
 
 namespace gbemu::core
 {
+
+class InterruptController;
 
 class Timer : public Device
 {

@@ -1,21 +1,22 @@
 #pragma once
 
+#include <bits/unique_ptr.h>
+#include <vector>
 #include "result.hpp"
 #include "types.hpp"
-#include "cart.hpp"
-#include "cpu.hpp"
-#include "ppu.hpp"
-#include "apu.hpp"
-#include "timer.hpp"
-#include "joypad.hpp"
-#include "int_controller.hpp"
-#include "serial.hpp"
-#include "memory.hpp"
-#include <vector>
-#include <memory>
 
 namespace gbemu::core
 {
+
+class Apu;
+class Cart;
+class Cpu;
+class InterruptController;
+class Joypad;
+class Memory;
+class Ppu;
+class Timer;
+class Serial;
 
 enum GameboyType
 {
@@ -28,7 +29,7 @@ class Gameboy
 {
 public:
     Gameboy();
-    ~Gameboy() {}
+    ~Gameboy();
 
     Result<void> setCartridge(std::unique_ptr<Cart> cart);
     Result<void> setBootrom(std::vector<u8> bootrom);
