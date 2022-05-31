@@ -103,12 +103,12 @@ public:
 
 protected:
     template<typename T, typename ...TArgs>
-    auto writeFunc(Result<void> (T::*func)(TArgs..., u16, u8), TArgs... args)
+    auto writeFunc(auto func, TArgs... args)
     {
         return std::bind(func, reinterpret_cast<T*>(this), std::forward<TArgs>(args)..., std::placeholders::_1, std::placeholders::_2);
     }
     template<typename T, typename ...TArgs>
-    auto readFunc(Result<u8> (T::*func)(TArgs..., u16), TArgs... args)
+    auto readFunc(auto func, TArgs... args)
     {
         return std::bind(func, reinterpret_cast<T*>(this), std::forward<TArgs>(args)..., std::placeholders::_1);
     }
