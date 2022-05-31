@@ -1,4 +1,4 @@
-#include "core/audio.hpp"
+#include "core/apu.hpp"
 
 #include <SDL2/SDL_audio.h>
 #include <SDL2/SDL.h>
@@ -14,7 +14,7 @@ namespace gbemu::core
 // TODO: remove
 static SDL_AudioDeviceID s_device;
 
-void Audio::initPlayer()
+void Apu::initPlayer()
 {
     if (SDL_Init(SDL_INIT_AUDIO) != 0)
         UNREACHABLE("SDL init error: {}", SDL_GetError());
@@ -35,16 +35,16 @@ void Audio::initPlayer()
     SDL_PauseAudioDevice(s_device, 0);
 }
 
-void Audio::destroyPlayer()
+void Apu::destroyPlayer()
 {
 }
 
-size_t Audio::getBuffered()
+size_t Apu::getBuffered()
 {
     return SDL_GetQueuedAudioSize(s_device) / (2 * sizeof(s16));
 }
 
-size_t Audio::getDesiredBuffered()
+size_t Apu::getDesiredBuffered()
 {
     return 2048;
 }
@@ -98,7 +98,7 @@ static std::vector<u8> genWaveform(const void* buffer, size_t data_size)
 
 
 
-void Audio::play(const void* data, size_t size)
+void Apu::play(const void* data, size_t size)
 {
     SDL_QueueAudio(s_device, data, size);
 

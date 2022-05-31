@@ -55,7 +55,7 @@ CXXFILES_EMU := \
 	src/core/mbc/rom.cpp \
 	src/core/mbc/mbc1.cpp \
 	src/core/mbc/mbc3.cpp \
-	src/core/audio.cpp \
+	src/core/apu.cpp \
 	src/core/cart.cpp \
 	src/core/cpu.cpp \
 	src/core/disas.cpp \

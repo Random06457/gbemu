@@ -1,4 +1,4 @@
-#include "audio.hpp"
+#include "apu.hpp"
 #include "io.hpp"
 #include "memory.hpp"
 #include "timer.hpp"
@@ -69,7 +69,7 @@ static void generateSamples(f64* prev_x, s16* samples, size_t sample_count, Func
     }
 }
 
-void Audio::decodeChannelWave(s16* samples, size_t sample_count)
+void Apu::decodeChannelWave(s16* samples, size_t sample_count)
 {
     // TODO: use duration
     f64 duration = WAVE_REG_TO_DURATION(m_nr31.sound_length);
@@ -92,7 +92,7 @@ void Audio::decodeChannelWave(s16* samples, size_t sample_count)
     generateSamples(&m_ch3_prev_x, samples, sample_count, constant(freq), constant(volume), func);
 }
 
-void Audio::decodeChannelPulseA(s16* samples, size_t sample_count)
+void Apu::decodeChannelPulseA(s16* samples, size_t sample_count)
 {
     f64 threshold_lut[] = { 0.125 ,0.25, 0.5, 0.75 };
     f64 threshold = threshold_lut[m_nr11.wave_pattern_duty];
@@ -132,7 +132,7 @@ void Audio::decodeChannelPulseA(s16* samples, size_t sample_count)
     generateSamples(&m_ch1_prev_x, samples, sample_count, constant(freq), envelop, func);
 }
 
-void Audio::decodeChannelPulseB(s16* samples, size_t sample_count)
+void Apu::decodeChannelPulseB(s16* samples, size_t sample_count)
 {
     f64 threshold_lut[] = { 0.125 ,0.25, 0.5, 0.75 };
     f64 threshold = threshold_lut[m_nr21.wave_pattern_duty];
@@ -172,7 +172,7 @@ void Audio::decodeChannelPulseB(s16* samples, size_t sample_count)
 }
 
 
-Audio::Audio()
+Apu::Apu()
 {
     m_audio_buffer_size = 0;
 
@@ -205,12 +205,12 @@ Audio::Audio()
     initPlayer();
 }
 
-Audio::~Audio()
+Apu::~Apu()
 {
     destroyPlayer();
 }
 
-void Audio::mapMemory(Memory* mem)
+void Apu::mapMemory(Memory* mem)
 {
     mem->mapRW(NR50_ADDR, &m_nr50);
     mem->mapRW(NR51_ADDR, &m_nr51);
@@ -235,7 +235,7 @@ void Audio::mapMemory(Memory* mem)
     mem->mapRW(W0_ADDR, &m_wave, sizeof(m_wave));
 }
 
-void Audio::step(size_t clocks_diff)
+void Apu::step(size_t clocks_diff)
 {
     m_clocks += clocks_diff;
     size_t sample_period = Timer::SYSTEM_FREQUENCY / AUDIO_SAMPLE_RATE;

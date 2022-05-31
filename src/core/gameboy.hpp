@@ -5,7 +5,7 @@
 #include "cart.hpp"
 #include "cpu.hpp"
 #include "ppu.hpp"
-#include "audio.hpp"
+#include "apu.hpp"
 #include "timer.hpp"
 #include "joypad.hpp"
 #include "int_controller.hpp"
@@ -42,7 +42,7 @@ public:
     Ppu* ppu() { return m_ppu.get(); }
     Timer* timer() { return m_timer.get(); }
     Memory* mem() { return m_memory.get(); }
-    Audio* audio() { return m_audio.get(); }
+    Apu* apu() { return m_apu.get(); }
     InterruptController* interrupts() { return m_interrupt_controller.get(); }
     Joypad* joypad() { return m_joypad.get(); }
     Cart* cart() { return m_cart.get(); }
@@ -60,7 +60,7 @@ private:
     std::unique_ptr<Timer> m_timer;
     std::unique_ptr<Cpu> m_cpu;
     std::unique_ptr<Ppu> m_ppu;
-    std::unique_ptr<Audio> m_audio;
+    std::unique_ptr<Apu> m_apu;
     std::unique_ptr<Joypad> m_joypad;
     std::unique_ptr<Serial> m_serial;
     GameboyType m_gb_type;
