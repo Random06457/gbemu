@@ -42,6 +42,7 @@ public:
     Ppu* ppu() { return m_ppu.get(); }
     Timer* timer() { return m_timer.get(); }
     Memory* mem() { return m_memory.get(); }
+    Audio* audio() { return m_audio.get(); }
     InterruptController* interrupts() { return m_interrupt_controller.get(); }
     Joypad* joypad() { return m_joypad.get(); }
     Cart* cart() { return m_cart.get(); }

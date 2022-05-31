@@ -4,13 +4,34 @@
 
 namespace gbemu::core
 {
+static constexpr size_t AUDIO_SAMPLE_RATE = 44100;
+static constexpr size_t AUDIO_BUFFER_SIZE = 0x100000;
 
 class Audio : public Device
 {
 public:
     Audio();
+    ~Audio();
 
     virtual void mapMemory(Memory* mem) override;
+
+    void step(size_t clocks_diff);
+    void decodeChannelWave(s16* samples, size_t sample_count);
+    void decodeChannelPulseA(s16* samples, size_t sample_count);
+    void decodeChannelPulseB(s16* samples, size_t sample_count);
+    void decodeChannelNoise(s16* samples, size_t sample_count);
+
+    // backend
+    void initPlayer();
+    void destroyPlayer();
+    void play(const void* data, size_t size);
+    size_t getBuffered();
+    size_t getDesiredBuffered();
+
+
+    auto audioBuffer() { return m_audio_buffer; }
+    auto audioBufferSize() const { return m_audio_buffer_size; }
+    auto setAudioBufferSize(size_t new_size)  { m_audio_buffer_size = new_size; }
 
 private:
     struct
@@ -43,36 +64,125 @@ private:
         u8 all_sound_on : 1;
     } PACKED m_nr52; // Sound on/off
 
-    struct
+    union ControlReg
     {
-        u8 sound_length : 6; // write only
-        u8 wave_pattern_duty : 2;
-    } PACKED m_nr11; // Channel 1 Sound length/Wave pattern duty (R/W)
-
-    struct
-    {
-        u8 number_of_envelope_sweep : 3;
-        u8 envelope_direction : 1;
-        u8 initial_envelope_volume : 4;
-    } PACKED m_nr12; // Channel 1 Volume Envelope (R/W)
-
-    union
-    {
+        u8 raw;
         struct
         {
-            // Channel 1 Frequency lo (Write Only)
-            u8 m_nr13;
-            // Channel 1 Frequency hi (R/W)
-            u8 m_nr14;
+            u8 freq_hi : 3;
+            u8 : 3;
+            u8 counter_selection : 1; // 1 = Stop when NR31 expires
+            u8 initial : 1; // 1 = Restart Sound
         };
+    } PACKED;
+
+    union FrequencyReg
+    {
+        u8 raw;
+        u8 freq_lo;
+    } PACKED;
+
+    struct FullFrequencyReg
+    {
         struct
         {
-            u16 ch1_freq : 11;
+            u16 freq : 11;
             u16 : 3;
-            u16 counter_selection : 1;
-            u16 initial : 1;
-        } m_ch1_freq;
-    };
+            u16 : 1;
+            u16 : 1;
+        };
+    } PACKED;
+
+    #define DEFINE_NR_3_4(ch) \
+    union \
+    { \
+        struct \
+        { \
+            FrequencyReg m_nr##ch##3; \
+            ControlReg m_nr##ch##4; \
+        }; \
+        FullFrequencyReg m_nr##ch##3_nr##ch##4; \
+    } PACKED;
+
+    union VolumeEnvelopReg
+    {
+        u8 raw;
+        struct
+        {
+            u8 number_of_envelope_sweep : 3;
+            u8 envelope_direction : 1;
+            u8 initial_envelope_volume : 4;
+        };
+    } PACKED;
+
+    union WaveVolumeReg
+    {
+        u8 raw;
+        struct
+        {
+            u8 : 5;
+            u8 volume : 2;
+            u8 : 1;
+        };
+    } PACKED;
+
+    union LengthReg
+    {
+        u8 raw;
+        struct
+        {
+            u8 sound_length : 6; // write only
+            u8 wave_pattern_duty : 2;
+        };
+    } PACKED;
+
+    union WaveLengthReg
+    {
+        u8 raw;
+        u8 sound_length;
+    } PACKED;
+
+    union SweepReg
+    {
+        u8 raw;
+        struct
+        {
+            u8 number_of_seep : 3;
+            u8 sweep_decrease : 1;
+            u8 sweep_time : 3;
+            u8 : 1;
+        };
+    } PACKED;
+
+    SweepReg m_nr10;
+    LengthReg m_nr11;
+    VolumeEnvelopReg m_nr12;
+    DEFINE_NR_3_4(1);
+
+    LengthReg m_nr21;
+    VolumeEnvelopReg m_nr22;
+    DEFINE_NR_3_4(2);
+
+    WaveLengthReg m_nr31;
+    WaveVolumeReg m_nr32;
+    DEFINE_NR_3_4(3);
+
+    u8 m_wave[16];
+
+    s16 m_ch1_buffer[AUDIO_BUFFER_SIZE];
+    s16 m_ch2_buffer[AUDIO_BUFFER_SIZE];
+    s16 m_ch3_buffer[AUDIO_BUFFER_SIZE];
+    s16 m_ch4_buffer[AUDIO_BUFFER_SIZE];
+    s16 m_audio_buffer[AUDIO_BUFFER_SIZE];
+    size_t m_audio_buffer_size;
+
+    size_t m_clocks;
+
+
+    f64 m_ch1_prev_x = 0;
+    f64 m_ch2_prev_x = 0;
+    f64 m_ch3_prev_x = 0;
+    f64 m_ch4_prev_x = 0;
 };
 
 }

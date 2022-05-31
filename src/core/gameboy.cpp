@@ -89,10 +89,17 @@ Result<void> Gameboy::setCartridge(std::unique_ptr<Cart> cart)
 
 void Gameboy::step()
 {
-    joypad()->processInput();
+    size_t old_clocks = timer()->systemClocks();
+
     interrupts()->processInterrupts(cpu());
     cpu()->step();
+
+    size_t new_clocks = timer()->systemClocks();
+    size_t clocks_diff = new_clocks - old_clocks;
+
+    joypad()->processInput();
     ppu()->step(mem(), timer()->systemClocks());
+    audio()->step(clocks_diff);
 }
 
 Result<void> Gameboy::powerOn()

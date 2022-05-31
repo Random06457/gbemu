@@ -30,7 +30,8 @@ CPPFLAGS := -MMD
 LDFLAGS :=
 LIBS := \
 	GL \
-	glfw
+	glfw \
+	SDL2
 
 ifneq ($(ASAN),0)
 	CXXFLAGS += -fsanitize=address
@@ -65,6 +66,7 @@ CXXFILES_EMU := \
 	src/core/memory.cpp \
 	src/core/timer.cpp \
 	src/core/ppu.cpp \
+	src/gui/audio_player.cpp \
 	src/gui/gui_main.cpp \
 	src/gui/joypad_process.cpp \
 	src/gui/ppu_render.cpp
@@ -75,7 +77,6 @@ CXXFILES_TEST := \
 	src/core/mbc/rom.cpp \
 	src/core/mbc/mbc1.cpp \
 	src/core/mbc/mbc3.cpp \
-	src/core/audio.cpp \
 	src/core/cart.cpp \
 	src/core/cpu.cpp \
 	src/core/disas.cpp \

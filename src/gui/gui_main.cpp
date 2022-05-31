@@ -12,6 +12,7 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_opengl3.h"
 #include "imgui/imgui_impl_glfw.h"
+#include <chrono>
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -31,6 +32,41 @@ static void mmioRegisterInput(gbemu::core::Gameboy& gb, const char* name, u16 ad
 
 static bool s_is_running = true;
 static std::unordered_set<u16> s_breakpoints;
+
+static void drawAudio(gbemu::core::Gameboy& gb)
+{
+    if (ImGui::BeginTabItem("Audio"))
+    {
+        MMIO_REG_INPUT(NR10);
+        MMIO_REG_INPUT(NR11);
+        MMIO_REG_INPUT(NR12);
+        MMIO_REG_INPUT(NR13);
+        MMIO_REG_INPUT(NR14);
+
+        ImGui::NewLine();
+
+        MMIO_REG_INPUT(NR21);
+        MMIO_REG_INPUT(NR22);
+        MMIO_REG_INPUT(NR23);
+        MMIO_REG_INPUT(NR24);
+
+        ImGui::NewLine();
+
+        MMIO_REG_INPUT(NR31);
+        MMIO_REG_INPUT(NR32);
+        MMIO_REG_INPUT(NR33);
+        MMIO_REG_INPUT(NR34);
+
+        ImGui::NewLine();
+
+        MMIO_REG_INPUT(NR41);
+        MMIO_REG_INPUT(NR42);
+        MMIO_REG_INPUT(NR43);
+        MMIO_REG_INPUT(NR44);
+
+        ImGui::EndTabItem();
+    }
+}
 
 static void drawDisassembly(gbemu::core::Gameboy& gb)
 {
@@ -172,6 +208,21 @@ static void drawCPU(gbemu::core::Gameboy& gb)
 {
     if (ImGui::BeginTabItem("CPU"))
     {
+        static auto last = std::chrono::system_clock::now();
+        auto now = std::chrono::system_clock::now();
+        auto frame_time = std::chrono::duration<f64>(now - last).count();
+        static size_t frame_counter = 0;
+        frame_counter++;
+        static f64 fps = 0.0;
+        if (frame_time >= 1.0)
+        {
+            last = now;
+            fps = frame_counter / frame_time;
+            frame_counter = 0;
+        }
+
+        ImGui::Text("%.2f FPS", fps);
+
         if (ImGui::Button(s_is_running ? "Pause" : "Run"))
             s_is_running = !s_is_running;
 
@@ -257,6 +308,7 @@ static void drawImGui(gbemu::core::Gameboy& gb)
             drawJoypad(gb);
             drawPpu(gb);
             drawOam(gb);
+            drawAudio(gb);
         }
         ImGui::EndTabBar();
     }

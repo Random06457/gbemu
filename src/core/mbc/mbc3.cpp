@@ -135,7 +135,6 @@ void Mbc3::remapRomBank1(Memory* mem)
 
 void Mbc3::remapRamRtc(Memory* mem)
 {
-    LOG("remapRamRtc\n");
     if (m_ram_and_timer_enabled)
     {
         if (m_ram_rtc_bank < 3)
