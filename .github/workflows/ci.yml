@@ -13,10 +13,10 @@ jobs:
     # - name: clang-format Check
     #   run: ./format.sh --check
 
-    - name: Install latest clang / GCC
+    - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install clang-14 g++-11 lld libgles-dev libglfw3-dev
+        sudo apt install clang-14 g++-11 lld libgles-dev libglfw3-dev libsdl2-dev
 
     - name: Install gtest
       uses: MarkusJx/googletest-installer@v1.1
