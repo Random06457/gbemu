@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include "types.hpp"
 
 namespace gbemu::core

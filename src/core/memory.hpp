@@ -1,8 +1,8 @@
 #pragma once
 
 #include <unordered_map>
-#include "types.hpp"
 #include "macro.hpp"
+#include "types.hpp"
 #include "result.hpp"
 
 namespace gbemu::core

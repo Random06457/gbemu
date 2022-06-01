@@ -1,8 +1,8 @@
 #include <span>
+#include "types.hpp"
 #include "common/arg_parser.hpp"
 #include "common/fs.hpp"
 #include "common/logging.hpp"
-#include "types.hpp"
 #include "core/cart.hpp"
 #include "core/gameboy.hpp"
 

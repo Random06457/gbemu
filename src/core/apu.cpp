@@ -1,5 +1,5 @@
-#include "common/logging.hpp"
 #include "apu.hpp"
+#include "common/logging.hpp"
 #include "io.hpp"
 #include "memory.hpp"
 #include "timer.hpp"

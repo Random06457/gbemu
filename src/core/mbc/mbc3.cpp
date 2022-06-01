@@ -1,7 +1,7 @@
 #include "mbc3.hpp"
+#include "common/logging.hpp"
 #include "core/io.hpp"
 #include "core/memory.hpp"
-#include "common/logging.hpp"
 
 namespace gbemu::core
 {

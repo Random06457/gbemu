@@ -1,5 +1,5 @@
-#include "io.hpp"
 #include "joypad.hpp"
+#include "io.hpp"
 #include "memory.hpp"
 
 namespace gbemu::core

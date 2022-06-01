@@ -1,11 +1,11 @@
 #include "cart.hpp"
 #include "unit.hpp"
 #include "common/logging.hpp"
-#include "memory.hpp"
 #include "io.hpp"
-#include "mbc/rom.hpp"
 #include "mbc/mbc1.hpp"
 #include "mbc/mbc3.hpp"
+#include "mbc/rom.hpp"
+#include "memory.hpp"
 
 namespace gbemu::core
 {

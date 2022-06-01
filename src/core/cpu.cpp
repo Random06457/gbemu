@@ -1,6 +1,6 @@
+#include "cpu.hpp"
 #include <cassert>
 #include "common/logging.hpp"
-#include "cpu.hpp"
 #include "disas.hpp"
 #include "int_controller.hpp"
 #include "io.hpp"

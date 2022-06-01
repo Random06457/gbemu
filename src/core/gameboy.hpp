@@ -2,8 +2,8 @@
 
 #include <bits/unique_ptr.h>
 #include <vector>
-#include "result.hpp"
 #include "types.hpp"
+#include "result.hpp"
 
 namespace gbemu::core
 {

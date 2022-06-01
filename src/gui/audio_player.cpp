@@ -1,7 +1,7 @@
 #include "core/apu.hpp"
 
-#include <SDL2/SDL_audio.h>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_audio.h>
 #include <cassert>
 #include <cmath>
 #include <vector>

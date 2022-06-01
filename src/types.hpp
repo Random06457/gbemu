@@ -1,5 +1,5 @@
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 
 using s8 = std::int8_t;
 using u8 = std::uint8_t;

@@ -3,9 +3,9 @@
 #include <bits/unique_ptr.h>
 #include <vector>
 #include "attributes.hpp"
-#include "result.hpp"
 #include "types.hpp"
 #include "unit.hpp"
+#include "result.hpp"
 
 namespace gbemu::core
 {

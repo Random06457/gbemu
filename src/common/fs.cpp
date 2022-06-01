@@ -1,7 +1,7 @@
+#include "fs.hpp"
 #include <fstream>
 #include <iterator>
 #include <sstream>
-#include "fs.hpp"
 #include "macro.hpp"
 
 bool File::exists(const fs::path& path)

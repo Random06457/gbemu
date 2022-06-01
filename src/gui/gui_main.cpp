@@ -1,11 +1,11 @@
 #define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
 #include <GLES3/gl3.h>
+#include <GLFW/glfw3.h>
 #include <chrono>
 #include <unordered_set>
 #include "imgui/imgui.h"
-#include "imgui/imgui_impl_opengl3.h"
 #include "imgui/imgui_impl_glfw.h"
+#include "imgui/imgui_impl_opengl3.h"
 
 #include "types.hpp"
 #include "common/logging.hpp"

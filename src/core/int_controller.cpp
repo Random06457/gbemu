@@ -1,6 +1,6 @@
+#include "int_controller.hpp"
 #include "common/logging.hpp"
 #include "cpu.hpp"
-#include "int_controller.hpp"
 #include "io.hpp"
 #include "memory.hpp"
 

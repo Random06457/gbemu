@@ -1,9 +1,9 @@
+#include "ppu.hpp"
 #include <cstring>
 #include "common/fs.hpp"
 #include "common/logging.hpp"
 #include "int_controller.hpp"
 #include "memory.hpp"
-#include "ppu.hpp"
 
 static constexpr size_t TILE_WIDTH = 8;
 static constexpr size_t TILE_HEIGHT = 8;
