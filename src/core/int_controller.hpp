@@ -31,7 +31,6 @@ public:
     void setIME(bool enable) { m_ime = enable; }
 
 private:
-
     bool m_ime; // interrupt master flag
     union
     {
@@ -57,7 +56,6 @@ private:
         };
         u8 raw;
     } PACKED m_ie; // Interrupt Enable (R/W)
-
 };
 
 }

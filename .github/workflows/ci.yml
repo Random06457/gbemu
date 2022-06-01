@@ -10,13 +10,13 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    # - name: clang-format Check
-    #   run: ./format.sh --check
-
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install clang-14 g++-11 lld libgles-dev libglfw3-dev libsdl2-dev
+        sudo apt install clang-format-14 clang-14 g++-11 lld libgles-dev libglfw3-dev libsdl2-dev
+
+    - name: Check Format
+      run: make format-check
 
     - name: Install gtest
       uses: MarkusJx/googletest-installer@v1.1

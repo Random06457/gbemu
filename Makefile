@@ -10,6 +10,7 @@ TARGETS := \
 	$(TARGET_EMU) \
 	$(TARGET_TEST)
 
+FORMAT := clang-format-14
 CXX := clang++
 LD := lld
 STD := c++20
@@ -136,6 +137,14 @@ test: build-test
 build-test: $(TARGET_TEST)
 
 
+FMT_FILES := $(shell find src -type f -name *.[c\|h]pp)
+
+format:
+	$(FORMAT) -i $(FMT_FILES)
+
+format-check:
+	$(FORMAT) --dry-run -Werror $(FMT_FILES)
+
 $(TARGET_EMU) : $(OFILES_EMU)
 
 $(TARGET_TEST): $(OFILES_TEST)
@@ -153,6 +162,6 @@ $(BUILD)/%.o : %.cc
 	$(V)$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(INCDIRS:%=-I%) -c $< -o $@
 	$(call printtask,Compiling,$@)
 
-.PHONY: all clean build-test test
+.PHONY: all clean build-test test format format-check
 
 -include $(DFILES)

@@ -15,11 +15,11 @@ std::optional<ArgParser::ParsedArg> ArgParser::getArg(const std::string& name)
 
     // check default args
     if (m_descriptions[name].default_value.has_value())
-        return ParsedArg{ &m_descriptions[name], m_descriptions[name].default_value };
+        return ParsedArg{ &m_descriptions[name],
+                          m_descriptions[name].default_value };
 
     return std::nullopt;
 }
-
 
 bool ArgParser::hasArg(const std::string& name)
 {
@@ -47,20 +47,11 @@ void ArgParser::showUsage()
         fmt::print("{}", desc.second.name);
         switch (desc.second.type)
         {
-            case ArgType_Bool:
-                fmt::print("=<true|false>");
-                break;
-            case ArgType_U32:
-                fmt::print("=<int>");
-                break;
-            case ArgType_String:
-                fmt::print("=<string>");
-                break;
-            case ArgType_StringNext:
-                fmt::print(" <string>");
-                break;
-            default:
-                UNREACHABLE("Invalid ArgType");
+            case ArgType_Bool: fmt::print("=<true|false>"); break;
+            case ArgType_U32: fmt::print("=<int>"); break;
+            case ArgType_String: fmt::print("=<string>"); break;
+            case ArgType_StringNext: fmt::print(" <string>"); break;
+            default: UNREACHABLE("Invalid ArgType");
         }
         fmt::print(" : {}\n", desc.second.description);
     }
@@ -79,7 +70,8 @@ const char* ArgParser::argType(ArgType type)
     }
 }
 
-std::optional<ArgParser::ArgValue> ArgParser::parseArgValue(ArgType type, const std::string& value)
+std::optional<ArgParser::ArgValue>
+ArgParser::parseArgValue(ArgType type, const std::string& value)
 {
     ArgValue ret;
     ret.value = value;
@@ -94,36 +86,35 @@ std::optional<ArgParser::ArgValue> ArgParser::parseArgValue(ArgType type, const 
                 return std::nullopt;
             return ret;
         case ArgType_String:
-        case ArgType_StringNext:
-            return ret;
+        case ArgType_StringNext: return ret;
 
         case ArgType_U32:
+        {
+            bool hex = value.starts_with("0x");
+            int (*checkc)(int) = std::isdigit;
+            int base = 10;
+            std::string digits = value;
+            if (hex)
             {
-                bool hex = value.starts_with("0x");
-                int (*checkc)(int) = std::isdigit;
-                int base = 10;
-                std::string digits = value;
-                if (hex)
-                {
-                    checkc = std::isxdigit;
-                    base = 16;
-                    digits = value.substr(2);
-                }
-                // check if valid
-                if (!std::ranges::all_of(digits, checkc))
-                    return std::nullopt;
-                ret.value_u32 = std::stoi(digits, nullptr, base);
+                checkc = std::isxdigit;
+                base = 16;
+                digits = value.substr(2);
             }
+            // check if valid
+            if (!std::ranges::all_of(digits, checkc))
+                return std::nullopt;
+            ret.value_u32 = std::stoi(digits, nullptr, base);
+        }
             return ret;
 
-        default:
-            UNREACHABLE("Invalid ArgType");
+        default: UNREACHABLE("Invalid ArgType");
     }
 }
 
 static bool unexpectedValue(ArgParser::ArgDesc* desc)
 {
-    LOG_ERROR("Expected value for argument \"{}\" of type {}\n", desc->name, ArgParser::argType(desc->type));
+    LOG_ERROR("Expected value for argument \"{}\" of type {}\n", desc->name,
+              ArgParser::argType(desc->type));
     return false;
 }
 
@@ -135,7 +126,8 @@ bool ArgParser::parseArg(s32 argc, const char** argv, s32& i)
     std::string name = arg.substr(0, pos);
 
     // check if arg was already parsed
-    if (std::ranges::any_of(m_parsed_args, [&name](auto arg) { return arg.description->name == name; }))
+    if (std::ranges::any_of(m_parsed_args, [&name](auto arg)
+                            { return arg.description->name == name; }))
     {
         LOG_ERROR("Argument \"{}\" was passed twice.\n", name);
         return false;
@@ -159,25 +151,27 @@ bool ArgParser::parseArg(s32 argc, const char** argv, s32& i)
             if (i >= argc)
                 return unexpectedValue(desc);
 
-            m_parsed_args.push_back({desc, parseArgValue(desc->type, argv[i++])});
+            m_parsed_args.push_back(
+                { desc, parseArgValue(desc->type, argv[i++]) });
             return true;
         }
 
         if (desc->type != ArgType_None)
             return unexpectedValue(desc);
 
-        m_parsed_args.push_back({desc, std::nullopt});
+        m_parsed_args.push_back({ desc, std::nullopt });
         return true;
     }
 
-    if (desc->type != ArgType_Bool && desc->type != ArgType_U32 && desc->type != ArgType_String)
+    if (desc->type != ArgType_Bool && desc->type != ArgType_U32 &&
+        desc->type != ArgType_String)
         return unexpectedValue(desc);
 
-    std::string value = arg.substr(pos+1);
+    std::string value = arg.substr(pos + 1);
     auto parsed_value = parseArgValue(desc->type, value);
     if (!parsed_value.has_value())
         return unexpectedValue(desc);
 
-    m_parsed_args.push_back({desc, parsed_value.value()});
+    m_parsed_args.push_back({ desc, parsed_value.value() });
     return true;
 }

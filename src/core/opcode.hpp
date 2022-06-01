@@ -1,4 +1,5 @@
 #pragma once
+// clang-format off
 
 #define MAKE_OP(i, name) OP_##name = i,
 enum
@@ -253,3 +254,5 @@ MAKE_OP(0xFF, RST_38H)                  // RST 38H
 };
 
 #undef MAKE_OP
+
+// clang-format on

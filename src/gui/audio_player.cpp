@@ -53,10 +53,10 @@ static std::vector<u8> genWaveform(const void* buffer, size_t data_size)
 {
     struct
     {
-        char riff_magic[4]; // "RIFF"
+        char riff_magic[4];    // "RIFF"
         u32 wave_section_size; // -8
-        char wave_magic[4]; // "WAVE"
-        char fmt_magic[4]; // "fmt "
+        char wave_magic[4];    // "WAVE"
+        char fmt_magic[4];     // "fmt "
         u32 header_size;
         u16 format; // PCM=1
         u16 channel_count;
@@ -95,8 +95,6 @@ static std::vector<u8> genWaveform(const void* buffer, size_t data_size)
 
     return output;
 }
-
-
 
 void Apu::play(const void* data, size_t size)
 {

@@ -6,10 +6,9 @@
 namespace gbemu::core
 {
 
-
 std::string Disas::disassemble(const void* data, size_t size)
 {
-    Disas disas{data, size};
+    Disas disas{ data, size };
     return disas.disassemble();
 }
 
@@ -18,7 +17,7 @@ std::string Disas::disassemble()
     u8 op = read8();
 
     // auto generated, see optable_gen.py
-    switch(op)
+    switch (op)
     {
         case OP_NOP: return "NOP ";
         case OP_LD_BC_d16: return fmt::format("LD BC, ${:04X}", read16());
@@ -266,12 +265,9 @@ std::string Disas::disassemble()
         case OP_CP_d8: return fmt::format("CP ${:02X}", read8());
         case OP_RST_38H: return "RST 38H";
 
-        default:
-            UNIMPLEMENTED("Invalid opcode (0x{:02X})", op);
+        default: UNIMPLEMENTED("Invalid opcode (0x{:02X})", op);
     }
-
 }
-
 
 size_t Disas::opcodeSize(u8 op)
 {
@@ -293,8 +289,7 @@ size_t Disas::opcodeSize(u8 op)
         case OP_JP_C_a16:
         case OP_CALL_C_a16:
         case OP_LD_MEM_a16_A:
-        case OP_LD_A_MEM_a16:
-            return 3;
+        case OP_LD_A_MEM_a16: return 3;
         case OP_LD_B_d8:
         case OP_LD_C_d8:
         case OP_STOP_d8:
@@ -320,10 +315,8 @@ size_t Disas::opcodeSize(u8 op)
         case OP_LDH_A_MEM_a8:
         case OP_OR_d8:
         case OP_LD_HL_SPI_r8:
-        case OP_CP_d8:
-            return 2;
-        default:
-            return 1;
+        case OP_CP_d8: return 2;
+        default: return 1;
     }
 }
 
@@ -575,10 +568,8 @@ size_t Disas::isValidOpcode(u8 op)
         case OP_LD_A_MEM_a16:
         case OP_EI:
         case OP_CP_d8:
-        case OP_RST_38H:
-            return true;
-        default:
-            return false;
+        case OP_RST_38H: return true;
+        default: return false;
     }
 }
 

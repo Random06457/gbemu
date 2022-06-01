@@ -8,12 +8,12 @@ namespace gbemu::core
 class Disas
 {
 public:
-
     Disas(const void* data, size_t size) :
         m_mem(reinterpret_cast<const u8*>(data)),
         m_size(size),
         m_idx(0)
-    {}
+    {
+    }
 
     std::string disassemble();
 

@@ -5,9 +5,7 @@
 namespace gbemu::core
 {
 
-Mbc1::Mbc1(std::vector<u8>& rom) :
-    Mbc(rom),
-    m_extram()
+Mbc1::Mbc1(std::vector<u8>& rom) : Mbc(rom), m_extram()
 {
     m_extram.resize(header()->ramSize());
 
@@ -18,15 +16,18 @@ Mbc1::Mbc1(std::vector<u8>& rom) :
 
 void Mbc1::map(Memory* mem)
 {
-    mem->mapWO(MmioWrite(0x0000, 0x2000, writeFunc<Mbc1>(&Mbc1::writeRamEnable, mem)));
-    mem->mapWO(MmioWrite(0x2000, 0x2000, writeFunc<Mbc1>(&Mbc1::writeRomBankNumber, mem)));
-    mem->mapWO(MmioWrite(0x4000, 0x2000, writeFunc<Mbc1>(&Mbc1::writeRamBankNumber, mem)));
-    mem->mapWO(MmioWrite(0x6000, 0x2000, writeFunc<Mbc1>(&Mbc1::writeSelectMode, mem)));
+    mem->mapWO(
+        MmioWrite(0x0000, 0x2000, writeFunc<Mbc1>(&Mbc1::writeRamEnable, mem)));
+    mem->mapWO(MmioWrite(0x2000, 0x2000,
+                         writeFunc<Mbc1>(&Mbc1::writeRomBankNumber, mem)));
+    mem->mapWO(MmioWrite(0x4000, 0x2000,
+                         writeFunc<Mbc1>(&Mbc1::writeRamBankNumber, mem)));
+    mem->mapWO(MmioWrite(0x6000, 0x2000,
+                         writeFunc<Mbc1>(&Mbc1::writeSelectMode, mem)));
 
     remapBank1(mem);
     remapRAM(mem);
 }
-
 
 Result<void> Mbc1::writeRamEnable(Memory* mem, u16 off, u8 data)
 {

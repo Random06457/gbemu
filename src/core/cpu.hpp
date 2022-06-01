@@ -28,9 +28,9 @@ public:
         VREG8_BC8, // (BC)
         VREG8_DE8, // (DE)
         VREG8_HA8, // (0xFF00 + a8)
-        VREG8_HC, // (0xFF00 + C)
+        VREG8_HC,  // (0xFF00 + C)
         VREG8_A16, // (a16)
-        VREG8_D8, // d8/r8
+        VREG8_D8,  // d8/r8
     };
 
 public:
@@ -56,11 +56,10 @@ public:
     void setLogging(bool enable) { m_logging_enable = enable; }
 
 private:
-
     void execute(u8 op);
     void executeCB(u8 op);
-public:
 
+public:
     auto mem() { return m_memory; }
     auto& regs() { return m_regs; }
 
@@ -72,10 +71,14 @@ private:
     bool m_halted;
 
 // TODO: handle endianness
-#define REG_8_16(x, y) \
-    union { \
-        u16 x##y; \
-        struct { u8 y, x; }; \
+#define REG_8_16(x, y)                                                         \
+    union                                                                      \
+    {                                                                          \
+        u16 x##y;                                                              \
+        struct                                                                 \
+        {                                                                      \
+            u8 y, x;                                                           \
+        };                                                                     \
     };
     struct
     {

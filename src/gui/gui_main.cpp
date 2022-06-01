@@ -21,16 +21,18 @@ static void glfw_error_callback(int error, const char* description)
     UNREACHABLE("Glfw Error {}: {}\n", error, description);
 }
 
-#define MMIO_REG_INPUT(name) mmioRegisterInput(gb, #name, gbemu::core::name##_ADDR)
+#define MMIO_REG_INPUT(name)                                                   \
+    mmioRegisterInput(gb, #name, gbemu::core::name##_ADDR)
 
-static void mmioRegisterInput(gbemu::core::Gameboy& gb, const char* name, u16 addr)
+static void mmioRegisterInput(gbemu::core::Gameboy& gb, const char* name,
+                              u16 addr)
 {
     s32 reg = gb.mem()->read8(addr).value_or(0);
-    if (ImGui::InputInt(name, &reg, 1, 100, ImGuiInputTextFlags_CharsHexadecimal))
+    if (ImGui::InputInt(name, &reg, 1, 100,
+                        ImGuiInputTextFlags_CharsHexadecimal))
         reg = std::clamp(reg, 0, 0xFF);
     gb.mem()->write8(gbemu::core::P1_ADDR, reg);
 }
-
 
 static bool s_is_running = true;
 static std::unordered_set<u16> s_breakpoints;
@@ -86,11 +88,11 @@ static void drawDisassembly(gbemu::core::Gameboy& gb)
         size_t op_size = gbemu::core::Disas::opcodeSize(buff[0]);
 
         for (size_t j = 1; j < op_size; j++)
-            buff[j] = gb.mem()->read8(addr+j).value_or(0);
+            buff[j] = gb.mem()->read8(addr + j).value_or(0);
 
         auto str = gbemu::core::Disas::isValidOpcode(buff[0])
-            ? gbemu::core::Disas::disassemble(buff, sizeof(buff))
-            : fmt::format("INVALID({:02X})", buff[0]);
+                       ? gbemu::core::Disas::disassemble(buff, sizeof(buff))
+                       : fmt::format("INVALID({:02X})", buff[0]);
 
         ImGui::Text("%04X: %s", addr, str.c_str());
 
@@ -108,18 +110,19 @@ static void drawBreakpoints()
 
     static std::vector<u16> addresses;
     static std::vector<std::string> names;
-    // require because the result of c_str() is not valid past the string's lifespan
+    // require because the result of c_str() is not valid past the string's
+    // lifespan
     static std::vector<const char*> names_cstr;
 
     static s32 bp_input;
 
     static s32 selected_item = -1;
-    ImGui::ListBox("Breakpoints", &selected_item, names_cstr.data(), names.size());
+    ImGui::ListBox("Breakpoints", &selected_item, names_cstr.data(),
+                   names.size());
 
-
-    if (ImGui::InputInt("Address", &bp_input, 1, 100, ImGuiInputTextFlags_CharsHexadecimal))
+    if (ImGui::InputInt("Address", &bp_input, 1, 100,
+                        ImGuiInputTextFlags_CharsHexadecimal))
         bp_input = std::clamp(bp_input, 0, 0xFFFF);
-
 
     if (ImGui::Button("Add"))
     {
@@ -128,7 +131,7 @@ static void drawBreakpoints()
         addresses.clear();
         names.clear();
         names_cstr.clear();
-        for (auto& bp :  s_breakpoints)
+        for (auto& bp : s_breakpoints)
         {
             addresses.push_back(bp);
             names.push_back(fmt::format("{:04X}", bp));
@@ -148,8 +151,6 @@ static void drawBreakpoints()
         names_cstr.erase(names_cstr.begin() + selected_item);
         selected_item = -1;
     }
-
-
 
     // ImGui::EndChild();
 }
@@ -176,10 +177,13 @@ static void drawPpu(gbemu::core::Gameboy& gb)
         MMIO_REG_INPUT(LYC);
 
         ImGui::Text("LCDC : 0x%02X", gb.ppu()->lcdc().raw);
-        ImGui::Text("BG and Win Enabled : %s", gb.ppu()->lcdc().bg_and_window_enable ? "True" : "False");
-        ImGui::Text("Win Enabled : %s", gb.ppu()->lcdc().window_enable ? "True" : "False");
+        ImGui::Text("BG and Win Enabled : %s",
+                    gb.ppu()->lcdc().bg_and_window_enable ? "True" : "False");
+        ImGui::Text("Win Enabled : %s",
+                    gb.ppu()->lcdc().window_enable ? "True" : "False");
         ImGui::Text("OBJ Size : 8x%d", gb.ppu()->lcdc().obj_size == 0 ? 8 : 16);
-        ImGui::Text("OBJ Enabled : %s", gb.ppu()->lcdc().obj_enable ? "True" : "False");
+        ImGui::Text("OBJ Enabled : %s",
+                    gb.ppu()->lcdc().obj_enable ? "True" : "False");
 
         ImGui::EndTabItem();
     }
@@ -195,9 +199,12 @@ static void drawOam(gbemu::core::Gameboy& gb)
 
         for (size_t i = 0; i < 40; i++)
         {
-            ImGui::Text("X=0x%X; Y=0x%X; Tile=0x%X; Pri=%d; FlipX=%d; FlipY = %d; Pal=%d",
-                oam_table[i].x, oam_table[i].y, oam_table[i].tile, oam_table[i].bg_and_window_over_obj,
-                oam_table[i].flip_x, oam_table[i].flip_y, oam_table[i].dmg_palette);
+            ImGui::Text("X=0x%X; Y=0x%X; Tile=0x%X; Pri=%d; FlipX=%d; FlipY = "
+                        "%d; Pal=%d",
+                        oam_table[i].x, oam_table[i].y, oam_table[i].tile,
+                        oam_table[i].bg_and_window_over_obj,
+                        oam_table[i].flip_x, oam_table[i].flip_y,
+                        oam_table[i].dmg_palette);
         }
 
         ImGui::EndChild();
@@ -251,32 +258,44 @@ static void drawCPU(gbemu::core::Gameboy& gb)
         bool flag_h = regs.flags.h;
         bool flag_c = regs.flags.c;
 
-        if (ImGui::InputInt("A", &a, 1, 100, ImGuiInputTextFlags_CharsHexadecimal))
+        if (ImGui::InputInt("A", &a, 1, 100,
+                            ImGuiInputTextFlags_CharsHexadecimal))
             regs.a = std::clamp(a, 0, 0xFF);
-        if (ImGui::InputInt("B", &b, 1, 100, ImGuiInputTextFlags_CharsHexadecimal))
+        if (ImGui::InputInt("B", &b, 1, 100,
+                            ImGuiInputTextFlags_CharsHexadecimal))
             regs.b = std::clamp(b, 0, 0xFF);
-        if (ImGui::InputInt("C", &c, 1, 100, ImGuiInputTextFlags_CharsHexadecimal))
+        if (ImGui::InputInt("C", &c, 1, 100,
+                            ImGuiInputTextFlags_CharsHexadecimal))
             regs.c = std::clamp(c, 0, 0xFF);
-        if (ImGui::InputInt("D", &d, 1, 100, ImGuiInputTextFlags_CharsHexadecimal))
+        if (ImGui::InputInt("D", &d, 1, 100,
+                            ImGuiInputTextFlags_CharsHexadecimal))
             regs.d = std::clamp(d, 0, 0xFF);
-        if (ImGui::InputInt("E", &e, 1, 100, ImGuiInputTextFlags_CharsHexadecimal))
+        if (ImGui::InputInt("E", &e, 1, 100,
+                            ImGuiInputTextFlags_CharsHexadecimal))
             regs.e = std::clamp(e, 0, 0xFF);
-        if (ImGui::InputInt("F", &f, 1, 100, ImGuiInputTextFlags_CharsHexadecimal))
+        if (ImGui::InputInt("F", &f, 1, 100,
+                            ImGuiInputTextFlags_CharsHexadecimal))
             regs.f = std::clamp(f, 0, 0xFF);
 
         ImGui::NextColumn();
 
-        if (ImGui::InputInt("BC", &bc, 1, 100, ImGuiInputTextFlags_CharsHexadecimal))
+        if (ImGui::InputInt("BC", &bc, 1, 100,
+                            ImGuiInputTextFlags_CharsHexadecimal))
             regs.bc = std::clamp(bc, 0, 0xFF);
-        if (ImGui::InputInt("DE", &de, 1, 100, ImGuiInputTextFlags_CharsHexadecimal))
+        if (ImGui::InputInt("DE", &de, 1, 100,
+                            ImGuiInputTextFlags_CharsHexadecimal))
             regs.de = std::clamp(de, 0, 0xFF);
-        if (ImGui::InputInt("HL", &hl, 1, 100, ImGuiInputTextFlags_CharsHexadecimal))
+        if (ImGui::InputInt("HL", &hl, 1, 100,
+                            ImGuiInputTextFlags_CharsHexadecimal))
             regs.hl = std::clamp(hl, 0, 0xFF);
-        if (ImGui::InputInt("AF", &af, 1, 100, ImGuiInputTextFlags_CharsHexadecimal))
+        if (ImGui::InputInt("AF", &af, 1, 100,
+                            ImGuiInputTextFlags_CharsHexadecimal))
             regs.af = std::clamp(af, 0, 0xFF);
-        if (ImGui::InputInt("SP", &sp, 1, 100, ImGuiInputTextFlags_CharsHexadecimal))
+        if (ImGui::InputInt("SP", &sp, 1, 100,
+                            ImGuiInputTextFlags_CharsHexadecimal))
             regs.sp = std::clamp(sp, 0, 0xFF);
-        if (ImGui::InputInt("PC", &pc, 1, 100, ImGuiInputTextFlags_CharsHexadecimal))
+        if (ImGui::InputInt("PC", &pc, 1, 100,
+                            ImGuiInputTextFlags_CharsHexadecimal))
             regs.pc = std::clamp(pc, 0, 0xFF);
 
         ImGui::NewLine();
@@ -315,7 +334,6 @@ static void drawImGui(gbemu::core::Gameboy& gb)
         ImGui::EndTabBar();
     }
     ImGui::End();
-
 }
 
 GLFWwindow* g_window;
@@ -328,7 +346,9 @@ s32 gui_main(gbemu::core::Gameboy& gb)
         return 1;
 
     // g_window = glfwCreateWindow(256*3, 256*3, "Gameboy", NULL, NULL);
-    g_window = glfwCreateWindow(gbemu::core::SCREEN_WIDTH*5, gbemu::core::SCREEN_HEIGHT*5, "Gameboy", NULL, NULL);
+    g_window =
+        glfwCreateWindow(gbemu::core::SCREEN_WIDTH * 5,
+                         gbemu::core::SCREEN_HEIGHT * 5, "Gameboy", NULL, NULL);
     if (g_window == NULL)
         return 1;
 
@@ -339,7 +359,6 @@ s32 gui_main(gbemu::core::Gameboy& gb)
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(g_window, true);
     ImGui_ImplOpenGL3_Init("#version 130");
-
 
     // Main loop
     while (!glfwWindowShouldClose(g_window))

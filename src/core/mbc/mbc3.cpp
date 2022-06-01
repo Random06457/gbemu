@@ -6,9 +6,7 @@
 namespace gbemu::core
 {
 
-Mbc3::Mbc3(std::vector<u8>& rom) :
-    Mbc(rom),
-    m_extram()
+Mbc3::Mbc3(std::vector<u8>& rom) : Mbc(rom), m_extram()
 {
     m_extram.resize(header()->ramSize());
 
@@ -26,16 +24,18 @@ Mbc3::Mbc3(std::vector<u8>& rom) :
 
 void Mbc3::map(Memory* mem)
 {
-    mem->mapWO(MmioWrite(0x0000, 0x2000, writeFunc<Mbc3>(&Mbc3::writeRamTimerEnable, mem)));
-    mem->mapWO(MmioWrite(0x2000, 0x2000, writeFunc<Mbc3>(&Mbc3::writeRomBank, mem)));
-    mem->mapWO(MmioWrite(0x4000, 0x2000, writeFunc<Mbc3>(&Mbc3::writeRamRtcBank, mem)));
-    mem->mapWO(MmioWrite(0x6000, 0x2000, writeFunc<Mbc3>(&Mbc3::writeLatchData, mem)));
+    mem->mapWO(MmioWrite(0x0000, 0x2000,
+                         writeFunc<Mbc3>(&Mbc3::writeRamTimerEnable, mem)));
+    mem->mapWO(
+        MmioWrite(0x2000, 0x2000, writeFunc<Mbc3>(&Mbc3::writeRomBank, mem)));
+    mem->mapWO(MmioWrite(0x4000, 0x2000,
+                         writeFunc<Mbc3>(&Mbc3::writeRamRtcBank, mem)));
+    mem->mapWO(
+        MmioWrite(0x6000, 0x2000, writeFunc<Mbc3>(&Mbc3::writeLatchData, mem)));
 
     remapRomBank1(mem);
     remapRamRtc(mem);
 }
-
-
 
 Result<void> Mbc3::writeRamTimerEnable(Memory* mem, u16 off, u8 data)
 {
@@ -71,7 +71,6 @@ Result<void> Mbc3::writeRomBank(Memory* mem, u16 off, u8 data)
         m_rom_bank = data;
         remapRomBank1(mem);
     }
-
 
     return {};
 }
@@ -127,10 +126,10 @@ Result<u8> Mbc3::readRtc(Memory* mem, u16 off)
     }
 }
 
-
 void Mbc3::remapRomBank1(Memory* mem)
 {
-    mem->remapRO(ROM1_START, m_rom.data() + m_rom_bank * ROM_BANK_SIZE, ROM_BANK_SIZE);
+    mem->remapRO(ROM1_START, m_rom.data() + m_rom_bank * ROM_BANK_SIZE,
+                 ROM_BANK_SIZE);
 }
 
 void Mbc3::remapRamRtc(Memory* mem)
@@ -138,9 +137,12 @@ void Mbc3::remapRamRtc(Memory* mem)
     if (m_ram_and_timer_enabled)
     {
         if (m_ram_rtc_bank < 3)
-            mem->remapRW(EXTRAM_START, m_extram.data() + m_ram_rtc_bank * RAM_BANK_SIZE, RAM_BANK_SIZE);
+            mem->remapRW(EXTRAM_START,
+                         m_extram.data() + m_ram_rtc_bank * RAM_BANK_SIZE,
+                         RAM_BANK_SIZE);
         else
-            mem->remapRW(EXTRAM_START, readFunc<Mbc3>(&Mbc3::readRtc, mem), writeFunc<Mbc3>(&Mbc3::writeRtc, mem));
+            mem->remapRW(EXTRAM_START, readFunc<Mbc3>(&Mbc3::readRtc, mem),
+                         writeFunc<Mbc3>(&Mbc3::writeRtc, mem));
     }
     else
     {

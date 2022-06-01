@@ -13,14 +13,13 @@ class Timer : public Device
 {
 public:
     static constexpr size_t SYSTEM_FREQUENCY = 4194304; // T-states
-    static constexpr size_t DIV_FREQUENCY = 16384; // T-states
+    static constexpr size_t DIV_FREQUENCY = 16384;      // T-states
 
-    static constexpr size_t TAC_FREQUENCY[] =
-    {
-        4096, // T-cycles / 1024
+    static constexpr size_t TAC_FREQUENCY[] = {
+        4096,   // T-cycles / 1024
         262144, // T-cycles / 16
-        65536, // T-cycles / 64
-        16384, // T-cycles / 256
+        65536,  // T-cycles / 64
+        16384,  // T-cycles / 256
     };
 
 public:
@@ -44,7 +43,6 @@ private:
         u8 clock_select : 2;
         u8 timer_enable : 1;
     } PACKED m_tac;
-
 };
 
 }

@@ -11,8 +11,8 @@ void printCart(gbemu::core::Cart& cart)
     auto hdr = cart.header();
     fmt::print("Title: {}\n", hdr->title);
     fmt::print("SGB Flag: 0x{:X}\n", hdr->sgb_flag);
-    fmt::print("Cartridge Type: 0x{:X} ({})\n", hdr->cart_type, hdr->cartType());
-    fmt::print("ROM Size: {}\n",hdr->romSize());
+    fmt::print("Cartridge Type: {}\n", hdr->cartType());
+    fmt::print("ROM Size: {}\n", hdr->romSize());
     fmt::print("RAM Size: {}\n", hdr->ramSize());
 }
 
@@ -22,12 +22,15 @@ s32 main(s32 argc, char** argv)
 {
     using namespace gbemu::core;
 
-
     ArgParser args;
 
-    args.registerArg({"--print-header", "Displays information about the selected ROM", ArgParser::ArgType_None, std::nullopt});
-    args.registerArg({"--input", "The Input ROM", ArgParser::ArgType_StringNext, std::nullopt});
-    args.registerArg({"--bootrom", "The Bootrom", ArgParser::ArgType_StringNext, std::nullopt});
+    args.registerArg({ "--print-header",
+                       "Displays information about the selected ROM",
+                       ArgParser::ArgType_None, std::nullopt });
+    args.registerArg({ "--input", "The Input ROM",
+                       ArgParser::ArgType_StringNext, std::nullopt });
+    args.registerArg({ "--bootrom", "The Bootrom",
+                       ArgParser::ArgType_StringNext, std::nullopt });
 
     if (!args.parse(argc, argv))
     {

@@ -7,13 +7,8 @@
 namespace gbemu::core
 {
 
-static const char* s_int_names[] =
-{
-    "Vblank",
-    "Lcd",
-    "Timer",
-    "Serial",
-    "Joypad",
+static constexpr const char* INTERRUPT_NAMES[] = {
+    "Vblank", "Lcd", "Timer", "Serial", "Joypad",
 };
 
 InterruptController::InterruptController()
@@ -28,7 +23,6 @@ void InterruptController::mapMemory(Memory* mem)
     mem->mapRW(IE_ADDR, &m_ie);
     mem->mapRW(IF_ADDR, &m_if);
 }
-
 
 void InterruptController::requestInterrupt(InterruptType type)
 {
@@ -45,7 +39,7 @@ void InterruptController::processInterrupts(Cpu* cpu)
         u8 bit = 1 << i;
         if ((m_if.raw & bit) && (m_ie.raw & bit))
         {
-            // LOG("*** INTERRUPT {} ***\n", s_int_names[i]);
+            // LOG("*** INTERRUPT {} ***\n", INTERRUPT_NAMES[i]);
 
             cpu->unhalt();
 

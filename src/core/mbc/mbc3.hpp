@@ -33,7 +33,6 @@ private:
     u8 m_rts_h;
     u8 m_rts_dl;
     u8 m_rts_dh;
-
 };
 
 }

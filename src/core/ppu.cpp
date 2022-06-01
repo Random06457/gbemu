@@ -25,12 +25,12 @@ void Ppu::oamSearch(size_t screen_y)
 
     size_t sprite_height = m_lcdc.obj_size == 0 ? 8 : 16;
 
-
     m_line_oam_count = 0;
     for (size_t i = 0; i < ARRAY_COUNT(m_oam) && m_line_oam_count < 10; i++)
     {
         // LOG("fetchSpriteLayerColor {} vs {}\n", screen_y, m_oam[i].y);
-        if (m_oam[i].x != 0 && screen_y + 16 >= m_oam[i].y && screen_y + 16 < m_oam[i].y + sprite_height)
+        if (m_oam[i].x != 0 && screen_y + 16 >= m_oam[i].y &&
+            screen_y + 16 < m_oam[i].y + sprite_height)
         {
             size_t j = 0;
             for (j = 0; j < m_line_oam_count; j++)
@@ -46,7 +46,8 @@ void Ppu::oamSearch(size_t screen_y)
             // insert
             else
             {
-                std::memmove(m_line_oam + j + 1, m_line_oam + j, m_line_oam_count - j);
+                std::memmove(m_line_oam + j + 1, m_line_oam + j,
+                             m_line_oam_count - j);
                 m_line_oam[j] = i;
                 m_line_oam_count++;
             }
@@ -56,18 +57,21 @@ void Ppu::oamSearch(size_t screen_y)
 
 void Ppu::drawLine(size_t screen_y)
 {
-    auto fetchTileColor = [] (u8* tile_data, size_t tile_idx, size_t tile_x, size_t tile_y) ALWAYS_INLINE -> u8
+    auto fetchTileColor = [](u8* tile_data, size_t tile_idx, size_t tile_x,
+                             size_t tile_y) ALWAYS_INLINE -> u8
     {
-        u8 b0 = tile_data[tile_idx * 0x10 + tile_y*2 + 0];
-        u8 b1 = tile_data[tile_idx * 0x10 + tile_y*2 + 1];
+        u8 b0 = tile_data[tile_idx * 0x10 + tile_y * 2 + 0];
+        u8 b1 = tile_data[tile_idx * 0x10 + tile_y * 2 + 1];
         u8 bit0 = (b0 >> (7 - tile_x)) & 1;
         u8 bit1 = (b1 >> (7 - tile_x)) & 1;
-        u8 color_code =  (bit0 << 1) | bit1;
+        u8 color_code = (bit0 << 1) | bit1;
 
         return color_code;
     };
 
-    auto fetchBgColorFromBgCoord = [this, fetchTileColor] (u8* tile_data, u8* tile_map, size_t bg_x, size_t bg_y) ALWAYS_INLINE -> u8
+    auto fetchBgColorFromBgCoord =
+        [this, fetchTileColor](u8* tile_data, u8* tile_map, size_t bg_x,
+                               size_t bg_y) ALWAYS_INLINE -> u8
     {
         size_t tile_x = bg_x / TILE_WIDTH;
         size_t tile_y = bg_y / TILE_HEIGHT;
@@ -82,7 +86,9 @@ void Ppu::drawLine(size_t screen_y)
         return fetchTileColor(tile_data, tile_idx, tile_off_x, tile_off_y);
     };
 
-    auto fetchBgColor = [this, fetchBgColorFromBgCoord] (u8* tile_data, u8* tile_map, size_t screen_x, size_t screen_y) ALWAYS_INLINE -> u8
+    auto fetchBgColor = [this, fetchBgColorFromBgCoord](
+                            u8* tile_data, u8* tile_map, size_t screen_x,
+                            size_t screen_y) ALWAYS_INLINE -> u8
     {
         size_t bg_x = (screen_x + m_scx) % BG_WIDTH;
         size_t bg_y = (screen_y + m_scy) % BG_HEIGHT;
@@ -90,7 +96,9 @@ void Ppu::drawLine(size_t screen_y)
         return fetchBgColorFromBgCoord(tile_data, tile_map, bg_x, bg_y);
     };
 
-    auto fetchWinColor = [this, fetchBgColorFromBgCoord] (u8* tile_data, u8* tile_map, size_t screen_x, size_t screen_y) ALWAYS_INLINE -> u8
+    auto fetchWinColor = [this, fetchBgColorFromBgCoord](
+                             u8* tile_data, u8* tile_map, size_t screen_x,
+                             size_t screen_y) ALWAYS_INLINE -> u8
     {
         size_t win_x = screen_x - m_wx + 7;
         size_t win_y = screen_y - m_wy;
@@ -98,22 +106,28 @@ void Ppu::drawLine(size_t screen_y)
         return fetchBgColorFromBgCoord(tile_data, tile_map, win_x, win_y);
     };
 
-    auto fetchSpriteColor = [this, fetchTileColor] (OamEntry& oam, size_t sprite_x, size_t sprite_y, u8 bg_color) ALWAYS_INLINE -> std::tuple<u8, u8>
+    auto fetchSpriteColor =
+        [this, fetchTileColor](OamEntry& oam, size_t sprite_x, size_t sprite_y,
+                               u8 bg_color) ALWAYS_INLINE -> std::tuple<u8, u8>
     {
         u8 tile_idx = oam.tile;
         if (m_lcdc.obj_size == 1)
             tile_idx &= ~1;
-        u8 sprite_color = fetchTileColor(spriteTiles(), tile_idx, sprite_x, sprite_y);
+        u8 sprite_color =
+            fetchTileColor(spriteTiles(), tile_idx, sprite_x, sprite_y);
         u8 palette = oam.dmg_palette;
 
         if (sprite_color == 0)
-            return {0, 0};
+            return { 0, 0 };
         if (oam.bg_and_window_over_obj == 1 && bg_color != 0)
-            return {0, 0};
-        return {sprite_color, palette};
+            return { 0, 0 };
+        return { sprite_color, palette };
     };
 
-    auto fetchSpriteLayerColor = [this, fetchSpriteColor] (u8* sprites, size_t sprite_count, size_t screen_x, size_t screen_y, u8 bg_color) ALWAYS_INLINE -> std::tuple<u8, u8>
+    auto fetchSpriteLayerColor =
+        [this, fetchSpriteColor](u8* sprites, size_t sprite_count,
+                                 size_t screen_x, size_t screen_y, u8 bg_color)
+            ALWAYS_INLINE -> std::tuple<u8, u8>
     {
         for (size_t i = 0; i < sprite_count; i++)
         {
@@ -130,12 +144,13 @@ void Ppu::drawLine(size_t screen_y)
                 if (oam.flip_y)
                     sprite_y = sprite_height - 1 - sprite_y;
 
-                auto[color, palette] = fetchSpriteColor(oam, sprite_x, sprite_y, bg_color);
+                auto [color, palette] =
+                    fetchSpriteColor(oam, sprite_x, sprite_y, bg_color);
                 if (color != 0)
-                    return {color, palette};
+                    return { color, palette };
             }
         }
-        return {0, 0};
+        return { 0, 0 };
     };
 
     u32* dst = m_screen_texture + SCREEN_WIDTH * screen_y;
@@ -150,22 +165,26 @@ void Ppu::drawLine(size_t screen_y)
         u8 bg_color = 0;
         if (m_lcdc.bg_and_window_enable)
         {
-            bg_color = (m_lcdc.window_enable && screen_x+7 >= m_wx && screen_y >= m_wy)
-                ? fetchWinColor(tiles, win_map, screen_x, screen_y)
-                : fetchBgColor(tiles, bg_map, screen_x, screen_y);
+            bg_color = (m_lcdc.window_enable && screen_x + 7 >= m_wx &&
+                        screen_y >= m_wy)
+                           ? fetchWinColor(tiles, win_map, screen_x, screen_y)
+                           : fetchBgColor(tiles, bg_map, screen_x, screen_y);
 
             // if (m_lcdc.window_enable)
-            // if (m_lcdc.window_enable && screen_x+7 >= m_wx && screen_y >= m_wy)
+            // if (m_lcdc.window_enable && screen_x+7 >= m_wx && screen_y >=
+            // m_wy)
             //     debug_win = true;
         }
 
-        auto [sprite_color, sprite_palette] = m_lcdc.obj_enable
-            ? fetchSpriteLayerColor(m_line_oam, m_line_oam_count, screen_x, screen_y, bg_color)
-            : std::tuple<u8, u8>{0, 0};
+        auto [sprite_color, sprite_palette] =
+            m_lcdc.obj_enable
+                ? fetchSpriteLayerColor(m_line_oam, m_line_oam_count, screen_x,
+                                        screen_y, bg_color)
+                : std::tuple<u8, u8>{ 0, 0 };
 
         *dst++ = sprite_color == 0
-            ? getColor(m_dmg_bgp, bg_color, false)
-            : getColor(m_dmg_obp[sprite_palette], sprite_color, false);
+                     ? getColor(m_dmg_bgp, bg_color, false)
+                     : getColor(m_dmg_obp[sprite_palette], sprite_color, false);
         // if (debug_win)
         //     dst[-1] = 0xFFFF0000;
     }
@@ -183,7 +202,8 @@ void Ppu::drawTile(u32* dst, u8* tile)
             u8 bit0 = (b0 >> (7 - x)) & 1;
             u8 bit1 = (b1 >> (7 - x)) & 1;
 
-            dst[y*32*8+x] = getColor(m_dmg_bgp, (bit0 << 1) | bit1, false);
+            dst[y * 32 * 8 + x] =
+                getColor(m_dmg_bgp, (bit0 << 1) | bit1, false);
         }
     }
 }
@@ -194,7 +214,7 @@ void Ppu::drawTiles(bool bg)
     u32* dst = bg ? m_bg_texture : m_window_texture;
     u8* tiles = bgTiles();
 
-    for (size_t i = 0; i < 32*32; i++)
+    for (size_t i = 0; i < 32 * 32; i++)
     {
         u8 tile_off = m_lcdc.bg_tile_area ? map[i] : map[i] ^ 0x80;
 
@@ -203,7 +223,7 @@ void Ppu::drawTiles(bool bg)
         size_t x = (i % 32) * 8;
         size_t y = (i / 32) * 8;
 
-        drawTile(dst + y * 32*8 + x, src);
+        drawTile(dst + y * 32 * 8 + x, src);
     }
 }
 
@@ -235,7 +255,9 @@ void Ppu::mapMemory(Memory* mem)
     mem->mapRW(WX_ADDR, &m_wx);
     mem->mapRW(WY_ADDR, &m_wy);
 
-    mem->mapRW(DMA_ADDR, MmioRead::readFunc(&m_dma), std::bind(&Ppu::startDMA, this, std::placeholders::_1, std::placeholders::_2));
+    mem->mapRW(DMA_ADDR, MmioRead::readFunc(&m_dma),
+               std::bind(&Ppu::startDMA, this, std::placeholders::_1,
+                         std::placeholders::_2));
 
     switchBank(mem, 0);
 }
@@ -255,7 +277,7 @@ void Ppu::switchBank(Memory* mem, size_t bank)
 
 u32 Ppu::getColor(u8 palette, u8 idx, bool transparency)
 {
-    u8 code = (palette >> idx*2) & 3;
+    u8 code = (palette >> idx * 2) & 3;
 
     if (transparency && code == 0)
         return 0x00000000;
@@ -342,16 +364,15 @@ void Ppu::step(Memory* mem, size_t clocks)
     }
 }
 
-
 void Ppu::dumpBg()
 {
     drawTiles(true);
     fmt::print("Dumping background\n");
     fmt::print("palette : 0x{:02X}\n", m_dmg_bgp);
     File::writeAllBytes("bg.raw", m_bg_texture, sizeof(m_bg_texture));
-    File::writeAllBytes("bg_map.bin", bgMap(), 32*32*0x10);
-    File::writeAllBytes("window_map.bin", windowMap(), 32*32*0x10);
-    File::writeAllBytes("bg_tiles.bin", bgTiles(), 0x100*0x10);
+    File::writeAllBytes("bg_map.bin", bgMap(), 32 * 32 * 0x10);
+    File::writeAllBytes("window_map.bin", windowMap(), 32 * 32 * 0x10);
+    File::writeAllBytes("bg_tiles.bin", bgTiles(), 0x100 * 0x10);
 }
 
 }

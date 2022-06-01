@@ -64,7 +64,6 @@ void Ppu::render()
     // static u32 scy_loc = 0;
     static u32 tex_loc = 0;
 
-
     // size_t tex_w = 256;
     // size_t tex_h = 256;
     // u32* tex_data = m_bg_texture;
@@ -88,12 +87,12 @@ void Ppu::render()
     // for (size_t y = 0; y < tex_h; y++)
     //     tex_data[y*tex_w+tex_w-1] = 0xFFFF0000;
 
-
     if (!init)
     {
         glGenTextures(1, &tex);
         glBindTexture(GL_TEXTURE_2D, tex);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex_w, tex_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex_w, tex_h, 0, GL_RGBA,
+                     GL_UNSIGNED_BYTE, tex_data);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -105,8 +104,8 @@ void Ppu::render()
 
         u32 tex_coord_loc = glGetAttribLocation(program, "pos");
 
-        static f32 tex_coords[] =
-        {
+        static f32 tex_coords[] = {
+            // clang-format off
             -1.0, -1.0,
             -1.0,  1.0,
             1.0,  1.0,
@@ -114,14 +113,17 @@ void Ppu::render()
             -1.0, -1.0,
             1.0,  1.0,
             1.0,  -1.0,
+            // clang-format on
         };
 
         glGenBuffers(1, &vbo);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(tex_coords), tex_coords, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(tex_coords), tex_coords,
+                     GL_STATIC_DRAW);
 
         glEnableVertexAttribArray(tex_coord_loc);
-        glVertexAttribPointer(tex_coord_loc, 2, GL_FLOAT, false, 2 * sizeof(f32), nullptr);
+        glVertexAttribPointer(tex_coord_loc, 2, GL_FLOAT, false,
+                              2 * sizeof(f32), nullptr);
 
         init = true;
     }
@@ -129,16 +131,15 @@ void Ppu::render()
     glUniform1f(tex_loc, tex);
     // glUniform1i(scy_loc, m_scy);
 
-
     glBindTexture(GL_TEXTURE_2D, tex);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tex_w, tex_h, GL_RGBA, GL_UNSIGNED_BYTE, tex_data);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tex_w, tex_h, GL_RGBA,
+                    GL_UNSIGNED_BYTE, tex_data);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
     glUseProgram(program);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
-
 
     m_new_frame_available = false;
 }

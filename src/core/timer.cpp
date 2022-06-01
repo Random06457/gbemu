@@ -15,7 +15,8 @@ Timer::Timer(InterruptController* interrupt) :
 
 void Timer::mapMemory(Memory* mem)
 {
-    mem->mapRW(DIV_ADDR, MmioRead::readFunc(&m_div), std::bind(&Timer::resetDiv, this, std::placeholders::_1));
+    mem->mapRW(DIV_ADDR, MmioRead::readFunc(&m_div),
+               std::bind(&Timer::resetDiv, this, std::placeholders::_1));
     mem->mapRW(TIMA_ADDR, &m_tima);
     mem->mapRW(TMA_ADDR, &m_tma);
     mem->mapRW(TAC_ADDR, &m_tac);

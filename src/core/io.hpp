@@ -2,28 +2,14 @@
 
 #include "types.hpp"
 
-#define MAKE_REGION(name, start, end) \
-    static constexpr u16 name##_START = start; \
-    static constexpr u16 name##_END = end + 1; \
+#define MAKE_REGION(name, start, end)                                          \
+    static constexpr u16 name##_START = start;                                 \
+    static constexpr u16 name##_END = end + 1;                                 \
     static constexpr u16 name##_SIZE = end + 1 - start;
 #define MAKE_REG(name, addr) static constexpr u16 name##_ADDR = addr;
 
 namespace gbemu::core
 {
-/*
-    0000	3FFF	16 KiB ROM bank 00	From cartridge, usually a fixed bank
-    4000	7FFF	16 KiB ROM Bank 01~NN	From cartridge, switchable bank via mapper (if any)
-    8000	9FFF	8 KiB Video RAM (VRAM)	In CGB mode, switchable bank 0/1
-    A000	BFFF	8 KiB External RAM	From cartridge, switchable bank if any
-    C000	CFFF	4 KiB Work RAM (WRAM)
-    D000	DFFF	4 KiB Work RAM (WRAM)	In CGB mode, switchable bank 1~7
-    E000	FDFF	Mirror of C000~DDFF (ECHO RAM)	Nintendo says use of this area is prohibited.
-    FE00	FE9F	Sprite attribute table (OAM)
-    FEA0	FEFF	Not Usable	Nintendo says use of this area is prohibited
-    FF00	FF7F	I/O Registers
-    FF80	FFFE	High RAM (HRAM)
-    FFFF	FFFF	Interrupt Enable register (IE)
-*/
 MAKE_REGION(BOOTROM, 0x0000, 0x00FF);
 MAKE_REGION(ROM0, 0x0000, 0x3FFF);
 MAKE_REGION(ROM1, 0x4000, 0x7FFF);
@@ -36,7 +22,6 @@ MAKE_REGION(OAM, 0xFE00, 0xFE9F);
 // MAKE_REGION(UNUSABLE, 0xFEA0, 0xFEFF);
 MAKE_REGION(IO, 0xFF00, 0xFF7F);
 MAKE_REGION(HRAM, 0xFF80, 0xFFFE);
-
 
 MAKE_REG(P1, 0xFF00);
 MAKE_REG(SB, 0xFF01);

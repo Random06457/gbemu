@@ -11,7 +11,6 @@ Serial::Serial(InterruptController* interrupts) :
     m_interrupts(interrupts),
     m_counter(0)
 {
-
 }
 
 void Serial::mapMemory(Memory* mem)

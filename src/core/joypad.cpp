@@ -6,10 +6,9 @@ namespace gbemu::core
 {
 
 Joypad::Joypad(InterruptController* interrupts) :
-    m_p1({0}),
+    m_p1({ 0 }),
     m_interrupts(interrupts)
 {
-
 }
 
 void Joypad::mapMemory(Memory* mem)

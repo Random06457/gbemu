@@ -14,6 +14,7 @@ public:
 
     virtual void mapMemory(Memory* mem) override;
     void processInput();
+
 private:
     union
     {

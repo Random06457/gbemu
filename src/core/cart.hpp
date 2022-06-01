@@ -94,22 +94,28 @@ class Mbc
 {
 public:
     Mbc(const std::vector<u8>& rom) : m_rom(rom) {}
-    virtual ~Mbc() {};
+    virtual ~Mbc(){};
 
     virtual void map(Memory* mem) = 0;
 
-    auto header() const { return reinterpret_cast<const CartHeader*>(m_rom.data()); }
+    auto header() const
+    {
+        return reinterpret_cast<const CartHeader*>(m_rom.data());
+    }
 
 protected:
-    template<typename T, typename ...TArgs>
+    template<typename T, typename... TArgs>
     auto writeFunc(auto func, TArgs... args)
     {
-        return std::bind(func, reinterpret_cast<T*>(this), std::forward<TArgs>(args)..., std::placeholders::_1, std::placeholders::_2);
+        return std::bind(func, reinterpret_cast<T*>(this),
+                         std::forward<TArgs>(args)..., std::placeholders::_1,
+                         std::placeholders::_2);
     }
-    template<typename T, typename ...TArgs>
+    template<typename T, typename... TArgs>
     auto readFunc(auto func, TArgs... args)
     {
-        return std::bind(func, reinterpret_cast<T*>(this), std::forward<TArgs>(args)..., std::placeholders::_1);
+        return std::bind(func, reinterpret_cast<T*>(this),
+                         std::forward<TArgs>(args)..., std::placeholders::_1);
     }
 
 protected:
@@ -123,7 +129,10 @@ public:
 
 public:
     template<typename T = void>
-    T* data(size_t off = 0) { return reinterpret_cast<T*>(m_rom.data() + off); }
+    T* data(size_t off = 0)
+    {
+        return reinterpret_cast<T*>(m_rom.data() + off);
+    }
 
     void mapMemory(Memory* mem, bool bootrom_enabled);
 

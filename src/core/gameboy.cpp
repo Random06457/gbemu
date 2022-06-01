@@ -14,7 +14,6 @@
 namespace gbemu::core
 {
 
-
 Gameboy::Gameboy() :
     m_bootrom(std::vector<u8>(BOOTROM_SIZE)),
     m_bootrom_enabled(true),
@@ -42,7 +41,10 @@ Gameboy::Gameboy() :
     mem()->mapRW(WRAM1_START, m_wram1.data(), m_wram1.size());
 
     // map bootrom disable register
-    mem()->mapWO(MmioWrite(BOOT_ADDR, 1, std::bind(&Gameboy::disableBootRom, this, std::placeholders::_1, std::placeholders::_2)));
+    mem()->mapWO(
+        MmioWrite(BOOT_ADDR, 1,
+                  std::bind(&Gameboy::disableBootRom, this,
+                            std::placeholders::_1, std::placeholders::_2)));
 
     // map registers
     m_interrupt_controller->mapMemory(mem());
@@ -59,7 +61,6 @@ Gameboy::Gameboy() :
 
 Gameboy::~Gameboy()
 {
-
 }
 
 Result<void> Gameboy::disableBootRom(u16 off, u8 data)

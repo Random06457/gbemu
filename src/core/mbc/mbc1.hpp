@@ -10,7 +10,6 @@ public:
 
     virtual void map(Memory* mem) override;
 
-
     Result<void> writeRamEnable(Memory* mem, u16 off, u8 data);
     Result<void> writeRomBankNumber(Memory* mem, u16 off, u8 data);
     Result<void> writeRamBankNumber(Memory* mem, u16 off, u8 data);

@@ -40,11 +40,10 @@ public:
     Ppu(InterruptController* interrupt);
 
 public:
-
     virtual void mapMemory(Memory* mem) override;
 
-    auto vram() { return  m_vram[m_vram_bank]; }
-    auto oam() { return  m_oam; }
+    auto vram() { return m_vram[m_vram_bank]; }
+    auto oam() { return m_oam; }
     void switchBank(Memory* mem, size_t bank);
 
     void step(Memory* mem, size_t clocks);
@@ -54,7 +53,10 @@ public:
     u8* spriteTiles() { return vram(); }
     u8* bgTiles() { return vram() + (m_lcdc.bg_tile_area ? 0 : 0x800); }
     u8* bgMap() { return vram() + (m_lcdc.bg_map_area ? 0x1C00 : 0x1800); }
-    u8* windowMap() { return vram() + (m_lcdc.window_map_area ? 0x1C00 : 0x1800); }
+    u8* windowMap()
+    {
+        return vram() + (m_lcdc.window_map_area ? 0x1C00 : 0x1800);
+    }
 
     Result<void> startDMA(u16 off, u8 addr);
 
@@ -78,7 +80,7 @@ private:
     u8 m_vram[2][VRAM_SIZE]; // switchable bank in CGB mode
     OamEntry m_oam[40];
 
-    u8 m_dmg_bgp; // non-CGB
+    u8 m_dmg_bgp;    // non-CGB
     u8 m_dmg_obp[2]; // non-CGB
     bool m_new_frame_available;
 
@@ -88,8 +90,8 @@ private:
         {
             u8 bg_and_window_enable : 1;
             u8 obj_enable : 1;
-            u8 obj_size : 1; // 0=8x8, 1=8x16
-            u8 bg_map_area : 1; // 0=9800-9BFF, 1=9C00-9FFF
+            u8 obj_size : 1;     // 0=8x8, 1=8x16
+            u8 bg_map_area : 1;  // 0=9800-9BFF, 1=9C00-9FFF
             u8 bg_tile_area : 1; // 0=8800-97FF, 1=8000-8FFF
             u8 window_enable : 1;
             u8 window_map_area : 1; // 0=9800-9BFF, 1=9C00-9FFF
@@ -100,7 +102,7 @@ private:
 
     struct
     {
-        PpuMode mode : 2; //0=HBlank, 1=VBlank, 2=OAM, 3=Transfer
+        PpuMode mode : 2; // 0=HBlank, 1=VBlank, 2=OAM, 3=Transfer
         u8 lyc_eq_lc : 1;
         u8 hblank_int_enable : 1;
         u8 vblank_int_enable : 1;
@@ -125,9 +127,9 @@ private:
 
     u32 m_dmg_colors[4];
 
-    u32 m_screen_texture[SCREEN_WIDTH*SCREEN_HEIGHT];
-    u32 m_bg_texture[32*32*8*8];
-    u32 m_window_texture[32*32*8*8];
+    u32 m_screen_texture[SCREEN_WIDTH * SCREEN_HEIGHT];
+    u32 m_bg_texture[32 * 32 * 8 * 8];
+    u32 m_window_texture[32 * 32 * 8 * 8];
 };
 
 }

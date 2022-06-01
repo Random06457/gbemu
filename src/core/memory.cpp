@@ -4,19 +4,15 @@
 namespace gbemu::core
 {
 
-
 bool Memory::Mapper::isRegionMapped(u16 addr, u16 size)
 {
     // check if the region intersects with a buffer
-    return std::ranges::any_of(m_entries,
-        [&addr, &size](auto& x) {
-            return x.intersect(addr, size);
-        }) ||
-        // check if the region intersects with a register
-        std::ranges::any_of(m_fast_entries,
-        [&addr, &size](auto& x) {
-            return x.first >= addr && x.first < addr + size;
-        });
+    return std::ranges::any_of(m_entries, [&addr, &size](auto& x)
+                               { return x.intersect(addr, size); }) ||
+           // check if the region intersects with a register
+           std::ranges::any_of(
+               m_fast_entries, [&addr, &size](auto& x)
+               { return x.first >= addr && x.first < addr + size; });
 }
 
 Result<Mmio*> Memory::Mapper::findEntry(u16 addr)
@@ -24,7 +20,8 @@ Result<Mmio*> Memory::Mapper::findEntry(u16 addr)
     if (m_fast_entries.contains(addr))
         return &m_fast_entries[addr];
 
-    auto it = std::ranges::find_if(m_entries, [&addr](auto& buf) { return buf.matches(addr); });
+    auto it = std::ranges::find_if(m_entries, [&addr](auto& buf)
+                                   { return buf.matches(addr); });
     if (it != m_entries.end())
         return &*it;
 
@@ -33,7 +30,8 @@ Result<Mmio*> Memory::Mapper::findEntry(u16 addr)
 
 Result<void> Memory::Mapper::map(const Mmio& entry)
 {
-    ERROR_IF(isRegionMapped(entry.start(), entry.size()), MemoryError_MapReservedRegion);
+    ERROR_IF(isRegionMapped(entry.start(), entry.size()),
+             MemoryError_MapReservedRegion);
 
     if (entry.size() == 1)
     {
@@ -43,7 +41,7 @@ Result<void> Memory::Mapper::map(const Mmio& entry)
 
     // find position
     auto it = m_entries.begin();
-    while(it != m_entries.end() && it->start() < entry.start())
+    while (it != m_entries.end() && it->start() < entry.start())
         ++it;
 
     m_entries.insert(it, entry);
@@ -59,7 +57,8 @@ Result<void> Memory::Mapper::unmap(u16 addr)
         return {};
     }
 
-    auto it = std::ranges::find_if(m_entries, [&addr](auto& buf) { return buf.start() == addr; });
+    auto it = std::ranges::find_if(m_entries, [&addr](auto& buf)
+                                   { return buf.start() == addr; });
     if (it != m_entries.end())
     {
         m_entries.erase(it);
@@ -73,9 +72,11 @@ Result<void> Memory::Mapper::remap(const Mmio& entry)
 {
     auto old_entry = findEntry(entry.start());
 
-    ERROR_IF(old_entry && old_entry.value()->start() != entry.start(), MemoryError_RemapWithDifferentAddr);
+    ERROR_IF(old_entry && old_entry.value()->start() != entry.start(),
+             MemoryError_RemapWithDifferentAddr);
 
-    ERROR_IF(old_entry && old_entry.value()->size() != entry.size(), MemoryError_RemapWithDifferentSize);
+    ERROR_IF(old_entry && old_entry.value()->size() != entry.size(),
+             MemoryError_RemapWithDifferentSize);
 
     if (old_entry)
     {

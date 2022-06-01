@@ -13,10 +13,10 @@ class ArgParser
 public:
     enum ArgType
     {
-        ArgType_None, // arg
-        ArgType_U32, // <arg=[\d+]>
-        ArgType_Bool, // <arg=true|false>
-        ArgType_String, // <arg="value">
+        ArgType_None,       // arg
+        ArgType_U32,        // <arg=[\d+]>
+        ArgType_Bool,       // <arg=true|false>
+        ArgType_String,     // <arg="value">
         ArgType_StringNext, // <arg "value">
 
         ArgType_Count,
@@ -31,10 +31,18 @@ public:
             bool value_bool;
         };
 
-        static ArgValue fromU32(u32 x) { return ArgValue{std::to_string(x), {x}}; }
-        static ArgValue fromBool(bool x) { return ArgValue{x ? "true" : "false", {x}}; }
-        static ArgValue fromString(const std::string& x) { return ArgValue{x, {0}}; }
-
+        static ArgValue fromU32(u32 x)
+        {
+            return ArgValue{ std::to_string(x), { x } };
+        }
+        static ArgValue fromBool(bool x)
+        {
+            return ArgValue{ x ? "true" : "false", { x } };
+        }
+        static ArgValue fromString(const std::string& x)
+        {
+            return ArgValue{ x, { 0 } };
+        }
     };
 
     struct ArgDesc
@@ -58,20 +66,23 @@ public:
     std::optional<ParsedArg> getArg(const std::string& name);
 
     bool parse(s32 argc, const char** argv);
-    bool parse(s32 argc, char** argv) { return parse(argc, const_cast<const char**>(argv)); }
+    bool parse(s32 argc, char** argv)
+    {
+        return parse(argc, const_cast<const char**>(argv));
+    }
 
     void showUsage();
 
     static const char* argType(ArgType type);
 
 private:
-
-    std::optional<ArgValue> parseArgValue(ArgType type, const std::string& value);
+    std::optional<ArgValue> parseArgValue(ArgType type,
+                                          const std::string& value);
 
     bool parseArg(s32 argc, const char** argv, s32& i);
 
 public:
-    auto& parsedArgs() const {return m_parsed_args; }
+    auto& parsedArgs() const { return m_parsed_args; }
 
 private:
     std::vector<ParsedArg> m_parsed_args;

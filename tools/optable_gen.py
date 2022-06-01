@@ -116,6 +116,7 @@ def gen_opcode_define(op, instr):
 
 def gen_opcode_header(table):
     print("#pragma once")
+    print("// clang-format off")
     print()
     print("#include \"types.hpp\"")
     print()
@@ -133,6 +134,8 @@ def gen_opcode_header(table):
     print("};")
     print()
     print("#undef MAKE_OP")
+    print()
+    print("clang-format on")
 
 def main():
     parser = argparse.ArgumentParser()

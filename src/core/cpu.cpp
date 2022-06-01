@@ -8,7 +8,14 @@
 #include "opcode.hpp"
 #include "timer.hpp"
 
-#define TRACE(...) do { if (m_logging_enable) { LOG(__VA_ARGS__); } } while (0)
+#define TRACE(...)                                                             \
+    do                                                                         \
+    {                                                                          \
+        if (m_logging_enable)                                                  \
+        {                                                                      \
+            LOG(__VA_ARGS__);                                                  \
+        }                                                                      \
+    } while (0)
 
 namespace gbemu::core
 {
@@ -76,7 +83,8 @@ u8 Cpu::read8(u16 addr)
     if (!ret)
     {
         TRACE("INVALID MEMORY : 0x{:04X} (PC={:04X})", addr, regs().pc);
-        // UNREACHABLE("INVALID MEMORY : 0x{:04X} (PC={:04X})", addr, regs().pc);
+        // UNREACHABLE("INVALID MEMORY : 0x{:04X} (PC={:04X})", addr,
+        // regs().pc);
     }
 
     // TODO: handle error
@@ -93,7 +101,8 @@ void Cpu::write8(u16 addr, u8 x)
     if (!ret)
     {
         TRACE("INVALID MEMORY : 0x{:04X} (PC={:04X})", addr, regs().pc);
-        // UNREACHABLE("INVALID MEMORY : 0x{:04X} (PC={:04X})", addr, regs().pc);
+        // UNREACHABLE("INVALID MEMORY : 0x{:04X} (PC={:04X})", addr,
+        // regs().pc);
     }
 
     // TODO: handle error
@@ -139,7 +148,6 @@ u16 Cpu::pop16()
     regs().sp += 2;
     return ret;
 }
-
 
 u8 Cpu::readReg(VREG8 reg)
 {
@@ -188,15 +196,33 @@ void Cpu::writeReg(VREG8 reg, u8 data)
     }
 }
 
-#define LD(d, s) op_ld(VREG8_##d, VREG8_##s); break
-#define INC(r) op_inc(VREG8_##r); break
-#define DEC(r) op_dec(VREG8_##r); break
-#define PUSH(x) push16(regs().x); break
-#define POP(x) regs().x = pop16(); break
-#define CALL_A16(cond) op_call(cond, fetch16()); break
-#define RET(cond) op_ret(cond); break
-#define JR_R8(cond) op_jr(cond, fetch8()); break
-#define JP_A16(cond) op_jp(cond, fetch16()); break
+#define LD(d, s)                                                               \
+    op_ld(VREG8_##d, VREG8_##s);                                               \
+    break
+#define INC(r)                                                                 \
+    op_inc(VREG8_##r);                                                         \
+    break
+#define DEC(r)                                                                 \
+    op_dec(VREG8_##r);                                                         \
+    break
+#define PUSH(x)                                                                \
+    push16(regs().x);                                                          \
+    break
+#define POP(x)                                                                 \
+    regs().x = pop16();                                                        \
+    break
+#define CALL_A16(cond)                                                         \
+    op_call(cond, fetch16());                                                  \
+    break
+#define RET(cond)                                                              \
+    op_ret(cond);                                                              \
+    break
+#define JR_R8(cond)                                                            \
+    op_jr(cond, fetch8());                                                     \
+    break
+#define JP_A16(cond)                                                           \
+    op_jp(cond, fetch16());                                                    \
+    break
 
 #define Z regs().flags.z
 #define NZ !regs().flags.z
@@ -205,44 +231,43 @@ void Cpu::writeReg(VREG8 reg, u8 data)
 #define N regs().flags.n
 #define H regs().flags.h
 
-
-#define MAKE_OP1(start, size, func, ...) \
-    if (op >= start && op < start + size) \
-    { \
-        VREG8 r = (VREG8)((op - start) % 8); \
-        func(r, ##__VA_ARGS__); \
-        return; \
+#define MAKE_OP1(start, size, func, ...)                                       \
+    if (op >= start && op < start + size)                                      \
+    {                                                                          \
+        VREG8 r = (VREG8)((op - start) % 8);                                   \
+        func(r, ##__VA_ARGS__);                                                \
+        return;                                                                \
     }
 
-#define MAKE_OP_ACCU(start, size, func, ...) \
-    if (op >= start && op < start + size) \
-    { \
-        VREG8 src = (VREG8)((op - start) % 8); \
-        func(VREG8_A, src, ##__VA_ARGS__); \
-        return; \
+#define MAKE_OP_ACCU(start, size, func, ...)                                   \
+    if (op >= start && op < start + size)                                      \
+    {                                                                          \
+        VREG8 src = (VREG8)((op - start) % 8);                                 \
+        func(VREG8_A, src, ##__VA_ARGS__);                                     \
+        return;                                                                \
     }
 
-#define MAKE_OP_LD(start, size, func, ...) \
-    if (op >= start && op < start + size) \
-    { \
-        VREG8 dst = (VREG8)((op - start) / 8); \
-        VREG8 src = (VREG8)((op - start) % 8); \
-        func(dst, src, ##__VA_ARGS__); \
-        return; \
+#define MAKE_OP_LD(start, size, func, ...)                                     \
+    if (op >= start && op < start + size)                                      \
+    {                                                                          \
+        VREG8 dst = (VREG8)((op - start) / 8);                                 \
+        VREG8 src = (VREG8)((op - start) % 8);                                 \
+        func(dst, src, ##__VA_ARGS__);                                         \
+        return;                                                                \
     }
 
-#define MAKE_OP_IDX(start, size, func, ...) \
-    if (op >= start && op <= start + size - 1) \
-    { \
-        u8 idx = (op - start) / 8; \
-        VREG8 r = (VREG8)((op - start) % 8); \
-        func(r, idx, ##__VA_ARGS__); \
-        return; \
+#define MAKE_OP_IDX(start, size, func, ...)                                    \
+    if (op >= start && op <= start + size - 1)                                 \
+    {                                                                          \
+        u8 idx = (op - start) / 8;                                             \
+        VREG8 r = (VREG8)((op - start) % 8);                                   \
+        func(r, idx, ##__VA_ARGS__);                                           \
+        return;                                                                \
     }
 
 void Cpu::execute(u8 op)
 {
-    auto op_jr = [this] (bool cond, s8 n) ALWAYS_INLINE
+    auto op_jr = [this](bool cond, s8 n) ALWAYS_INLINE
     {
         if (cond)
         {
@@ -250,7 +275,7 @@ void Cpu::execute(u8 op)
             regs().pc += n;
         }
     };
-    auto op_jp = [this] (bool cond, u16 addr) ALWAYS_INLINE
+    auto op_jp = [this](bool cond, u16 addr) ALWAYS_INLINE
     {
         if (cond)
         {
@@ -259,7 +284,7 @@ void Cpu::execute(u8 op)
         }
     };
 
-    auto op_ret = [this] (bool cond) ALWAYS_INLINE
+    auto op_ret = [this](bool cond) ALWAYS_INLINE
     {
         m_timer->tick(4);
         if (cond)
@@ -268,7 +293,7 @@ void Cpu::execute(u8 op)
         }
     };
 
-    auto op_call = [this] (bool cond, u16 addr) ALWAYS_INLINE
+    auto op_call = [this](bool cond, u16 addr) ALWAYS_INLINE
     {
         if (cond)
         {
@@ -277,12 +302,10 @@ void Cpu::execute(u8 op)
         }
     };
 
-    auto op_ld = [this] (VREG8 dst, VREG8 src) ALWAYS_INLINE
-    {
-        writeReg(dst, readReg(src));
-    };
+    auto op_ld = [this](VREG8 dst, VREG8 src) ALWAYS_INLINE
+    { writeReg(dst, readReg(src)); };
 
-    auto op_add_hl_r16 = [this] (u16 a) ALWAYS_INLINE
+    auto op_add_hl_r16 = [this](u16 a) ALWAYS_INLINE
     {
         m_timer->tick(4);
 
@@ -297,7 +320,7 @@ void Cpu::execute(u8 op)
         regs().hl = d;
     };
 
-    auto op_add = [this] (VREG8 dst, VREG8 src, bool c) ALWAYS_INLINE
+    auto op_add = [this](VREG8 dst, VREG8 src, bool c) ALWAYS_INLINE
     {
         u8 a = readReg(dst);
         u8 b = readReg(src);
@@ -311,7 +334,7 @@ void Cpu::execute(u8 op)
 
         writeReg(dst, d);
     };
-    auto op_sub = [this] (VREG8 dst, VREG8 src, bool c) ALWAYS_INLINE
+    auto op_sub = [this](VREG8 dst, VREG8 src, bool c) ALWAYS_INLINE
     {
         u8 a = readReg(dst);
         u8 b = readReg(src);
@@ -325,7 +348,7 @@ void Cpu::execute(u8 op)
 
         writeReg(dst, d);
     };
-    auto op_and = [this] (VREG8 dst, VREG8 src) ALWAYS_INLINE
+    auto op_and = [this](VREG8 dst, VREG8 src) ALWAYS_INLINE
     {
         u8 a = readReg(dst);
         u8 b = readReg(src);
@@ -338,7 +361,7 @@ void Cpu::execute(u8 op)
 
         writeReg(dst, d);
     };
-    auto op_xor = [this] (VREG8 dst, VREG8 src) ALWAYS_INLINE
+    auto op_xor = [this](VREG8 dst, VREG8 src) ALWAYS_INLINE
     {
         u8 a = readReg(dst);
         u8 b = readReg(src);
@@ -351,7 +374,7 @@ void Cpu::execute(u8 op)
 
         writeReg(dst, d);
     };
-    auto op_or = [this] (VREG8 dst, VREG8 src) ALWAYS_INLINE
+    auto op_or = [this](VREG8 dst, VREG8 src) ALWAYS_INLINE
     {
         u8 a = readReg(dst);
         u8 b = readReg(src);
@@ -364,7 +387,7 @@ void Cpu::execute(u8 op)
 
         writeReg(dst, d);
     };
-    auto op_cp = [this] (VREG8 dst, VREG8 src) ALWAYS_INLINE
+    auto op_cp = [this](VREG8 dst, VREG8 src) ALWAYS_INLINE
     {
         u8 a = readReg(dst);
         u8 b = readReg(src);
@@ -376,7 +399,7 @@ void Cpu::execute(u8 op)
         C = d > a - b;
     };
 
-    auto op_inc = [this] (VREG8 r) ALWAYS_INLINE
+    auto op_inc = [this](VREG8 r) ALWAYS_INLINE
     {
         u8 a = readReg(r);
         u8 b = 1;
@@ -389,7 +412,7 @@ void Cpu::execute(u8 op)
         writeReg(r, d);
     };
 
-    auto op_dec = [this] (VREG8 r) ALWAYS_INLINE
+    auto op_dec = [this](VREG8 r) ALWAYS_INLINE
     {
         u8 a = readReg(r);
         u8 b = 1;
@@ -417,15 +440,14 @@ void Cpu::execute(u8 op)
 
     u8 mem[3];
     mem[0] = op;
-    mem[1] = m_memory->read8(regs().pc+0).value_or(0);
-    mem[2] = m_memory->read8(regs().pc+1).value_or(0);
+    mem[1] = m_memory->read8(regs().pc + 0).value_or(0);
+    mem[2] = m_memory->read8(regs().pc + 1).value_or(0);
 
-    TRACE("{:04X}: {}\n", regs().pc-1, Disas::disassemble(&mem, sizeof(mem)));
+    TRACE("{:04X}: {}\n", regs().pc - 1, Disas::disassemble(&mem, sizeof(mem)));
 
     switch (op)
     {
-        case OP_NOP:
-            break;
+        case OP_NOP: break;
         case OP_STOP_d8:
             // UNIMPLEMENTED("STOP");
             // TODO:
@@ -457,14 +479,20 @@ void Cpu::execute(u8 op)
         case OP_POP_BC: POP(bc);
         case OP_POP_DE: POP(de);
         case OP_POP_HL: POP(hl);
-        case OP_POP_AF: regs().af = pop16(); regs().f &= 0xF0; break;
+        case OP_POP_AF:
+            regs().af = pop16();
+            regs().f &= 0xF0;
+            break;
 
         case OP_LD_BC_d16: regs().bc = fetch16(); break;
         case OP_LD_DE_d16: regs().de = fetch16(); break;
         case OP_LD_HL_d16: regs().hl = fetch16(); break;
         case OP_LD_SP_d16: regs().sp = fetch16(); break;
 
-        case OP_LD_SP_HL: m_timer->tick(4); regs().sp = regs().hl; break;
+        case OP_LD_SP_HL:
+            m_timer->tick(4);
+            regs().sp = regs().hl;
+            break;
 
         case OP_RST_00H: op_call(true, 0x00); break;
         case OP_RST_08H: op_call(true, 0x08); break;
@@ -587,16 +615,13 @@ void Cpu::execute(u8 op)
             break;
         }
 
-
         case OP_LDH_MEM_a8_A: LD(HA8, A);
         case OP_LDH_A_MEM_a8: LD(A, HA8);
 
         case OP_LD_MEM_C_A: LD(HC, A);
         case OP_LD_A_MEM_C: LD(A, HC);
 
-        case OP_PREFIX:
-            executeCB(fetch8());
-            break;
+        case OP_PREFIX: executeCB(fetch8()); break;
 
         case OP_DI: // DI
             m_interrupt_controller->setIME(false);
@@ -616,7 +641,6 @@ void Cpu::execute(u8 op)
         case OP_ADD_HL_DE: op_add_hl_r16(regs().de); break;
         case OP_ADD_HL_HL: op_add_hl_r16(regs().hl); break;
         case OP_ADD_HL_SP: op_add_hl_r16(regs().sp); break;
-
 
         case OP_ADD_A_d8: op_add(VREG8_A, VREG8_D8, false); break;
         case OP_ADC_A_d8: op_add(VREG8_A, VREG8_D8, true); break;
@@ -723,14 +747,13 @@ void Cpu::execute(u8 op)
             break;
         }
 
-        default:
-            UNIMPLEMENTED("Unimplemented opcode (0x{:02X})", op);
+        default: UNIMPLEMENTED("Unimplemented opcode (0x{:02X})", op);
     }
 }
 
 void Cpu::executeCB(u8 op)
 {
-    auto op_bit = [this] (VREG8 r, size_t idx) ALWAYS_INLINE
+    auto op_bit = [this](VREG8 r, size_t idx) ALWAYS_INLINE
     {
         u8 b = readReg(r);
 
@@ -739,21 +762,21 @@ void Cpu::executeCB(u8 op)
         H = 1;
     };
 
-    auto op_res = [this] (VREG8 r, size_t idx) ALWAYS_INLINE
+    auto op_res = [this](VREG8 r, size_t idx) ALWAYS_INLINE
     {
         u8 b = readReg(r);
         b &= ~(1 << idx);
         writeReg(r, b);
     };
 
-    auto op_set = [this] (VREG8 r, size_t idx) ALWAYS_INLINE
+    auto op_set = [this](VREG8 r, size_t idx) ALWAYS_INLINE
     {
         u8 b = readReg(r);
         b |= 1 << idx;
         writeReg(r, b);
     };
 
-    auto op_sr = [this]<typename T> (VREG8 r, bool c, bool rotate) ALWAYS_INLINE
+    auto op_sr = [this]<typename T>(VREG8 r, bool c, bool rotate) ALWAYS_INLINE
     {
         T b = readReg(r);
 
@@ -771,7 +794,7 @@ void Cpu::executeCB(u8 op)
         writeReg(r, b);
     };
 
-    auto op_sl = [this]<typename T> (VREG8 r, bool c, bool rotate) ALWAYS_INLINE
+    auto op_sl = [this]<typename T>(VREG8 r, bool c, bool rotate) ALWAYS_INLINE
     {
         T b = readReg(r);
 
@@ -789,7 +812,7 @@ void Cpu::executeCB(u8 op)
         writeReg(r, b);
     };
 
-    auto op_swap = [this] (VREG8 r) ALWAYS_INLINE
+    auto op_swap = [this](VREG8 r) ALWAYS_INLINE
     {
         u8 b = readReg(r);
         b = ((b & 0xF) << 4) | ((b >> 4) & 0xF);
@@ -800,13 +823,13 @@ void Cpu::executeCB(u8 op)
         writeReg(r, b);
     };
 
-    MAKE_OP1(0x00, 8, op_sl.operator()<u8>, true, true); // rlc
-    MAKE_OP1(0x08, 8, op_sr.operator()<u8>, true, true); // rrc
-    MAKE_OP1(0x10, 8, op_sl.operator()<u8>, false, true); // rl
-    MAKE_OP1(0x18, 8, op_sr.operator()<u8>, false, true); // rr
+    MAKE_OP1(0x00, 8, op_sl.operator()<u8>, true, true);   // rlc
+    MAKE_OP1(0x08, 8, op_sr.operator()<u8>, true, true);   // rrc
+    MAKE_OP1(0x10, 8, op_sl.operator()<u8>, false, true);  // rl
+    MAKE_OP1(0x18, 8, op_sr.operator()<u8>, false, true);  // rr
     MAKE_OP1(0x20, 8, op_sl.operator()<u8>, false, false); // sla
     MAKE_OP1(0x28, 8, op_sr.operator()<s8>, false, false); // sra
-    MAKE_OP1(0x30, 8, op_swap); // swap
+    MAKE_OP1(0x30, 8, op_swap);                            // swap
     MAKE_OP1(0x38, 8, op_sr.operator()<u8>, false, false); // srl
 
     MAKE_OP_IDX(0x40, 0x40, op_bit);

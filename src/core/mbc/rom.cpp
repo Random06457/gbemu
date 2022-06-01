@@ -5,11 +5,8 @@
 namespace gbemu::core
 {
 
-
-Rom::Rom(std::vector<u8>& rom) :
-    Mbc(rom)
+Rom::Rom(std::vector<u8>& rom) : Mbc(rom)
 {
-
 }
 
 void Rom::map(Memory* mem)

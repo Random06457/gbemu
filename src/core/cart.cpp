@@ -20,7 +20,9 @@ size_t CartHeader::romSize(u8 rom_size)
 
 size_t CartHeader::ramSize(u8 ram_size)
 {
-    size_t size[] = { 0, 0, 8_kb, 32_kb, 128_kb, 64_kb, };
+    size_t size[] = {
+        0, 0, 8_kb, 32_kb, 128_kb, 64_kb,
+    };
 
     if (ram_size <= ARRAY_COUNT(size))
         return size[ram_size];
@@ -44,7 +46,8 @@ const char* CartHeader::cartType(CartridgeType cart_type)
         case CartridgeType_MMM01_RAM: return "MMM01+RAM";
         case CartridgeType_MMM01_RAM_BATTERY: return "MMM01+RAM+BATTERY";
         case CartridgeType_MBC3_TIMER_BATTERY: return "MBC3+TIMER+BATTERY";
-        case CartridgeType_MBC3_TIMER_RAM_BATTERY: return "MBC3+TIMER+RAM+BATTERY";
+        case CartridgeType_MBC3_TIMER_RAM_BATTERY:
+            return "MBC3+TIMER+RAM+BATTERY";
         case CartridgeType_MBC3: return "MBC3";
         case CartridgeType_MBC3_RAM: return "MBC3+RAM";
         case CartridgeType_MBC3_RAM_BATTERY: return "MBC3+RAM+BATTERY";
@@ -53,9 +56,11 @@ const char* CartHeader::cartType(CartridgeType cart_type)
         case CartridgeType_MBC5_RAM_BATTERY: return "MBC5+RAM+BATTERY";
         case CartridgeType_MBC5_RUMBLE: return "MBC5+RUMBLE";
         case CartridgeType_MBC5_RUMBLE_RAM: return "MBC5+RUMBLE+RAM";
-        case CartridgeType_MBC5_RUMBLE_RAM_BATTERY: return "MBC5+RUMBLE+RAM+BATTERY";
+        case CartridgeType_MBC5_RUMBLE_RAM_BATTERY:
+            return "MBC5+RUMBLE+RAM+BATTERY";
         case CartridgeType_MBC6: return "MBC6";
-        case CartridgeType_MBC7_SENSOR_RUMBLE_RAM_BATTERY: return "MBC7+SENSOR+RUMBLE+RAM+BATTERY";
+        case CartridgeType_MBC7_SENSOR_RUMBLE_RAM_BATTERY:
+            return "MBC7+SENSOR+RUMBLE+RAM+BATTERY";
         case CartridgeType_POCKET_CAMERA: return "POCKET CAMERA";
         case CartridgeType_BANDAI_TAMA5: return "BANDAI TAMA5";
         case CartridgeType_HuC3: return "HuC3";
@@ -64,9 +69,7 @@ const char* CartHeader::cartType(CartridgeType cart_type)
     }
 }
 
-Cart::Cart(std::vector<u8> rom) :
-    m_rom(rom),
-    m_header(data<const CartHeader>())
+Cart::Cart(std::vector<u8> rom) : m_rom(rom), m_header(data<const CartHeader>())
 {
     switch (m_header->cart_type)
     {
@@ -89,8 +92,8 @@ Cart::Cart(std::vector<u8> rom) :
             break;
 
         default:
-            LOG("type : {}({})\n", CartHeader::cartType(m_header->cart_type), m_header->cart_type);
-            UNIMPLEMENTED("Only MBC1 supported");
+            UNIMPLEMENTED("{} not supported",
+                          CartHeader::cartType(m_header->cart_type));
     }
 }
 
@@ -102,6 +105,5 @@ void Cart::mapMemory(Memory* mem, bool bootrom_enabled)
 
     m_mbc->map(mem);
 }
-
 
 };

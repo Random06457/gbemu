@@ -28,12 +28,14 @@ File::Result<std::vector<u8>> File::readAllBytes(const fs::path& path)
 
     ERROR_IF(!fs.is_open(), FileSystemError_FileOpenFailed);
 
-    std::vector<u8> ret((std::istreambuf_iterator<char>(fs)), (std::istreambuf_iterator<char>()));
+    std::vector<u8> ret((std::istreambuf_iterator<char>(fs)),
+                        (std::istreambuf_iterator<char>()));
 
     return ret;
 }
 
-File::Result<void> File::writeAllBytes(const fs::path& path, const void* data, size_t size)
+File::Result<void> File::writeAllBytes(const fs::path& path, const void* data,
+                                       size_t size)
 {
     std::ofstream fs;
     fs.open(path, std::ios::binary);

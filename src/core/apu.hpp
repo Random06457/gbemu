@@ -28,10 +28,9 @@ public:
     size_t getBuffered();
     size_t getDesiredBuffered();
 
-
     auto audioBuffer() { return m_audio_buffer; }
     auto audioBufferSize() const { return m_audio_buffer_size; }
-    auto setAudioBufferSize(size_t new_size)  { m_audio_buffer_size = new_size; }
+    auto setAudioBufferSize(size_t new_size) { m_audio_buffer_size = new_size; }
 
 private:
     struct
@@ -72,7 +71,7 @@ private:
             u8 freq_hi : 3;
             u8 : 3;
             u8 counter_selection : 1; // 1 = Stop when NR31 expires
-            u8 initial : 1; // 1 = Restart Sound
+            u8 initial : 1;           // 1 = Restart Sound
         };
     } PACKED;
 
@@ -93,15 +92,15 @@ private:
         };
     } PACKED;
 
-    #define DEFINE_NR_3_4(ch) \
-    union \
-    { \
-        struct \
-        { \
-            FrequencyReg m_nr##ch##3; \
-            ControlReg m_nr##ch##4; \
-        }; \
-        FullFrequencyReg m_nr##ch##3_nr##ch##4; \
+#define DEFINE_NR_3_4(ch)                                                      \
+    union                                                                      \
+    {                                                                          \
+        struct                                                                 \
+        {                                                                      \
+            FrequencyReg m_nr##ch##3;                                          \
+            ControlReg m_nr##ch##4;                                            \
+        };                                                                     \
+        FullFrequencyReg m_nr##ch##3_nr##ch##4;                                \
     } PACKED;
 
     union VolumeEnvelopReg
@@ -177,7 +176,6 @@ private:
     size_t m_audio_buffer_size;
 
     size_t m_clocks;
-
 
     f64 m_ch1_prev_x = 0;
     f64 m_ch2_prev_x = 0;

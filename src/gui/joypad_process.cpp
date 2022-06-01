@@ -20,10 +20,12 @@ void Joypad::processInput()
     }
     if (m_p1.select_button == 0 && m_p1.select_direction == 1)
     {
-        m_p1.up_select = glfwGetKey(g_window, GLFW_KEY_RIGHT_CONTROL) == GLFW_RELEASE;
+        m_p1.up_select =
+            glfwGetKey(g_window, GLFW_KEY_RIGHT_CONTROL) == GLFW_RELEASE;
         m_p1.down_start = glfwGetKey(g_window, GLFW_KEY_SPACE) == GLFW_RELEASE;
         m_p1.right_a = glfwGetKey(g_window, GLFW_KEY_ENTER) == GLFW_RELEASE;
-        m_p1.left_b = glfwGetKey(g_window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE;
+        m_p1.left_b =
+            glfwGetKey(g_window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE;
     }
 
     if ((old_p1 & ~m_p1.raw) & 0xF)
