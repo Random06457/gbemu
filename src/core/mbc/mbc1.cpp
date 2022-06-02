@@ -1,4 +1,6 @@
 #include "mbc1.hpp"
+#include "common/fs.hpp"
+#include "common/logging.hpp"
 #include "core/io.hpp"
 #include "core/memory.hpp"
 
@@ -7,7 +9,14 @@ namespace gbemu::core
 
 Mbc1::Mbc1(std::vector<u8>& rom) : Mbc(rom), m_extram()
 {
-    m_extram.resize(header()->ramSize());
+    size_t ram_size = header()->ramSize();
+
+    // Load save from file if it exists and has the correct size
+    auto save = File::readAllBytes(header()->title);
+    if (save && save.value().size() == ram_size)
+        m_extram = save.value();
+    else
+        m_extram.resize(header()->ramSize());
 
     m_mode = 0;
     m_ram_bank = 0;
@@ -34,8 +43,15 @@ Result<void> Mbc1::writeRamEnable(Memory* mem, u16 off, u8 data)
     // 4 bits
     data &= 0b1111;
 
-    m_ram_enabled = data == 10;
-    remapRAM(mem);
+    bool enabled = data == 10;
+
+    File::writeAllBytes(header()->title, m_extram.data(), m_extram.size());
+
+    if (enabled != m_ram_enabled)
+    {
+        m_ram_enabled = enabled;
+        remapRAM(mem);
+    }
 
     return {};
 }

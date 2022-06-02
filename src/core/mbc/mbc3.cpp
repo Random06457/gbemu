@@ -1,4 +1,5 @@
 #include "mbc3.hpp"
+#include "common/fs.hpp"
 #include "common/logging.hpp"
 #include "core/io.hpp"
 #include "core/memory.hpp"
@@ -8,7 +9,14 @@ namespace gbemu::core
 
 Mbc3::Mbc3(std::vector<u8>& rom) : Mbc(rom), m_extram()
 {
-    m_extram.resize(header()->ramSize());
+    size_t ram_size = header()->ramSize();
+
+    // Load save from file if it exists and has the correct size
+    auto save = File::readAllBytes(header()->title);
+    if (save && save.value().size() == ram_size)
+        m_extram = save.value();
+    else
+        m_extram.resize(header()->ramSize());
 
     m_ram_and_timer_enabled = false;
     m_rom_bank = 1;
@@ -44,9 +52,11 @@ Result<void> Mbc3::writeRamTimerEnable(Memory* mem, u16 off, u8 data)
 
     bool enabled = data == 10;
 
+    File::writeAllBytes(header()->title, m_extram.data(), m_extram.size());
+
     if (enabled != m_ram_and_timer_enabled)
     {
-        m_ram_and_timer_enabled = data == 10;
+        m_ram_and_timer_enabled = enabled;
         remapRamRtc(mem);
     }
 

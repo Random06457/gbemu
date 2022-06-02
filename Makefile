@@ -80,10 +80,6 @@ CXXFILES_EMU := \
 CXXFILES_TEST := \
 	src/common/arg_parser.cpp \
 	src/common/logging.cpp \
-	src/core/mbc/rom.cpp \
-	src/core/mbc/mbc1.cpp \
-	src/core/mbc/mbc3.cpp \
-	src/core/cart.cpp \
 	src/core/cpu.cpp \
 	src/core/disas.cpp \
 	src/core/int_controller.cpp \
